@@ -22,7 +22,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 7.0.3.1"
   spec.add_dependency "resque"
-
+  spec.add_dependency "redis", "~> 4.0.0"
+  spec.add_dependency "redis-namespace"
 
   spec.add_development_dependency "rubocop"
   spec.add_development_dependency "rubocop-performance"

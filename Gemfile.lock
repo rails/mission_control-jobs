@@ -13,6 +13,8 @@ PATH
   specs:
     mission_control-jobs (0.1.0)
       rails (>= 7.0.3.1)
+      redis (~> 4.0.0)
+      redis-namespace
       resque
 
 GEM
@@ -161,7 +163,7 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
-    redis (4.7.1)
+    redis (4.0.3)
     redis-namespace (1.8.2)
       redis (>= 3.0.4)
     regexp_parser (2.5.0)
