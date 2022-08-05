@@ -15,6 +15,6 @@ class MissionControl::Jobs::Queues::StatusController < ApplicationController
 
   private
     def set_queue
-      @queue = ActiveJob::Base.queue(params[:queue_id])
+      @queue = ActiveJob::Base.queues[params[:queue_id]]
     end
 end
