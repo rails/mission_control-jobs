@@ -1,0 +1,9 @@
+<% flash.each do |name, message| -%>
+  <% message_class = { notice: "is-success", alert: "is-danger" }[name.to_sym] %>
+
+  <article class="message <%= message_class %>">
+    <div class="message-body">
+      <%= message %>
+    </div>
+  </article>
+<% end -%>

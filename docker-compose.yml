@@ -1,0 +1,11 @@
+version: "3.4"
+
+volumes:
+  db: {}
+  redis: {}
+
+services:
+  redis:
+    image: redis:4.0-alpine
+    volumes:
+      - redis:/data

@@ -1,0 +1,14 @@
+<table class="table queues is-striped is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th>Queue</th>
+    <th>Pending jobs</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/queues/queue", collection: @queues %>
+
+  </tbody>
+</table>

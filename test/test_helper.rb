@@ -13,3 +13,29 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActiveSupport::TestCase.file_fixture_path = ActiveSupport::TestCase.fixture_path + "/files"
   ActiveSupport::TestCase.fixtures :all
 end
+
+require_relative "active_job/queue_adapters/adapter_testing"
+Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
+
+class ActiveSupport::TestCase
+  include JobQueuesHelper
+
+  parallelize workers: :number_of_processors
+
+  teardown { delete_adapters_data }
+
+  private
+    def delete_adapters_data
+      delete_resque_data
+    end
+
+    def delete_resque_data
+      redis = Resque.redis
+      if redis.try(:namespace)
+        all_keys = redis.keys("*")
+        redis.del all_keys if all_keys.any?
+      else
+        redis.flushdb
+      end
+    end
+end
