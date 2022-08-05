@@ -1,0 +1,16 @@
+<tr class="queue">
+  <td>
+    <%= queue.name %>
+    <% if queue.paused? %>
+      <span class="tag is-warning">Paused</span>
+    <% end %>
+  </td>
+  <td> <%= queue.size %> </td>
+  <td>
+    <% if queue.active? %>
+      <%= button_to "Pause", pause_queue_status_path(queue.name), method: :put, class: "button is-warning" %>
+    <% else %>
+      <%= button_to "Resume", resume_queue_status_path(queue.name), method: :put, class: "button is-success" %>
+    <% end %>
+  </td>
+</tr>
