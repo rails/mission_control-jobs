@@ -1,1 +1,10 @@
-<p>Hola jorge!</p>
+<table class="table">
+  <tbody>
+  <% @queues.each do |queue| %>
+  <tr>
+    <td> <%= queue.name %> </td>
+    <td> <%= queue.size %> </td>
+  </tr>
+  <% end %>
+  </tbody>
+</table>
