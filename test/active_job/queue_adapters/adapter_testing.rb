@@ -38,6 +38,14 @@ module ActiveJob::QueueAdapters::AdapterTesting
     assert_not queue.paused?
   end
 
+  test "queue size" do
+    3.times { DynamicQueueJob("queue_1").perform_later }
+
+    queue = ApplicationJob.queue("queue_1")
+    assert_equal 3, queue.size
+    assert_equal 3, queue.length
+  end
+
   private
     # Template method to override in child classes. It returns the
     # name of the adapter to test.

@@ -6,6 +6,12 @@ class ActiveJob::Queue
     @queue_adapter = queue_adapter
   end
 
+  def size
+    queue_adapter.queue_count(name)
+  end
+
+  alias length size
+
   def pause
     queue_adapter.pause_queue(name)
   end

@@ -3,6 +3,10 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.queues
   end
 
+  def queue_count(queue_name)
+    Resque.size queue_name
+  end
+
   def pause_queue(queue_name)
     ResquePauseHelper.pause(queue_name)
   end
