@@ -3,11 +3,13 @@ class MissionControl::Jobs::Queues::StatusController < ApplicationController
 
   def pause
     @queue.pause
+
     redirect_to queues_url
   end
 
   def resume
     @queue.resume
+
     redirect_to queues_url
   end
 
