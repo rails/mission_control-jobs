@@ -58,6 +58,16 @@ module ActiveJob::QueueAdapters::AdapterTesting
     assert_equal 5, ApplicationJob.queue("queue_2").size
   end
 
+  test "clear a queue" do
+    DynamicQueueJob("queue_1").perform_later
+    queue = ApplicationJob.queue("queue_1")
+    assert queue
+
+    queue.clear
+    queue = ApplicationJob.queue("queue_1")
+    assert_not queue
+  end
+
   test "check if a queue is empty" do
     3.times { DynamicQueueJob("queue_1").perform_later }
     queue = ApplicationJob.queue("queue_1")

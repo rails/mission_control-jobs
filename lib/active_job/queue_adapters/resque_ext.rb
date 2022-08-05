@@ -7,6 +7,10 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.size queue_name
   end
 
+  def clear_queue(queue_name)
+    Resque.remove_queue(queue_name)
+  end
+
   def pause_queue(queue_name)
     ResquePauseHelper.pause(queue_name)
   end
