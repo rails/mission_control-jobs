@@ -14,6 +14,7 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActiveSupport::TestCase.fixtures :all
 end
 
+require_relative "active_job/queue_adapters/adapter_testing"
 Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
 
 class ActiveSupport::TestCase
