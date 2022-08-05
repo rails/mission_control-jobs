@@ -13,4 +13,13 @@ module JobsHelper
       end
     end
   end
+
+  def assert_queues(*expected_names)
+    queues = ApplicationJob.queues
+
+    assert_equal expected_names.length, queues.length
+    expected_names.each.with_index do |expected_name, index|
+      assert_equal expected_name, queues[index].name
+    end
+  end
 end

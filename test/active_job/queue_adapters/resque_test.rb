@@ -9,6 +9,6 @@ class ActiveJob::QueueAdapters::ResqueTest < ActiveSupport::TestCase
     DynamicQueueJob("queue_1").perform_later
     DynamicQueueJob("queue_2").perform_later
 
-    pp Resque.queues
+    assert_queues "queue_1", "queue_2"
   end
 end
