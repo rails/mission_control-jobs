@@ -51,8 +51,7 @@ module ActiveJob::QueueAdapters::AdapterTesting
   end
 
   private
-    # Template method to override in child classes. It returns the
-    # name of the adapter to test.
+    # Template method to override with the adapter to test.
     #
     # E.g: +:resque+, +:sidekiq+
     def queue_adapter
