@@ -7,6 +7,5 @@ class_loader.setup
 
 module MissionControl
   module Jobs
-    # Your code goes here...
   end
 end
