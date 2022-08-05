@@ -10,7 +10,12 @@
 
   <% @queues.each do |queue| %>
     <tr class="queue">
-      <td> <%= queue.name %> </td>
+      <td>
+        <%= queue.name %>
+        <% if queue.paused? %>
+          <span class="tag is-warning">Paused</span>
+        <% end %>
+      </td>
       <td> <%= queue.size %> </td>
       <td>
         <% if queue.active? %>
