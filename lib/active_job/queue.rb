@@ -12,6 +12,10 @@ class ActiveJob::Queue
 
   alias length size
 
+  def empty?
+    size == 0
+  end
+
   def pause
     queue_adapter.pause_queue(name)
   end
