@@ -7,7 +7,7 @@ class ActiveJob::Queue
   end
 
   def size
-    queue_adapter.queue_count(name)
+    queue_adapter.queue_size(name)
   end
 
   alias length size

@@ -3,7 +3,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.queues
   end
 
-  def queue_count(queue_name)
+  def queue_size(queue_name)
     Resque.size queue_name
   end
 
