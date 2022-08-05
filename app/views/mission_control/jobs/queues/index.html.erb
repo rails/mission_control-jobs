@@ -1,4 +1,4 @@
-<table class="table is-striped is-hoverable is-fullwidth">
+<table class="table queues is-striped is-hoverable is-fullwidth">
   <tbody>
   <thead>
   <tr>
@@ -9,7 +9,7 @@
   </thead>
 
   <% @queues.each do |queue| %>
-    <tr>
+    <tr class="queue">
       <td> <%= queue.name %> </td>
       <td> <%= queue.size %> </td>
       <td>

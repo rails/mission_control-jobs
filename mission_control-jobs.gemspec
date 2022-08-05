@@ -23,6 +23,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rails", ">= 7.0.3.1"
 
   spec.add_development_dependency "resque"
+  spec.add_development_dependency "capybara"
+  spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "redis", "~> 4.0.0"
   spec.add_development_dependency "redis-namespace"
