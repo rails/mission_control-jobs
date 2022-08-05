@@ -50,6 +50,14 @@ module ActiveJob::QueueAdapters::AdapterTesting
     assert_equal 3, queue.length
   end
 
+  test "queue sizes for multiple queues" do
+    3.times { DynamicQueueJob("queue_1").perform_later }
+    5.times { DynamicQueueJob("queue_2").perform_later }
+
+    assert_equal 3, ApplicationJob.queue("queue_1").size
+    assert_equal 5, ApplicationJob.queue("queue_2").size
+  end
+
   private
     # Template method to override with the adapter to test.
     #
