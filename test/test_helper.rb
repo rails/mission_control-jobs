@@ -18,4 +18,23 @@ Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
 
 class ActiveSupport::TestCase
   include JobQueuesHelper
+
+  parallelize workers: :number_of_processors
+
+  teardown { delete_adapters_data }
+
+  private
+    def delete_adapters_data
+      delete_resque_data
+    end
+
+    def delete_resque_data
+      redis = Resque.redis
+      if redis.try(:namespace)
+        all_keys = redis.keys("*")
+        redis.del all_keys if all_keys.any?
+      else
+        redis.flushdb
+      end
+    end
 end

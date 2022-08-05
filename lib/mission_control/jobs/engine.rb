@@ -13,6 +13,19 @@ module MissionControl
           ActiveJob::QueueAdapters::ResqueAdapter.include ActiveJob::QueueAdapters::ResqueExt
         end
       end
+
+      initializer "mission_control-jobs.testing" do
+        ActiveSupport.on_load(:active_support_test_case) do
+          parallelize_setup do |worker|
+            redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
+            Resque.redis = Redis::Namespace.new "test-#{worker}", redis: redis
+          end
+
+          parallelize_teardown do
+            delete_adapters_data
+          end
+        end
+      end
     end
   end
 end
