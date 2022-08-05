@@ -29,5 +29,9 @@ class ActiveJob::QueueAdapters::ResqueTest < ActiveSupport::TestCase
     queue.pause
     assert_not queue.active?
     assert queue.paused?
+
+    queue.resume
+    assert queue.active?
+    assert_not queue.paused?
   end
 end
