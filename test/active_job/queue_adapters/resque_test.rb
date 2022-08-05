@@ -6,9 +6,15 @@ class ActiveJob::QueueAdapters::ResqueTest < ActiveSupport::TestCase
   end
 
   test "fetch the list of queues" do
-    DynamicQueueJob("queue_1").perform_later
-    DynamicQueueJob("queue_2").perform_later
+    create_queues "queue_1", "queue_2"
 
     assert_queues "queue_1", "queue_2"
+  end
+
+  test "find queue by name" do
+    create_queues "queue_1", "queue_2"
+
+    assert_equal "queue_1", ApplicationJob.find_queue("queue_1").name
+    assert_nil ApplicationJob.find_queue("queue_3")
   end
 end

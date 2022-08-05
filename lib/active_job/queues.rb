@@ -7,5 +7,9 @@ module ActiveJob::Queues
         ActiveJob::Queue.new(queue_name)
       end
     end
+
+    def find_queue(name)
+      queues.find { |queue| queue.name == name }
+    end
   end
 end

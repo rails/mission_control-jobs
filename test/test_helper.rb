@@ -17,5 +17,5 @@ end
 Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
 
 class ActiveSupport::TestCase
-  include JobsHelper
+  include JobQueuesHelper
 end

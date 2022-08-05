@@ -1,4 +1,4 @@
-module JobsHelper
+module JobQueuesHelper
   extend ActiveSupport::Concern
 
   included do
@@ -11,6 +11,12 @@ module JobsHelper
 
       def perform
       end
+    end
+  end
+
+  def create_queues(*names)
+    names.each do |name|
+      DynamicQueueJob(name).perform_later
     end
   end
 
