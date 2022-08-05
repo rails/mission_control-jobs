@@ -11,7 +11,11 @@ module ActiveJob::QueueAdapters::AdapterTesting
   test "fetch the list of queues" do
     create_queues "queue_1", "queue_2"
 
-    assert_queues "queue_1", "queue_2"
+    queues = ApplicationJob.queues
+
+    assert_equal 2, queues.length
+    assert_equal "queue_1", queues[0].name
+    assert_equal "queue_2", queues[1].name
   end
 
   test "find queue by name" do
