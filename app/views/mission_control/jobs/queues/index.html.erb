@@ -1,10 +1,17 @@
-<table class="table">
+<table class="table is-striped is-hoverable is-fullwidth">
   <tbody>
-  <% @queues.each do |queue| %>
+  <thead>
   <tr>
-    <td> <%= queue.name %> </td>
-    <td> <%= queue.size %> </td>
+    <th>Queue</th>
+    <th>Pending jobs</th>
   </tr>
+  </thead>
+
+  <% @queues.each do |queue| %>
+    <tr>
+      <td> <%= queue.name %> </td>
+      <td> <%= queue.size %> </td>
+    </tr>
   <% end %>
   </tbody>
 </table>
