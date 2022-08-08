@@ -1,23 +1,33 @@
 class ActiveJob::JobsRelation
-  PROPERTIES = %i[ only_failed queue_name from_index to_index job_class_names ]
+  PROPERTIES = %i[ queue_name status from_index to_index job_class_names ]
+  STATUSES = %i[ pending failed ]
 
   attr_reader *PROPERTIES
+
+  def initialize(queue_adapter: ActiveJob::Base.queue_adapter)
+    @queue_adapter = queue_adapter
+    set_defaults
+  end
 
   # Returns a +ActiveJob::JobsRelation+ with the configured filtering options
   #
   # === Options
   #
-  # * <tt>:job_class</tt> - A string with the class names of the jobs to filter.
-  #   It also supports passing an array to include multiple job classes.
+  # * <tt>:job_class</tt> - A string with the class name or class names of
+  #   jobs to filter.
   def where(job_class: nil, queue: nil)
     clone_with job_class_names: job_class, queue_name: queue
   end
 
-  def failed
-    clone_with only_failed: true
-  end
+  STATUSES.each do |status|
+    define_method status do
+      clone_with status: status
+    end
 
-  alias only_failed? only_failed
+    define_method "#{status}?" do
+      self.status == status
+    end
+  end
 
   def from(from)
     clone_with from_index: from
@@ -27,8 +37,17 @@ class ActiveJob::JobsRelation
     clone_with to_index: to
   end
 
+  def count
+    queue_adapter.count_jobs(self)
+  end
+
   private
+    attr_reader :queue_adapter
     attr_writer *PROPERTIES
+
+    def set_defaults
+      self.status = :pending
+    end
 
     def clone_with(**properties)
       dup.tap do |relation|

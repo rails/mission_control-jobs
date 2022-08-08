@@ -11,9 +11,15 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert [ "SomeJob1", "SomeJob2" ], @jobs.where(job_class: [ "SomeJob1", "SomeJob2" ])
   end
 
-  test "set filter by failed flag" do
-    assert_not @jobs.only_failed?
-    assert @jobs.failed.only_failed?
+  test "filter by pending status" do
+    assert @jobs.pending?
+    assert @jobs.pending.pending?
+    assert_not @jobs.failed.pending?
+  end
+
+  test "filter by failed status" do
+    assert_not @jobs.failed?
+    assert @jobs.failed.failed?
   end
 
   test "set from and to" do
