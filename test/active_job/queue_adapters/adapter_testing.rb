@@ -2,7 +2,7 @@ module ActiveJob::QueueAdapters::AdapterTesting
   extend ActiveSupport::Concern
 
   included do
-    include Queues
+    include Failed, Queues
 
     setup do
       ApplicationJob.queue_adapter = queue_adapter
@@ -10,10 +10,19 @@ module ActiveJob::QueueAdapters::AdapterTesting
   end
 
   private
-    # Template method to override with the adapter to test.
+    # Returns the adapter to test.
+    #
+    # Template method to override in child classes.
     #
     # E.g: +:resque+, +:sidekiq+
     def queue_adapter
+      raise NotImplementedError
+    end
+
+    # Perform the jobs in the queue
+    #
+    # Template method to override in child classes.
+    def perform_enqueued_jobs
       raise NotImplementedError
     end
 end

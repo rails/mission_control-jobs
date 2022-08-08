@@ -39,8 +39,22 @@ class ActiveJob::JobsRelation
   end
 
   def count
-    queue_adapter.count_jobs(self)
+    queue_adapter.jobs_count(self)
   end
+
+  def empty?
+    count == 0
+  end
+
+  def to_s
+    properties_with_values = PROPERTIES.collect do |name|
+      value = public_send(name)
+      "#{name}: #{value}" unless value.nil?
+    end.compact.join(", ")
+    "<Jobs with [#{properties_with_values}]>"
+  end
+
+  alias inspect to_s
 
   private
     attr_reader :queue_adapter

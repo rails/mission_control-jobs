@@ -10,7 +10,7 @@ module ActiveJob::Querying
       fetch_queues.index_by(&:name).with_indifferent_access
     end
 
-    def failed
+    def jobs
       ActiveJob::JobsRelation.new(queue_adapter: queue_adapter)
     end
 
