@@ -6,6 +6,7 @@ class ActiveJob::JobsRelation
 
   def initialize(queue_adapter: ActiveJob::Base.queue_adapter)
     @queue_adapter = queue_adapter
+
     set_defaults
   end
 

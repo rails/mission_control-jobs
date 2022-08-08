@@ -1,4 +1,4 @@
-module ActiveJob::Queues
+module ActiveJob::Querying
   extend ActiveSupport::Concern
 
   class_methods do
@@ -8,6 +8,10 @@ module ActiveJob::Queues
     #   ApplicationJob.queues[:some_queue] #=> <ActiveJob::Queue:0x000000010e302f00 @name="some_queue">
     def queues
       fetch_queues.index_by(&:name).with_indifferent_access
+    end
+
+    def failed
+      ActiveJob::JobsRelation.new(queue_adapter: queue_adapter)
     end
 
     private

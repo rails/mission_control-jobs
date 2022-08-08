@@ -1,4 +1,4 @@
-require "active_job/queues"
+require "active_job/querying"
 require "active_job/queue_adapters/resque_ext"
 require "active_job/queue"
 require "active_job/jobs_relation"
@@ -10,7 +10,7 @@ module MissionControl
 
       initializer "active_job.extensions" do
         ActiveSupport.on_load :active_job do
-          ActiveJob::Base.include ActiveJob::Queues
+          ActiveJob::Base.include ActiveJob::Querying
           ActiveJob::QueueAdapters::ResqueAdapter.include ActiveJob::QueueAdapters::ResqueExt
         end
       end
