@@ -1,10 +1,3 @@
-require "active_job/querying"
-require "active_job/queue_adapters/resque_ext"
-require "active_job/queue"
-require "active_job/jobs_relation"
-require "active_job/execution_error"
-require "active_job/errors/query_error"
-
 module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
