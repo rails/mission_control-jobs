@@ -1,6 +1,7 @@
 require "active_job/queues"
 require "active_job/queue_adapters/resque_ext"
 require "active_job/queue"
+require "active_job/jobs_relation"
 
 module MissionControl
   module Jobs
