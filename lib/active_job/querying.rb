@@ -1,6 +1,16 @@
 module ActiveJob::Querying
   extend ActiveSupport::Concern
 
+  included do
+    # ActiveJob will use pagination internally when fetching relations of jobs. This
+    # parameter sets the max amount of jobs to fetch in each data store query.
+    class_attribute :default_page_size, default: 1000
+
+    # TODO: These should be moved to +ActiveJob::Core+ when upstreaming.
+    attr_accessor :last_execution_error
+    attr_reader :serialized_arguments
+  end
+
   class_methods do
     # Returns the queues indexed by name. The hash supports both strings
     # and symbols for accessing the queues.
@@ -11,7 +21,7 @@ module ActiveJob::Querying
     end
 
     def jobs
-      ActiveJob::JobsRelation.new(queue_adapter: queue_adapter)
+      ActiveJob::JobsRelation.new(queue_adapter: queue_adapter, default_page_size: default_page_size)
     end
 
     private

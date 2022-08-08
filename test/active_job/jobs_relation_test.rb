@@ -22,12 +22,12 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert @jobs.failed.failed?
   end
 
-  test "set from and to" do
-    assert_nil @jobs.from_index
-    assert_nil @jobs.to_index
+  test "set limit and offset" do
+    assert_equal 0, @jobs.offset_value
+    assert_nil @jobs.limit_value
 
-    jobs = @jobs.from(10).to(20)
-    assert_equal 10, jobs.from_index
-    assert_equal 20, jobs.to_index
+    jobs = @jobs.offset(10).limit(20)
+    assert_equal 10, jobs.offset_value
+    assert_equal 20, jobs.limit_value
   end
 end

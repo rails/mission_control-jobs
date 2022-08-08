@@ -1,11 +1,16 @@
 class ActiveJob::JobsRelation
-  PROPERTIES = %i[ queue_name status from_index to_index job_class_names ]
+  include Enumerable
+
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_names ]
   STATUSES = %i[ pending failed ]
 
   attr_reader *PROPERTIES
 
-  def initialize(queue_adapter: ActiveJob::Base.queue_adapter)
+  delegate :last, :[], to: :to_a
+
+  def initialize(queue_adapter: ActiveJob::Base.queue_adapter, default_page_size: ActiveJob::Base.default_page_size)
     @queue_adapter = queue_adapter
+    @default_page_size = default_page_size
 
     set_defaults
   end
@@ -30,12 +35,12 @@ class ActiveJob::JobsRelation
     end
   end
 
-  def from(from)
-    clone_with from_index: from
+  def offset(offset)
+    clone_with offset_value: offset
   end
 
-  def to(to)
-    clone_with to_index: to
+  def limit(limit)
+    clone_with limit_value: limit
   end
 
   def count
@@ -56,11 +61,23 @@ class ActiveJob::JobsRelation
 
   alias inspect to_s
 
+  def each
+    current_offset = offset_value
+    begin
+      limit = [ limit_value || default_page_size, default_page_size ].min
+      page = offset(current_offset).limit(limit)
+      jobs = queue_adapter.fetch_jobs(page)
+      Array(jobs).each { |job| yield job }
+      current_offset += limit
+    end until jobs.blank?
+  end
+
   private
-    attr_reader :queue_adapter
+    attr_reader :queue_adapter, :default_page_size
     attr_writer *PROPERTIES
 
     def set_defaults
+      self.offset_value = 0
       self.status = :pending
     end
 

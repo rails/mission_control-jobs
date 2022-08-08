@@ -1,4 +1,4 @@
-module ActiveJob::QueueAdapters::AdapterTesting::Jobs
+module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
   extend ActiveSupport::Concern
   extend ActiveSupport::Testing::Declarative
 

@@ -2,7 +2,7 @@ module ActiveJob::QueueAdapters::AdapterTesting
   extend ActiveSupport::Concern
 
   included do
-    include Jobs, Queues
+    include CountJobs, QueryJobs, Queues
 
     setup do
       ApplicationJob.queue_adapter = queue_adapter
