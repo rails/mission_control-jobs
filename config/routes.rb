@@ -7,5 +7,7 @@ MissionControl::Jobs::Engine.routes.draw do
     end
   end
 
+  resources :failed_jobs
+
   root to: "queues#index"
 end
