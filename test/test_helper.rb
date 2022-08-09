@@ -19,7 +19,7 @@ Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
 Dir[File.join(__dir__, "active_job", "queue_adapters", "adapter_testing", "*.rb")].each { |file| require file }
 
 class ActiveSupport::TestCase
-  include JobQueuesHelper
+  include JobsHelper, JobQueuesHelper
 
   parallelize workers: :number_of_processors
 

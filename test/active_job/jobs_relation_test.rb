@@ -6,9 +6,8 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
   end
 
   test "pass job class names" do
-    assert_nil @jobs.job_class_names
-    assert [ "SomeJob" ], @jobs.where(job_class: "SomeJob").job_class_names
-    assert [ "SomeJob1", "SomeJob2" ], @jobs.where(job_class: [ "SomeJob1", "SomeJob2" ])
+    assert_nil @jobs.job_class_name
+    assert "SomeJob", @jobs.where(job_class: "SomeJob").job_class_name
   end
 
   test "filter by pending status" do

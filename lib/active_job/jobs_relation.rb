@@ -1,7 +1,7 @@
 class ActiveJob::JobsRelation
   include Enumerable
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_names ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   STATUSES = %i[ pending failed ]
 
   attr_reader *PROPERTIES
@@ -22,7 +22,7 @@ class ActiveJob::JobsRelation
   # * <tt>:job_class</tt> - A string with the class name or class names of
   #   jobs to filter.
   def where(job_class: nil, queue: nil)
-    clone_with job_class_names: job_class, queue_name: queue
+    clone_with job_class_name: job_class.to_s, queue_name: queue.to_s
   end
 
   STATUSES.each do |status|
@@ -44,8 +44,15 @@ class ActiveJob::JobsRelation
   end
 
   def count
-    queue_adapter.jobs_count(self)
+    if filtering_needed?
+      to_a.length
+    else
+      queue_adapter.jobs_count(self)
+    end
   end
+
+  alias length count
+  alias size count
 
   def empty?
     count == 0
@@ -67,9 +74,10 @@ class ActiveJob::JobsRelation
       limit = [ limit_value || default_page_size, default_page_size ].min
       page = offset(current_offset).limit(limit)
       jobs = queue_adapter.fetch_jobs(page)
-      Array(jobs).each { |job| yield job }
+      filtered_jobs = filter_if_needed(jobs)
+      Array(filtered_jobs).each { |job| yield job }
       current_offset += limit
-    end until jobs.blank?
+    end until (jobs.blank? && jobs.length == filtered_jobs.length)
   end
 
   private
@@ -89,7 +97,25 @@ class ActiveJob::JobsRelation
       end
     end
 
-    def job_class_names=(job_class_name_or_names)
-      @job_class_names = Array(job_class_name_or_names) if job_class_name_or_names
+    def filter_if_needed(jobs)
+      if filtering_needed?
+        filter(jobs)
+      else
+        jobs
+      end
+    end
+
+    # If adapter does not support filtering by class name, it will perform
+    # the filtering in memory.
+    def filtering_needed?
+      job_class_name.present? && !queue_adapter.support_class_name_filtering?
+    end
+
+    def filter(jobs)
+      jobs.filter { |job| satisfy_filter?(job) }
+    end
+
+    def satisfy_filter?(job)
+      job.class_name == job_class_name
     end
 end

@@ -26,9 +26,9 @@ module ActiveJob::QueueAdapters::ResqueExt
   def jobs_count(jobs_relation)
     case jobs_relation.status
     when :pending
-        Resque.queue_sizes.inject(0) { |sum, (_queue_name, queue_size)| sum + queue_size }
+      pending_jobs_count(jobs_relation)
     when :failed
-        Resque.data_store.num_failed
+      failed_jobs_count
     else
         raise ActiveJob::Errors::QueryError.new(jobs_relation), "Status not supported: #{status}"
     end
@@ -38,20 +38,47 @@ module ActiveJob::QueueAdapters::ResqueExt
     fetch_resque_jobs(jobs_relation).collect { |resque_job| deserialize_resque_job(resque_job) }
   end
 
+  def support_class_name_filtering?
+    false
+  end
+
   private
-    def fetch_resque_jobs(jobs_relation)
-      if jobs_relation.failed?
-        Resque::Failure.all(jobs_relation.offset_value, jobs_relation.limit_value)
-      else
-        unless jobs_relation.queue_name.present?
-          raise ActiveJob::Errors::QueryError.new(jobs_relation), "This adapter only supports fetching failed jobs when no queue name is provided"
+    def pending_jobs_count(jobs_relation)
+      Resque.queue_sizes.inject(0) do |sum, (queue_name, queue_size)|
+        if jobs_relation.queue_name.blank? || jobs_relation.queue_name == queue_name
+          sum + queue_size
+        else
+          sum
         end
-        Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)
       end
     end
 
+    def failed_jobs_count
+      Resque.data_store.num_failed
+    end
+
+    def fetch_resque_jobs(jobs_relation)
+      if jobs_relation.failed?
+        fetch_failed_resque_jobs(jobs_relation)
+      else
+        fetch_queue_resque_jobs(jobs_relation)
+      end
+    end
+
+    def fetch_failed_resque_jobs(jobs_relation)
+      Resque::Failure.all(jobs_relation.offset_value, jobs_relation.limit_value)
+    end
+
+    def fetch_queue_resque_jobs(jobs_relation)
+      unless jobs_relation.queue_name.present?
+        raise ActiveJob::Errors::QueryError.new(jobs_relation), "This adapter only supports fetching failed jobs when no queue name is provided"
+      end
+      Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)
+    end
+
     def deserialize_resque_job(resque_job_hash)
-      ActiveJob::Base.deserialize(resque_job_hash.dig("payload", "args")&.first).tap do |job|
+      args_hash = resque_job_hash.dig("payload", "args") || resque_job_hash.dig("args")
+      ActiveJob::JobProxy.new(args_hash&.first).tap do |job|
         job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
       end
     end
