@@ -31,4 +31,14 @@ module ActiveJob::Querying
         end
       end
   end
+
+  module Root
+    def queues
+      ActiveJob::Base.queues
+    end
+
+    def jobs
+      ActiveJob::Base.jobs
+    end
+  end
 end

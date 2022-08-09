@@ -6,7 +6,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     FailingJob.perform_later(123)
     perform_enqueued_jobs
 
-    job = ApplicationJob.jobs.failed.last
+    job = ActiveJob.jobs.failed.last
 
     assert_equal [ 123 ], job.serialized_arguments
     assert_job_proxy FailingJob, job
