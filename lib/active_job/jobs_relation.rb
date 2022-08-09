@@ -22,9 +22,9 @@
 class ActiveJob::JobsRelation
   include Enumerable
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   STATUSES = %i[ pending failed ]
 
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   attr_reader *PROPERTIES
 
   delegate :last, :[], to: :to_a
