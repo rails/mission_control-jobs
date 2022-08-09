@@ -2,7 +2,7 @@
 # corresponding job class.
 #
 # This is useful for managing jobs without having the job
-# classes present in the database.
+# classes present in the code base.
 class ActiveJob::JobProxy < ActiveJob::Base
   attr_reader :class_name
 
