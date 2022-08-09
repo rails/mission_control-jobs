@@ -16,4 +16,8 @@ class ActiveJob::JobProxy < ActiveJob::Base
       json["job_class"] = @class_name
     end
   end
+
+  def perform_now
+    raise "A JobProxy doesn't support immediate execution, only enqueuing."
+  end
 end

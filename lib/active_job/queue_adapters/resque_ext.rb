@@ -30,7 +30,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     when :failed
       failed_jobs_count
     else
-        raise ActiveJob::Errors::QueryError.new(jobs_relation), "Status not supported: #{status}"
+        raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
     end
   end
 
@@ -71,7 +71,7 @@ module ActiveJob::QueueAdapters::ResqueExt
 
     def fetch_queue_resque_jobs(jobs_relation)
       unless jobs_relation.queue_name.present?
-        raise ActiveJob::Errors::QueryError.new(jobs_relation), "This adapter only supports fetching failed jobs when no queue name is provided"
+        raise ActiveJob::Errors::QueryError, "This adapter only supports fetching failed jobs when no queue name is provided"
       end
       Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)
     end
