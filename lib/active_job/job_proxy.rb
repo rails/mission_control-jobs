@@ -9,6 +9,7 @@ class ActiveJob::JobProxy < ActiveJob::Base
   attr_reader :class_name
 
   def initialize(job_data)
+    super
     @class_name = job_data["job_class"]
     deserialize(job_data)
   end
