@@ -32,6 +32,7 @@ module ActiveJob::Querying
       end
   end
 
+  # Top-level query methods added to `ActiveJob`
   module Root
     def queues
       ActiveJob::Base.queues
