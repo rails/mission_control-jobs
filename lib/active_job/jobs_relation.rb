@@ -106,8 +106,8 @@ class ActiveJob::JobsRelation
       limit = [ limit_value || default_page_size, default_page_size ].min
       page = offset(current_offset).limit(limit)
       jobs = queue_adapter.fetch_jobs(page)
-      filtered_jobs = filter_if_needed(jobs)
-      Array(filtered_jobs).each { |job| yield job }
+      jobs = filter(jobs) if filtering_needed?
+      Array(jobs).each { |job| yield job }
       current_offset += limit
     end until jobs.blank?
   end
@@ -129,22 +129,14 @@ class ActiveJob::JobsRelation
       end
     end
 
-    def filter_if_needed(jobs)
-      if filtering_needed?
-        filter(jobs)
-      else
-        jobs
-      end
+    def filter(jobs)
+      jobs.filter { |job| satisfy_filter?(job) }
     end
 
     # If adapter does not support filtering by class name, it will perform
     # the filtering in memory.
     def filtering_needed?
       job_class_name.present? && !queue_adapter.support_class_name_filtering?
-    end
-
-    def filter(jobs)
-      jobs.filter { |job| satisfy_filter?(job) }
     end
 
     def satisfy_filter?(job)
