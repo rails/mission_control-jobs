@@ -1,6 +1,6 @@
 require_relative "../application_system_test_case"
 
-class MissionControl::Jobs::PauseQueuesTest < ApplicationSystemTestCase
+class PauseQueuesTest < ApplicationSystemTestCase
   setup do
     create_queues "queue_1", "queue_2"
 

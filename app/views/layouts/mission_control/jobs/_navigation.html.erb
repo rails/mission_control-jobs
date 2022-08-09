@@ -1,8 +1,8 @@
 <div class="tabs">
   <ul>
-    <% navigation_sections.each do |key, label_and_url| %>
-      <li class="<%= 'is-active' if key == current_section %>">
-        <%= link_to label_and_url.first, label_and_url.last %>
+    <% navigation_sections.each do |key, (label, url)| %>
+      <li class="<%= "is-active" if key == current_section %>">
+        <%= link_to label, url %>
       </li>
     <% end %>
   </ul>

@@ -1,4 +1,4 @@
-class MissionControl::Jobs::Queues::StatusController < ApplicationController
+class MissionControl::Jobs::Queues::StatusController < MissionControl::Jobs::ApplicationController
   before_action :set_queue
 
   def pause

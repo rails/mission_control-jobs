@@ -35,12 +35,16 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      CI: true
     strategy:
       matrix:
         ruby-version: ['3.0']
     services:
       redis:
         image: redis:4.0-alpine
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
@@ -48,9 +52,11 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Prepare database
+        run: bin/rails db:setup
       - name: Run tests
         run: bin/rails test
       - name: Run system tests
-        run: bin/rails test:system
+        run: bin/rails app:test:system
 
 
