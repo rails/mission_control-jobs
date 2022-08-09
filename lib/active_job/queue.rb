@@ -36,6 +36,10 @@ class ActiveJob::Queue
     !paused?
   end
 
+  def jobs
+    ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).where(queue: name)
+  end
+
   private
     attr_reader :queue_adapter
 end

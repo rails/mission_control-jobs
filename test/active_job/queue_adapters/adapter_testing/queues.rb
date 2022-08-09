@@ -69,4 +69,14 @@ module ActiveJob::QueueAdapters::AdapterTesting::Queues
 
     assert_not queue.empty?
   end
+
+  test "fetch the jobs in a queue" do
+    DummyJob.queue_as :queue_1
+    3.times { DummyJob.perform_later }
+    DummyJob.queue_as :queue_2
+    5.times { DummyJob.perform_later }
+
+    assert_equal 3, ApplicationJob.queues[:queue_1].jobs.to_a.length
+    assert_equal 5, ApplicationJob.queues[:queue_2].jobs.to_a.length
+  end
 end
