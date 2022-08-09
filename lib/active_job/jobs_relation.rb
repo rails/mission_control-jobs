@@ -47,7 +47,7 @@ class ActiveJob::JobsRelation
   # * <tt>:queue</tt> - To only include the jobs in the provided queue.
   def where(job_class: nil, queue: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating where clauses
-    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [key, value.to_s] }.to_h
+    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
     clone_with **arguments
   end
 
@@ -74,7 +74,7 @@ class ActiveJob::JobsRelation
 
   # Returns the number of jobs in the relation.
   #
-  # If filtering jobs by class name, if the adapter doesn't support
+  # When filtering jobs by class name, if the adapter doesn't support
   # it directly, this will imply loading all the jobs in memory.
   def count
     if filtering_needed?
@@ -104,13 +104,13 @@ class ActiveJob::JobsRelation
   def each
     current_offset = offset_value
     begin
-      limit = [limit_value || default_page_size, default_page_size].min
+      limit = [ limit_value || default_page_size, default_page_size ].min
       page = offset(current_offset).limit(limit)
       jobs = queue_adapter.fetch_jobs(page)
       filtered_jobs = filter_if_needed(jobs)
       Array(filtered_jobs).each { |job| yield job }
       current_offset += limit
-    end until (jobs.blank? && jobs.length == filtered_jobs.length)
+    end until jobs.blank?
   end
 
   private

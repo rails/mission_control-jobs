@@ -54,6 +54,20 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     end
   end
 
+  test "fetch pending jobs when pagination kicks in and the first pages are empty due to filtering" do
+    DummyJob.queue_as :default
+    WithPaginationDummyJob1 = Class.new(DummyJob)
+    WithPaginationDummyJob1.default_page_size = 2
+    WithPaginationDummyJob2 = Class.new(DummyJob)
+    WithPaginationDummyJob2.default_page_size = 2
+
+    4.times { |index| WithPaginationDummyJob1.perform_later(index) }
+    10.times { |index| WithPaginationDummyJob2.perform_later(index) }
+
+    jobs = ActiveJob::Base.jobs.where(queue: :default, job_class: WithPaginationDummyJob2).to_a
+    assert_equal 10, jobs.size
+  end
+
   test "fetch jobs in a given queue" do
     DummyJob.queue_as :queue_1
     3.times { DummyJob.perform_later }
