@@ -4,6 +4,8 @@
 # This is useful for managing jobs without having the job
 # classes present in the code base.
 class ActiveJob::JobProxy < ActiveJob::Base
+  class UnsupportedError < StandardError; end
+
   attr_reader :class_name
 
   def initialize(job_data)
@@ -18,6 +20,6 @@ class ActiveJob::JobProxy < ActiveJob::Base
   end
 
   def perform_now
-    raise "A JobProxy doesn't support immediate execution, only enqueuing."
+    raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end
 end
