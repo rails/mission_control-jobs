@@ -30,7 +30,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     when :failed
       failed_jobs_count
     else
-        raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+      raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
     end
   end
 

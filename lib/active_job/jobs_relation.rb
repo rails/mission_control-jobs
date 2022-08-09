@@ -1,6 +1,6 @@
 # A relation of jobs that can be filtered and acted on.
 #
-# You normally fetch a relation of jobs via +ActiveJob::Base.jobs+
+# Relations of jobs are normally fetched via +ActiveJob::Base.jobs+
 # or through a given queue (+ActiveJob::Queue#jobs+).
 #
 # This class offers a fluid interface to query a subset of jobs. For
@@ -61,8 +61,7 @@ class ActiveJob::JobsRelation
     end
   end
 
-  # Sets an offset for the jobs-fetching query. The first
-  # position is 0.
+  # Sets an offset for the jobs-fetching query. The first position is 0.
   def offset(offset)
     clone_with offset_value: offset
   end
