@@ -15,12 +15,12 @@ class ActiveJob::JobsRelation
     set_defaults
   end
 
-  # Returns a +ActiveJob::JobsRelation+ with the configured filtering options
+  # Returns a +ActiveJob::JobsRelation+ with the configured filtering options.
   #
   # === Options
   #
-  # * <tt>:job_class</tt> - A string with the class name or class names of
-  #   jobs to filter.
+  # * <tt>:job_class</tt> - To only include the jobs of a given class.
+  # * <tt>:queue</tt> - To only include the jobs in the provided queue.
   def where(job_class: nil, queue: nil)
     clone_with job_class_name: job_class.to_s, queue_name: queue.to_s
   end
