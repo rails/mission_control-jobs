@@ -22,7 +22,9 @@ class ActiveJob::JobsRelation
   # * <tt>:job_class</tt> - To only include the jobs of a given class.
   # * <tt>:queue</tt> - To only include the jobs in the provided queue.
   def where(job_class: nil, queue: nil)
-    clone_with job_class_name: job_class.to_s, queue_name: queue.to_s
+    # Remove nil arguments to avoid overriding parameters when concatenating where clauses
+    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    clone_with **arguments
   end
 
   STATUSES.each do |status|

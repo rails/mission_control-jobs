@@ -29,4 +29,14 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert_equal 10, jobs.offset_value
     assert_equal 20, jobs.limit_value
   end
+
+  test "set job class and queue" do
+    jobs = @jobs.where(job_class: "MyJob")
+    assert_equal "MyJob", jobs.job_class_name
+
+    # Supports concatenation without overriding exising properties
+    jobs = jobs.where(queue: "my_queue")
+    assert_equal "my_queue", jobs.queue_name
+    assert_equal "MyJob", jobs.job_class_name
+  end
 end
