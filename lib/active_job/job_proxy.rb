@@ -1,8 +1,9 @@
-# A proxy for managing jobs without having to load the
-# corresponding job class.
+# A proxy for managing jobs without having to load the corresponding
+# job class.
 #
-# This is useful for managing jobs without having the job
-# classes present in the code base.
+# This is useful for managing jobs without having the job classes
+# present in the code base.
+#
 class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 

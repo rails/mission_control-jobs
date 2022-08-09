@@ -1,3 +1,24 @@
+# A relation of jobs that can be filtered and acted on.
+#
+# You normally fetch a relation of jobs via +ActiveJob::Base.jobs+
+# or through a given queue (+ActiveJob::Queue#jobs+).
+#
+# This class offers a fluid interface to query a subset of jobs. For
+# example:
+#
+#   queue = ActiveJob::Base.queues[:default]
+#   queue.jobs.limit(10).where(job_class: "DummyJob").last
+#
+# Relations are enumerable, so you can use +Enumerable+ methods on them.
+# Notice however that using these methods will imply loading all the relation
+# in memory, which could introduce performance concerns.
+#
+# Internally, +ActiveJob+ will always use paginated queries to the underlying
+# queue adapter. The page size can be controlled via +config.active_job.default_page_size+
+# (1000 by default).
+#
+# There are additional performance concerns depending on the configured
+# adapter. Please check +ActiveJob::Relation#where+, +ActiveJob::Relation#count+.
 class ActiveJob::JobsRelation
   include Enumerable
 
@@ -20,10 +41,13 @@ class ActiveJob::JobsRelation
   # === Options
   #
   # * <tt>:job_class</tt> - To only include the jobs of a given class.
+  #   Depending on the configured queue adapter, this will perform the
+  #   filtering in memory, which could introduce performance concerns
+  #   for large sets of jobs.
   # * <tt>:queue</tt> - To only include the jobs in the provided queue.
   def where(job_class: nil, queue: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating where clauses
-    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [key, value.to_s] }.to_h
     clone_with **arguments
   end
 
@@ -37,14 +61,21 @@ class ActiveJob::JobsRelation
     end
   end
 
+  # Sets an offset for the jobs-fetching query. The first
+  # position is 0.
   def offset(offset)
     clone_with offset_value: offset
   end
 
+  # Sets the max number of jobs to fetch in the query.
   def limit(limit)
     clone_with limit_value: limit
   end
 
+  # Returns the number of jobs in the relation.
+  #
+  # If filtering jobs by class name, if the adapter doesn't support
+  # it directly, this will imply loading all the jobs in memory.
   def count
     if filtering_needed?
       to_a.length
@@ -73,7 +104,7 @@ class ActiveJob::JobsRelation
   def each
     current_offset = offset_value
     begin
-      limit = [ limit_value || default_page_size, default_page_size ].min
+      limit = [limit_value || default_page_size, default_page_size].min
       page = offset(current_offset).limit(limit)
       jobs = queue_adapter.fetch_jobs(page)
       filtered_jobs = filter_if_needed(jobs)
