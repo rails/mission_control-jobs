@@ -1,0 +1,14 @@
+<% navigation(title: "Queue #{@queue.name}", section: :queues)  %>
+
+<table class="table queues is-striped is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th>Job</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/queues/job", collection: @jobs %>
+
+  </tbody>
+</table>

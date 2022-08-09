@@ -1,6 +1,6 @@
 <tr class="queue">
   <td>
-    <%= queue.name %>
+    <%= link_to queue.name, queue_path(queue.name) %>
     <% if queue.paused? %>
       <span class="tag is-warning">Paused</span>
     <% end %>
