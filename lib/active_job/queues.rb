@@ -14,7 +14,7 @@ class ActiveJob::Queues
 
   delegate :each, to: :values
   delegate :values, to: :queues_by_name, private: true
-  delegate :[], :size, :to_s, :inspect, to: :queues_by_name
+  delegate :[], :size, :length, :to_s, :inspect, to: :queues_by_name
 
   def initialize(queues)
     @queues_by_name = queues.index_by(&:name).with_indifferent_access
