@@ -24,13 +24,10 @@ module ActiveJob::QueueAdapters::ResqueExt
   end
 
   def jobs_count(jobs_relation)
-    case jobs_relation.status
-    when :pending
-      pending_jobs_count(jobs_relation)
-    when :failed
-      failed_jobs_count
+    if jobs_relation.offset_value.present? || jobs_relation.limit_value.present?
+      count_fetched_jobs(jobs_relation) # no direct way of counting jobs
     else
-      raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+      direct_jobs_count(jobs_relation)
     end
   end
 
@@ -92,5 +89,23 @@ module ActiveJob::QueueAdapters::ResqueExt
           message: resque_job_hash["error"],
           backtrace: resque_job_hash["backtrace"]
       end
+    end
+
+    def direct_jobs_count(jobs_relation)
+      case jobs_relation.status
+      when :pending
+          pending_jobs_count(jobs_relation)
+      when :failed
+          failed_jobs_count
+      else
+          raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+      end
+    end
+
+    MAX_JOBS_COUNT = 100_000_000
+
+    def count_fetched_jobs(jobs_relation)
+      jobs_relation = jobs_relation.limit(MAX_JOBS_COUNT) unless jobs_relation.limit_value
+      fetch_jobs(jobs_relation).size
     end
 end

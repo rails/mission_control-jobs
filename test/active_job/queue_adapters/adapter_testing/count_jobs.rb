@@ -65,4 +65,16 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     assert 5, ApplicationJob.jobs.failed.where(job_class: "FailingJob").count
     assert 10, ApplicationJob.jobs.failed.where(job_class: "FailingReloadedJob").count
   end
+
+  test "count with offset and limit" do
+    assert_equal 0, ApplicationJob.jobs.failed.count
+
+    10.times { FailingJob.perform_later }
+    perform_enqueued_jobs
+
+    assert_equal 7, ApplicationJob.jobs.failed.offset(3).count
+    assert_equal 2, ApplicationJob.jobs.failed.limit(2).count
+    assert_equal 2, ApplicationJob.jobs.failed.offset(3).limit(2).count
+    assert_equal 3, ApplicationJob.jobs.failed.offset(7).limit(10).count
+  end
 end
