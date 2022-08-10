@@ -46,7 +46,7 @@ class ActiveJob::JobsRelation
   #   for large sets of jobs.
   # * <tt>:queue</tt> - To only include the jobs in the provided queue.
   def where(job_class: nil, queue: nil)
-    # Remove nil arguments to avoid overriding parameters when concatenating where clauses
+    # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
     clone_with **arguments
   end
