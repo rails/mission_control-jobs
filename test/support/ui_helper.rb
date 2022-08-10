@@ -3,4 +3,12 @@ module UIHelper
     row = find(".queues .queue", text: name)
     within row, &block
   end
+
+  def queue_elements
+    all(".queues .queue")
+  end
+
+  def job_elements
+    all(".jobs .job")
+  end
 end

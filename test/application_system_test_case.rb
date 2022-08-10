@@ -6,6 +6,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   include UIHelper
 
   include MissionControl::Jobs::Engine.routes.url_helpers
+
+  # UI tests just use Resque for now
+  def perform_enqueued_jobs
+    worker = Resque::Worker.new("*")
+    worker.work(0.0)
+  end
 end
 
 Capybara.configure do |config|
