@@ -2,6 +2,7 @@
 ENV["RAILS_ENV"] = "test"
 
 require_relative "../test/dummy/config/environment"
+
 ActiveRecord::Migrator.migrations_paths = [ File.expand_path("../test/dummy/db/migrate", __dir__) ]
 ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __dir__)
 require "rails/test_help"
@@ -16,11 +17,14 @@ end
 
 require_relative "active_job/queue_adapters/adapter_testing"
 Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
+Dir[File.join(__dir__, "active_job", "queue_adapters", "adapter_testing", "*.rb")].each { |file| require file }
 
 class ActiveSupport::TestCase
-  include JobQueuesHelper
+  include JobsHelper, JobQueuesHelper
 
-  parallelize workers: :number_of_processors
+  unless ENV["CI"]
+    parallelize workers: :number_of_processors
+  end
 
   teardown { delete_adapters_data }
 

@@ -1,4 +1,4 @@
 class DummyJob < ApplicationJob
-  def perform
+  def perform(value = nil)
   end
 end

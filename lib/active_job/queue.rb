@@ -1,3 +1,4 @@
+# A queue of jobs
 class ActiveJob::Queue
   attr_reader :name
 
@@ -34,6 +35,11 @@ class ActiveJob::Queue
 
   def active?
     !paused?
+  end
+
+  # Return an +ActiveJob::JobsRelation+ with the jobs in the queue.
+  def jobs
+    ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).where(queue: name)
   end
 
   private

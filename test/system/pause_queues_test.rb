@@ -1,13 +1,13 @@
 require_relative "../application_system_test_case"
 
-class MissionControl::Jobs::PauseQueuesTest < ApplicationSystemTestCase
+class PauseQueuesTest < ApplicationSystemTestCase
   setup do
     create_queues "queue_1", "queue_2"
 
     visit queues_path
   end
 
-  test "Pause and resume a queue" do
+  test "pause and resume a queue" do
     within_queue_row "queue_2" do
       assert_no_text "Resume"
       click_on "Pause"

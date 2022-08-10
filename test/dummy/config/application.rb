@@ -12,7 +12,7 @@ module Dummy
     config.load_defaults Rails::VERSION::STRING.to_f
 
     # For compatibility with applications that use this config
-    config.action_controller.include_all_helpers = false
+    config.action_controller.include_all_helpers = true
 
     # Configuration for the application, engines, and railties goes here.
     #

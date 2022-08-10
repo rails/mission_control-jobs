@@ -1,6 +1,3 @@
-module MissionControl
-  module Jobs
-    class ApplicationController < ActionController::Base
-    end
-  end
+class MissionControl::Jobs::ApplicationController < ActionController::Base
+  layout "mission_control/jobs/application"
 end

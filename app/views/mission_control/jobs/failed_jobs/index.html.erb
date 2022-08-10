@@ -1,0 +1,15 @@
+<% navigation(title: "Failed jobs", section: :failed_jobs)  %>
+
+<table class="jobs failed table queues is-striped is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th>Job</th>
+    <th>Error</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/failed_jobs/job", collection: @jobs %>
+
+  </tbody>
+</table>

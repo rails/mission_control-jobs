@@ -1,20 +1,29 @@
-module ActiveJob::Queues
-  extend ActiveSupport::Concern
+# An enumerable collection of queues that supports direct access to queues by name.
+#
+#   queue_1 = ApplicationJob::Queue.new("queue_1")
+#   queue_2 = ApplicationJob::Queue.new("queue_2")
+#   queues = ApplicationJob::Queues.new([queue_1, queue_2])
+#
+#   queues[:queue_1] #=> queue_1
+#   queues[:queue_2] #=> queue_2
+#   queues.to_a #=> [ queue_1, queue_2 ] # Enumerable
+#
+# See +ActiveJob::Queue+.
+class ActiveJob::Queues
+  include Enumerable
 
-  class_methods do
-    # Returns the queues indexed by name. The hash supports both strings
-    # and symbols for accessing the queues.
-    #
-    #   ApplicationJob.queues[:some_queue] #=> <ActiveJob::Queue:0x000000010e302f00 @name="some_queue">
-    def queues
-      fetch_queues.index_by(&:name).with_indifferent_access
-    end
+  delegate :each, to: :values
+  delegate :values, to: :queues_by_name, private: true
+  delegate :[], :size, :length, :to_s, :inspect, to: :queues_by_name
 
-    private
-      def fetch_queues
-        queue_adapter.queue_names.collect do |queue_name|
-          ActiveJob::Queue.new(queue_name, queue_adapter: queue_adapter)
-        end
-      end
+  def initialize(queues)
+    @queues_by_name = queues.index_by(&:name).with_indifferent_access
   end
+
+  def to_h
+    queues_by_name.dup
+  end
+
+  private
+    attr_reader :queues_by_name
 end

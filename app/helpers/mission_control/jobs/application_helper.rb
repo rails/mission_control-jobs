@@ -1,6 +1,4 @@
-module MissionControl
-  module Jobs
-    module ApplicationHelper
-    end
+module MissionControl::Jobs
+  module ApplicationHelper
   end
 end
