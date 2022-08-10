@@ -12,12 +12,11 @@ module ActiveJob::Querying
   end
 
   class_methods do
-    # Returns the queues indexed by name. The hash supports both strings
-    # and symbols for accessing the queues.
+    # Returns the list of queues.
     #
-    #   ApplicationJob.queues[:some_queue] #=> <ActiveJob::Queue:0x000000010e302f00 @name="some_queue">
+    # See +ActiveJob::Queues+
     def queues
-      fetch_queues.index_by(&:name).with_indifferent_access
+      ActiveJob::Queues.new(fetch_queues)
     end
 
     def jobs
