@@ -102,14 +102,17 @@ class ActiveJob::JobsRelation
 
   def each
     current_offset = offset_value
+    pending_count = limit_value || Float::INFINITY
     begin
-      limit = [ limit_value || default_page_size, default_page_size ].min
+      limit = [ pending_count, default_page_size ].min
       page = offset(current_offset).limit(limit)
       jobs = queue_adapter.fetch_jobs(page)
+      finished = jobs.empty?
       jobs = filter(jobs) if filtering_needed?
       Array(jobs).each { |job| yield job }
       current_offset += limit
-    end until jobs.blank?
+      pending_count -= jobs.length
+    end until finished
   end
 
   private

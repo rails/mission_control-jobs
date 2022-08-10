@@ -35,7 +35,7 @@ module ActiveJob::QueueAdapters::ResqueExt
   end
 
   def fetch_jobs(jobs_relation)
-    fetch_resque_jobs(jobs_relation).collect { |resque_job| deserialize_resque_job(resque_job) }
+    fetch_resque_jobs(jobs_relation).collect { |resque_job| deserialize_resque_job(resque_job) if resque_job.is_a?(Hash) }.compact
   end
 
   def support_class_name_filtering?
@@ -59,21 +59,23 @@ module ActiveJob::QueueAdapters::ResqueExt
 
     def fetch_resque_jobs(jobs_relation)
       if jobs_relation.failed?
-        fetch_failed_resque_jobs(jobs_relation)
+        fetched = fetch_failed_resque_jobs(jobs_relation)
+        # puts "Para #{jobs_relation}: #{fetched.length}"
+        fetched
       else
         fetch_queue_resque_jobs(jobs_relation)
       end
     end
 
     def fetch_failed_resque_jobs(jobs_relation)
-      Resque::Failure.all(jobs_relation.offset_value, jobs_relation.limit_value)
+      Array.wrap(Resque::Failure.all(jobs_relation.offset_value, jobs_relation.limit_value))
     end
 
     def fetch_queue_resque_jobs(jobs_relation)
       unless jobs_relation.queue_name.present?
         raise ActiveJob::Errors::QueryError, "This adapter only supports fetching failed jobs when no queue name is provided"
       end
-      Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)
+      Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value))
     end
 
     def deserialize_resque_job(resque_job_hash)

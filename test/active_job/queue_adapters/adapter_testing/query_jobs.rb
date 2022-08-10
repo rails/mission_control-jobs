@@ -38,6 +38,52 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert jobs.find { |job| assert_job_proxy FailingJob, job }
   end
 
+  test "enumerate jobs with limit without offset" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ApplicationJob.jobs.failed.limit(2).to_a
+    assert_equal 2, jobs.size
+    assert_equal [ 0 ], jobs[0].serialized_arguments
+    assert_equal [ 1 ], jobs[1].serialized_arguments
+  end
+
+  test "enumerate jobs with offset without limit" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ApplicationJob.jobs.failed.offset(2).to_a
+    assert_equal 8, jobs.size
+    assert_equal [ 2 ], jobs[0].serialized_arguments
+    assert_equal [ 9 ], jobs[7].serialized_arguments
+  end
+
+  test "enumerate jobs with offset and limit" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ApplicationJob.jobs.failed.offset(2).limit(2).to_a
+    assert_equal 2, jobs.size
+    assert_equal [ 2 ], jobs[0].serialized_arguments
+    assert_equal [ 3 ], jobs[1].serialized_arguments
+  end
+
+  test "enumerate jobs when limit is greater than the available set" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ApplicationJob.jobs.failed.limit(1000).to_a
+    assert_equal 10, jobs.size
+  end
+
+  test "enumerate jobs when offset is out of range" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ApplicationJob.jobs.failed.offset(1000).to_a
+    assert_empty jobs
+  end
+
   test "fetch failed jobs when pagination kicks in" do
     WithPaginationFailingJob = Class.new(FailingJob)
     WithPaginationFailingJob.default_page_size = 2
@@ -52,6 +98,20 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
       assert_job_proxy WithPaginationFailingJob, job
       assert [ index ], job.serialized_arguments[0]
     end
+  end
+
+  test "fetch jobs when pagination kicks in with offset and limit" do
+    WithPaginationFailingJob = Class.new(FailingJob)
+    WithPaginationFailingJob.default_page_size = 2
+
+    10.times { |index| WithPaginationFailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = WithPaginationFailingJob.jobs.failed.offset(2).limit(3).to_a
+    assert_equal 3, jobs.size
+
+    assert_equal [ 2 ], jobs[0].serialized_arguments
+    assert_equal [ 4 ], jobs[2].serialized_arguments
   end
 
   test "fetch pending jobs when pagination kicks in and the first pages are empty due to filtering" do
