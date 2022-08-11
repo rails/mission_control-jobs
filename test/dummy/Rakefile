@@ -4,3 +4,11 @@
 require_relative "config/application"
 
 Rails.application.load_tasks
+
+namespace :app do
+  namespace :db do
+    task :seed do
+      Rails.application.load_seed
+    end
+  end
+end
