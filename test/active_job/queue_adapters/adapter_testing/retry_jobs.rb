@@ -19,4 +19,27 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
 
     assert_empty failed_jobs
   end
+
+  test "retry a single failed job" do
+    FailingJob.perform_later
+    perform_enqueued_jobs
+
+    assert_not_empty ActiveJob.jobs.failed
+
+    failed_job = ActiveJob.jobs.failed.last
+    failed_job.retry
+
+    assert_empty ActiveJob.jobs.failed
+  end
+
+  test "retrying a single job fails if the job does not exist" do
+    FailingJob.perform_later
+    perform_enqueued_jobs
+    failed_job = ActiveJob.jobs.failed.last
+    delete_all_jobs
+
+    assert_raise ActiveJob::Errors::JobNotFoundError do
+      failed_job.retry
+    end
+  end
 end

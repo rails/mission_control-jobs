@@ -33,6 +33,8 @@ class ActiveSupport::TestCase
       delete_resque_data
     end
 
+    alias delete_all_jobs delete_adapters_data
+
     def delete_resque_data
       redis = Resque.redis
       if redis.try(:namespace)

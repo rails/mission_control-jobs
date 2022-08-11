@@ -126,6 +126,11 @@ class ActiveJob::JobsRelation
     queue_adapter.retry_all_jobs(self)
   end
 
+  # Retry the provided job
+  def retry_job(job)
+    queue_adapter.retry_job(job, self)
+  end
+
   private
     attr_reader :queue_adapter, :default_page_size
     attr_writer *PROPERTIES
