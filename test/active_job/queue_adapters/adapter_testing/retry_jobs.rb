@@ -20,6 +20,23 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_empty failed_jobs
   end
 
+  test "retry all failed withing a given page" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    assert_equal 10, ActiveJob.jobs.failed.count
+
+    failed_jobs = ActiveJob.jobs.failed.offset(2).limit(3)
+    failed_jobs.retry_all
+
+    assert_equal 7, ActiveJob.jobs.failed.count
+
+    [ 0, 1, 5, 6, 7, 8, 9 ].each.with_index do |expected_argument, index|
+      puts index
+      assert_equal [ expected_argument ], ActiveJob.jobs.failed[index].serialized_arguments
+    end
+  end
+
   test "retry a single failed job" do
     FailingJob.perform_later
     perform_enqueued_jobs
