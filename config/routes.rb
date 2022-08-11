@@ -7,7 +7,12 @@ MissionControl::Jobs::Engine.routes.draw do
     end
   end
 
-  resources :failed_jobs
+  resources :failed_jobs do
+    scope module: :failed_jobs do
+      resource :retry, only: :create
+    end
+  end
+
   namespace :failed_jobs do
     resource :bulk_retry, only: :create
   end
