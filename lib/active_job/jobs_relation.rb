@@ -131,6 +131,14 @@ class ActiveJob::JobsRelation
     queue_adapter.retry_job(job, self)
   end
 
+  def find(job_id)
+    queue_adapter.find_job(job_id, self)
+  end
+
+  def find!(job_id)
+    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+  end
+
   private
     attr_reader :queue_adapter, :default_page_size
     attr_writer *PROPERTIES

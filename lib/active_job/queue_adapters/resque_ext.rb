@@ -43,6 +43,10 @@ module ActiveJob::QueueAdapters::ResqueExt
     resque_jobs_for(jobs_relation).retry_job(job)
   end
 
+  def find_job(job_id, jobs_relation)
+    resque_jobs_for(jobs_relation).find_job(job_id)
+  end
+
   private
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation)
@@ -75,6 +79,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
       def retry_job(job)
         resque_requeue_and_remove(index_for!(job))
+      end
+
+      def find_job(job_id)
+        jobs_by_id[job_id]
       end
 
       private
@@ -161,6 +169,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def job_indexes_by_job_id
           @job_indexes_by_job_id ||= all_without_pagination.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
+        end
+
+        def jobs_by_id
+          @jobs_by_id ||= all_without_pagination.index_by(&:job_id)
         end
 
         def all_without_pagination
