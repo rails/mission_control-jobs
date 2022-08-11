@@ -35,6 +35,14 @@ module ActiveJob::QueueAdapters::ResqueExt
     false
   end
 
+  def retry_all_jobs(jobs_relation)
+    resque_jobs_for(jobs_relation).retry_all
+  end
+
+  def retry_job(job, jobs_relation)
+    jobs_relation(jobs_relation).retry(job)
+  end
+
   private
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation)
@@ -59,14 +67,20 @@ module ActiveJob::QueueAdapters::ResqueExt
         fetch_resque_jobs.collect { |resque_job| deserialize_resque_job(resque_job) if resque_job.is_a?(Hash) }.compact
       end
 
-      private
-        MAX_JOBS_COUNT = 100_000_000
+      def retry_all
+        jobs_relation.reverse.each do |job|
+          retry_job(job)
+        end
+      end
 
+      def retry_job(job)
+        resque_requeue_and_remove(index_for(job))
+      end
+
+      private
         def fetch_resque_jobs
           if jobs_relation.failed?
-            fetched = fetch_failed_resque_jobs
-            # puts "Para #{jobs_relation}: #{fetched.length}"
-            fetched
+            fetch_failed_resque_jobs
           else
             fetch_queue_resque_jobs
           end
@@ -125,11 +139,24 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def count_fetched_jobs
-          if jobs_relation.limit_value
-            all.size
-          else
-            self.class.new(jobs_relation.limit(MAX_JOBS_COUNT)).all.count
-          end
+          all.size
+        end
+
+        def index_for(job)
+          job_indexes_by_job_id[job.job_id]
+        end
+
+        def resque_requeue_and_remove(job_index)
+          Resque::Failure.requeue(job_index)
+          Resque::Failure.remove(job_index)
+        end
+
+        def job_indexes_by_job_id
+          @job_indexes_by_job_id ||= all_without_pagination.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
+        end
+
+        def all_without_pagination
+          self.class.new(jobs_relation.offset(0).limit(ActiveJob::JobsRelation::MAX_JOBS_COUNT)).all
         end
     end
 end

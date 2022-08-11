@@ -27,7 +27,9 @@ class ActiveJob::JobsRelation
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   attr_reader *PROPERTIES
 
-  delegate :last, :[], to: :to_a
+  delegate :last, :[], :reverse, to: :to_a
+
+  MAX_JOBS_COUNT = 100_000_000 # When no limit value it defaults to "all jobs"
 
   def initialize(queue_adapter: ActiveJob::Base.queue_adapter, default_page_size: ActiveJob::Base.default_page_size)
     @queue_adapter = queue_adapter
@@ -115,12 +117,22 @@ class ActiveJob::JobsRelation
     end until finished
   end
 
+  # Retry all the jobs in the queue
+  #
+  # This operation is only valid for sets of failed jobs. It will
+  # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
+  def retry_all
+    raise ActiveJob::Errors::InvalidOperation, "You can only retry failed jobs, but these jobs are #{status}" unless failed?
+    queue_adapter.retry_all_jobs(self)
+  end
+
   private
     attr_reader :queue_adapter, :default_page_size
     attr_writer *PROPERTIES
 
     def set_defaults
       self.offset_value = 0
+      self.limit_value = MAX_JOBS_COUNT
       self.status = :pending
     end
 
