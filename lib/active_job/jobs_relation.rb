@@ -117,7 +117,7 @@ class ActiveJob::JobsRelation
     end until finished
   end
 
-  # Retry all the jobs in the queue
+  # Retry all the jobs in the queue.
   #
   # This operation is only valid for sets of failed jobs. It will
   # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
@@ -126,16 +126,22 @@ class ActiveJob::JobsRelation
     queue_adapter.retry_all_jobs(self)
   end
 
-  # Retry the provided job
+  # Retry the provided job.
   def retry_job(job)
     queue_adapter.retry_job(job, self)
   end
 
-  def find(job_id)
+  # Find a job by id.
+  #
+  # Returns nil when not found.
+  def find_by_id(job_id)
     queue_adapter.find_job(job_id, self)
   end
 
-  def find!(job_id)
+  # Find a job by id.
+  #
+  # Raises +ActiveJob::Errors::JobNotFoundError+ when not found.
+  def find_by_id!(job_id)
     queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
   end
 
