@@ -6,7 +6,8 @@
   <%= csp_meta_tag %>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <%= stylesheet_link_tag    "mission_control/jobs/application", media: "all" %>
+  <%= stylesheet_link_tag "mission_control/jobs/application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
 </head>
 <body>
 
