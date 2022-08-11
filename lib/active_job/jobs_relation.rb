@@ -29,7 +29,7 @@ class ActiveJob::JobsRelation
 
   delegate :last, :[], :reverse, to: :to_a
 
-  MAX_JOBS_COUNT = 100_000_000 # When no limit value it defaults to "all jobs"
+  ALL_JOBS_LIMIT = 100_000_000 # When no limit value it defaults to "all jobs"
 
   def initialize(queue_adapter: ActiveJob::Base.queue_adapter, default_page_size: ActiveJob::Base.default_page_size)
     @queue_adapter = queue_adapter
@@ -132,7 +132,7 @@ class ActiveJob::JobsRelation
 
     def set_defaults
       self.offset_value = 0
-      self.limit_value = MAX_JOBS_COUNT
+      self.limit_value = ALL_JOBS_LIMIT
       self.status = :pending
     end
 

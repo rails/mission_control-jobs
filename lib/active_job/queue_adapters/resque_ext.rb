@@ -56,7 +56,7 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def count
-        if jobs_relation.offset_value > 0 || jobs_relation.limit_value.present?
+        if jobs_relation.offset_value > 0 || limit_value_provided?
           count_fetched_jobs # no direct way of counting jobs
         else
           direct_jobs_count
@@ -78,6 +78,10 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       private
+        def limit_value_provided?
+          jobs_relation.limit_value.present? && jobs_relation.limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
+        end
+
         def fetch_resque_jobs
           if jobs_relation.failed?
             fetch_failed_resque_jobs
@@ -156,7 +160,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def all_without_pagination
-          self.class.new(jobs_relation.offset(0).limit(ActiveJob::JobsRelation::MAX_JOBS_COUNT)).all
+          self.class.new(jobs_relation.offset(0).limit(ActiveJob::JobsRelation::ALL_JOBS_LIMIT)).all
         end
     end
 end
