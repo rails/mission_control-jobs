@@ -48,7 +48,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
 
     assert_equal 10, ActiveJob.jobs.failed.count
 
-    assert_not ActiveJob.jobs.failed.find { |job| job.is_a?(FailingReloadedJob) }
+    assert_not ActiveJob.jobs.failed.any? { |job| job.is_a?(FailingReloadedJob) }
   end
 
   test "retry a single failed job" do
