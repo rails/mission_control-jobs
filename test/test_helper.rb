@@ -26,7 +26,7 @@ class ActiveSupport::TestCase
     parallelize workers: :number_of_processors
   end
 
-  teardown { delete_adapters_data }
+  setup { delete_adapters_data }
 
   private
     def delete_adapters_data
