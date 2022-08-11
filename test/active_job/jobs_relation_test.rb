@@ -23,7 +23,6 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
 
   test "set limit and offset" do
     assert_equal 0, @jobs.offset_value
-    assert_nil @jobs.limit_value
 
     jobs = @jobs.offset(10).limit(20)
     assert_equal 10, jobs.offset_value
