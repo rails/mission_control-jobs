@@ -178,7 +178,6 @@ module ActiveJob::QueueAdapters::ResqueExt
         # Returns an enumerator that loops through all the jobs in the relation, without
         # taking limit/offset into consideration. Internally, it will paginate jobs in batches.
         def all_without_pagination_enumerator
-          self.class.new(jobs_relation.offset(0).limit(ActiveJob::JobsRelation::ALL_JOBS_LIMIT)).all
           from = 0
           Enumerator.new do |enumerator|
             begin
