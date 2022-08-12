@@ -168,15 +168,26 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def job_indexes_by_job_id
-          @job_indexes_by_job_id ||= all_without_pagination.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
+          @job_indexes_by_job_id ||= all_without_pagination_enumerator.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
         end
 
         def jobs_by_id
-          @jobs_by_id ||= all_without_pagination.index_by(&:job_id)
+          @jobs_by_id ||= all_without_pagination_enumerator.index_by(&:job_id)
         end
 
-        def all_without_pagination
+        # Returns an enumerator that loops through all the jobs in the relation, without
+        # taking limit/offset into consideration. Internally, it will paginate jobs in batches.
+        def all_without_pagination_enumerator
           self.class.new(jobs_relation.offset(0).limit(ActiveJob::JobsRelation::ALL_JOBS_LIMIT)).all
+          from = 0
+          Enumerator.new do |enumerator|
+            begin
+              current_page = jobs_relation.offset(from).limit(jobs_relation.default_page_size)
+              jobs = self.class.new(current_page).all
+              jobs.each { |job| enumerator << job }
+              from += jobs_relation.default_page_size
+            end until jobs.empty?
+          end
         end
     end
 end

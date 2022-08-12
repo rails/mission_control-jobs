@@ -25,7 +25,7 @@ class ActiveJob::JobsRelation
   STATUSES = %i[ pending failed ]
 
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
-  attr_reader *PROPERTIES
+  attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
 
@@ -146,7 +146,7 @@ class ActiveJob::JobsRelation
   end
 
   private
-    attr_reader :queue_adapter, :default_page_size
+    attr_reader :queue_adapter
     attr_writer *PROPERTIES
 
     def set_defaults
