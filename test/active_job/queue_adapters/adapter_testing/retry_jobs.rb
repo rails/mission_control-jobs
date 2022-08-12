@@ -18,6 +18,9 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     failed_jobs.retry_all
 
     assert_empty failed_jobs
+
+    perform_enqueued_jobs
+    assert_equal 2 * 10, FailingJob.invocations.count
   end
 
   test "retry all failed withing a given page" do
@@ -49,6 +52,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_equal 10, ActiveJob.jobs.failed.count
 
     assert_not ActiveJob.jobs.failed.any? { |job| job.is_a?(FailingReloadedJob) }
+
+    perform_enqueued_jobs
+    assert_equal 1 * 10, FailingJob.invocations.count
+    assert_equal 2 * 5, FailingReloadedJob.invocations.count
   end
 
   test "retry a single failed job" do
@@ -61,6 +68,9 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     failed_job.retry
 
     assert_empty ActiveJob.jobs.failed
+
+    perform_enqueued_jobs
+    assert_equal 2, FailingJob.invocations.count
   end
 
   test "retrying a single job fails if the job does not exist" do
