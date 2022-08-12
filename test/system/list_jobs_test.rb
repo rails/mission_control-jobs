@@ -11,8 +11,8 @@ class ListJobsTest < ApplicationSystemTestCase
   test "view the jobs in a queue" do
     click_on "queue_1"
 
-    assert_equal 10, job_elements.length
-    job_elements.each.with_index do |job_element, index|
+    assert_equal 10, job_row_elements.length
+    job_row_elements.each.with_index do |job_element, index|
       within job_element do
         assert_text "DummyJob"
         assert_text "#{index}"

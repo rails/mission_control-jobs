@@ -4,7 +4,7 @@ class MissionControl::Jobs::FailedJobs::RetriesController < MissionControl::Jobs
   def create
     @job.retry
 
-    redirect_to failed_jobs_url
+    redirect_to failed_jobs_url, notice: "Retried job with id #{@job.job_id}"
   end
 
   private
