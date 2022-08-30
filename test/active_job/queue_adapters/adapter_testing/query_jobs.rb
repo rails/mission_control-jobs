@@ -101,13 +101,13 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
   end
 
   test "fetch jobs when pagination kicks in with offset and limit" do
-    WithPaginationFailingJob = Class.new(FailingJob)
-    WithPaginationFailingJob.default_page_size = 2
+    WithPaginationAndOffsetFailingJob = Class.new(FailingJob)
+    WithPaginationAndOffsetFailingJob.default_page_size = 2
 
-    10.times { |index| WithPaginationFailingJob.perform_later(index) }
+    10.times { |index| WithPaginationAndOffsetFailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = WithPaginationFailingJob.jobs.failed.offset(2).limit(3).to_a
+    jobs = WithPaginationAndOffsetFailingJob.jobs.failed.offset(2).limit(3).to_a
     assert_equal 3, jobs.size
 
     assert_equal [ 2 ], jobs[0].serialized_arguments
