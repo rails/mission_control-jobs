@@ -1,11 +1,14 @@
 <% navigation(title: "Failed jobs", section: :failed_jobs)  %>
 
+<%= render "mission_control/jobs/failed_jobs/toolbar" %>
+
 <table class="jobs failed table queues is-striped is-hoverable is-fullwidth">
   <tbody>
   <thead>
   <tr>
     <th>Job</th>
     <th>Error</th>
+    <th></th>
   </tr>
   </thead>
 

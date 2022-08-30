@@ -25,9 +25,11 @@ class ActiveJob::JobsRelation
   STATUSES = %i[ pending failed ]
 
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
-  attr_reader *PROPERTIES
+  attr_reader *PROPERTIES, :default_page_size
 
-  delegate :last, :[], to: :to_a
+  delegate :last, :[], :reverse, to: :to_a
+
+  ALL_JOBS_LIMIT = 100_000_000 # When no limit value it defaults to "all jobs"
 
   def initialize(queue_adapter: ActiveJob::Base.queue_adapter, default_page_size: ActiveJob::Base.default_page_size)
     @queue_adapter = queue_adapter
@@ -115,12 +117,41 @@ class ActiveJob::JobsRelation
     end until finished
   end
 
+  # Retry all the jobs in the queue.
+  #
+  # This operation is only valid for sets of failed jobs. It will
+  # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
+  def retry_all
+    raise ActiveJob::Errors::InvalidOperation, "You can only retry failed jobs, but these jobs are #{status}" unless failed?
+    queue_adapter.retry_all_jobs(self)
+  end
+
+  # Retry the provided job.
+  def retry_job(job)
+    queue_adapter.retry_job(job, self)
+  end
+
+  # Find a job by id.
+  #
+  # Returns nil when not found.
+  def find_by_id(job_id)
+    queue_adapter.find_job(job_id, self)
+  end
+
+  # Find a job by id.
+  #
+  # Raises +ActiveJob::Errors::JobNotFoundError+ when not found.
+  def find_by_id!(job_id)
+    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+  end
+
   private
-    attr_reader :queue_adapter, :default_page_size
+    attr_reader :queue_adapter
     attr_writer *PROPERTIES
 
     def set_defaults
       self.offset_value = 0
+      self.limit_value = ALL_JOBS_LIMIT
       self.status = :pending
     end
 

@@ -13,6 +13,7 @@ module MissionControl
       initializer "active_job.extensions" do
         ActiveSupport.on_load :active_job do
           ActiveJob::Base.include ActiveJob::Querying
+          ActiveJob::Base.include ActiveJob::Executing
           ActiveJob.extend ActiveJob::Querying::Root
           ActiveJob::QueueAdapters::ResqueAdapter.include ActiveJob::QueueAdapters::ResqueExt
         end

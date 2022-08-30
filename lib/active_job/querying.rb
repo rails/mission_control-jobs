@@ -5,10 +5,6 @@ module ActiveJob::Querying
     # ActiveJob will use pagination internally when fetching relations of jobs. This
     # parameter sets the max amount of jobs to fetch in each data store query.
     class_attribute :default_page_size, default: 1000
-
-    # TODO: These should be moved to +ActiveJob::Core+ when upstreaming.
-    attr_accessor :last_execution_error
-    attr_reader :serialized_arguments
   end
 
   class_methods do

@@ -19,6 +19,8 @@ require_relative "active_job/queue_adapters/adapter_testing"
 Dir[File.join(__dir__, "support", "*.rb")].each { |file| require file }
 Dir[File.join(__dir__, "active_job", "queue_adapters", "adapter_testing", "*.rb")].each { |file| require file }
 
+ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
+
 class ActiveSupport::TestCase
   include JobsHelper, JobQueuesHelper
 
@@ -26,12 +28,21 @@ class ActiveSupport::TestCase
     parallelize workers: :number_of_processors
   end
 
-  setup { delete_adapters_data }
+  setup do
+    reset_executions_for_job_test_classes
+    delete_adapters_data
+  end
 
   private
+    def reset_executions_for_job_test_classes
+      ApplicationJob.descendants.including(ApplicationJob).each { |klass| klass.invocations&.clear }
+    end
+
     def delete_adapters_data
       delete_resque_data
     end
+
+    alias delete_all_jobs delete_adapters_data
 
     def delete_resque_data
       redis = Resque.redis

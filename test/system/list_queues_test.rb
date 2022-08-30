@@ -8,8 +8,8 @@ class ListQueuesTest < ApplicationSystemTestCase
   end
 
   test "list queues sorted by name" do
-    assert_equal 10, queue_elements.length
-    queue_elements.each.with_index do |queue_element, index|
+    assert_equal 10, queue_row_elements.length
+    queue_row_elements.each.with_index do |queue_element, index|
       within queue_element do
         assert_text "queue_#{index}"
       end

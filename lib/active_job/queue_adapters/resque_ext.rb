@@ -35,6 +35,18 @@ module ActiveJob::QueueAdapters::ResqueExt
     false
   end
 
+  def retry_all_jobs(jobs_relation)
+    resque_jobs_for(jobs_relation).retry_all
+  end
+
+  def retry_job(job, jobs_relation)
+    resque_jobs_for(jobs_relation).retry_job(job)
+  end
+
+  def find_job(job_id, jobs_relation)
+    resque_jobs_for(jobs_relation).find_job(job_id)
+  end
+
   private
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation)
@@ -48,7 +60,7 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def count
-        if jobs_relation.offset_value > 0 || jobs_relation.limit_value.present?
+        if jobs_relation.offset_value > 0 || limit_value_provided?
           count_fetched_jobs # no direct way of counting jobs
         else
           direct_jobs_count
@@ -59,14 +71,28 @@ module ActiveJob::QueueAdapters::ResqueExt
         fetch_resque_jobs.collect { |resque_job| deserialize_resque_job(resque_job) if resque_job.is_a?(Hash) }.compact
       end
 
+      def retry_all
+        jobs_relation.reverse.each do |job|
+          retry_job(job)
+        end
+      end
+
+      def retry_job(job)
+        resque_requeue_and_remove(index_for!(job))
+      end
+
+      def find_job(job_id)
+        jobs_by_id[job_id]
+      end
+
       private
-        MAX_JOBS_COUNT = 100_000_000
+        def limit_value_provided?
+          jobs_relation.limit_value.present? && jobs_relation.limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
+        end
 
         def fetch_resque_jobs
           if jobs_relation.failed?
-            fetched = fetch_failed_resque_jobs
-            # puts "Para #{jobs_relation}: #{fetched.length}"
-            fetched
+            fetch_failed_resque_jobs
           else
             fetch_queue_resque_jobs
           end
@@ -125,10 +151,41 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def count_fetched_jobs
-          if jobs_relation.limit_value
-            all.size
-          else
-            self.class.new(jobs_relation.limit(MAX_JOBS_COUNT)).all.count
+          all.size
+        end
+
+        def index_for(job)
+          job_indexes_by_job_id[job.job_id]
+        end
+
+        def index_for!(job)
+          index_for(job) or raise ActiveJob::Errors::JobNotFoundError.new(job)
+        end
+
+        def resque_requeue_and_remove(job_index)
+          Resque::Failure.requeue(job_index)
+          Resque::Failure.remove(job_index)
+        end
+
+        def job_indexes_by_job_id
+          @job_indexes_by_job_id ||= all_without_pagination_enumerator.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
+        end
+
+        def jobs_by_id
+          @jobs_by_id ||= all_without_pagination_enumerator.index_by(&:job_id)
+        end
+
+        # Returns an enumerator that loops through all the jobs in the relation, without
+        # taking limit/offset into consideration. Internally, it will paginate jobs in batches.
+        def all_without_pagination_enumerator
+          from = 0
+          Enumerator.new do |enumerator|
+            begin
+              current_page = jobs_relation.offset(from).limit(jobs_relation.default_page_size)
+              jobs = self.class.new(current_page).all
+              jobs.each { |job| enumerator << job }
+              from += jobs_relation.default_page_size
+            end until jobs.empty?
           end
         end
     end
