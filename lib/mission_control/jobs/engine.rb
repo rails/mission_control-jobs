@@ -15,7 +15,7 @@ module MissionControl
           ActiveJob::Base.include ActiveJob::Querying
           ActiveJob::Base.include ActiveJob::Executing
           ActiveJob.extend ActiveJob::Querying::Root
-          ActiveJob::QueueAdapters::ResqueAdapter.include ActiveJob::QueueAdapters::ResqueExt
+          ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
         end
       end
 
