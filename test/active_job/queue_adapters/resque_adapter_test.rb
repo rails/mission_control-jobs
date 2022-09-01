@@ -19,10 +19,20 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     current_redis = current_resque_redis
     new_redis = create_redis "new_redis"
 
-    ActiveJob::QueueAdapters::ResqueAdapter.new(new_redis)
+    assert_changes -> { current_resque_redis }, from: current_redis, to: new_redis do
+      ActiveJob::QueueAdapters::ResqueAdapter.new(new_redis)
+    end
+  end
 
-    assert_equal new_redis, current_resque_redis
-    assert_not_equal current_redis, current_resque_redis
+  test "activate a different redis instance" do
+    old_redis = create_redis "old_redis"
+    new_redis = create_redis "new_redis"
+    adapter = ActiveJob::QueueAdapters::ResqueAdapter.new(new_redis)
+    Resque.redis = old_redis
+
+    assert_changes -> { current_resque_redis }, from: old_redis, to: new_redis do
+      adapter.activate
+    end
   end
 
   private
