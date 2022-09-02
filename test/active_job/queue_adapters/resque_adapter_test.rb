@@ -52,13 +52,32 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     end.flatten.each(&:join)
   end
 
+  test "use different queue adapters via active job" do
+    redis_1 = create_redis("redis_1")
+    adapter_1 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_1)
+    redis_2 = create_redis("redis_2")
+    adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
+
+    adapter_1.activate
+
+    5.times { DummyJob.perform_later }
+
+    adapter_2.activate
+    10.times { DummyJob.perform_later }
+
+    adapter_1.activate
+    assert_equal 5, ApplicationJob.jobs.pending.count
+
+    adapter_2.activate
+    assert_equal 10, ApplicationJob.jobs.pending.count
+  end
+
   private
     def current_resque_redis
       Resque.redis.instance_variable_get("@redis")
     end
 
     def create_redis(name)
-      redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
-      Redis::Namespace.new "#{name}", redis: redis
+      Redis::Namespace.new "resque:#{name}", redis: @old_data_store
     end
 end
