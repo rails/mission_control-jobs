@@ -10,7 +10,17 @@ module MissionControl
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
 
-      initializer "active_job.extensions" do
+      config.mission_control = ActiveSupport::OrderedOptions.new
+      config.mission_control.jobs = ActiveSupport::OrderedOptions.new
+      config.mission_control.jobs.queue_adapters = []
+
+      initializer "mission_control-jobs.config" do
+        config.mission_control.jobs.each do |key, value|
+          MissionControl::Jobs.send("#{key}=", value)
+        end
+      end
+
+      initializer "mission_control-jobs.active_job.extensions" do
         ActiveSupport.on_load :active_job do
           ActiveJob::Base.include ActiveJob::Querying
           ActiveJob::Base.include ActiveJob::Executing
@@ -24,10 +34,6 @@ module MissionControl
           parallelize_setup do |worker|
             redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
             Resque.redis = Redis::Namespace.new "test-#{worker}", redis: redis
-          end
-
-          parallelize_teardown do
-            delete_adapters_data
           end
         end
       end

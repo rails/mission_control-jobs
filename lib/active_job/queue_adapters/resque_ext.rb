@@ -2,7 +2,6 @@ module ActiveJob::QueueAdapters::ResqueExt
   def initialize(redis = Resque.redis)
     super()
     @redis = redis
-    activate
   end
 
   def activate
