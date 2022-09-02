@@ -27,7 +27,7 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
 
     { redis_1 => adapter_1, redis_2 => adapter_2 }.collect do |redis, adapter|
-      50.times.collect do
+      20.times.collect do
         Thread.new do
           adapter.activate
           sleep_to_force_race_condition
