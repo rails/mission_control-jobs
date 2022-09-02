@@ -29,14 +29,14 @@ class ActiveSupport::TestCase
   end
 
   setup do
-    @original_queue_adapters = MissionControl::Jobs.queue_adapters
+    @original_applications = MissionControl::Jobs.applications
     reset_executions_for_job_test_classes
     delete_adapters_data
     ActiveJob::Base.current_queue_adapter = nil
   end
 
   teardown do
-    MissionControl::Jobs.queue_adapters = @original_queue_adapters
+    MissionControl::Jobs.applications = @original_applications
   end
 
   private

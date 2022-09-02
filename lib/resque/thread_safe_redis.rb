@@ -11,7 +11,7 @@ module Resque::ThreadSafeRedis
     self.thread_resque_instance ||= ResqueInstance.new
   end
 
-  # Resque is a module that extends itself. We leverage this trait to create different
+  # +Resque+ is a module that extends itself. We leverage this trait to create different
   # redis instances and reuse the actual `#redis=` and `#redis` accessors logic with
   # different data stores.
   class ResqueInstance

@@ -12,7 +12,7 @@ module MissionControl
 
       config.mission_control = ActiveSupport::OrderedOptions.new
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
-      config.mission_control.jobs.queue_adapters = []
+      config.mission_control.jobs.applications = MissionControl::Jobs::Applications
 
       initializer "mission_control-jobs.config" do
         config.mission_control.jobs.each do |key, value|

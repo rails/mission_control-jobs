@@ -24,7 +24,7 @@ class ActiveJob::QueueAdapters::QueueAdapterTest < ActiveSupport::TestCase
     end
   end
 
-  test "changing current resque adapter is thread safe" do
+  test "changing current resque adapter is thread-safe" do
     2.times.collect { ActiveJob::QueueAdapters::ResqueAdapter.new }.collect do |new_adapter|
       20.times.collect do
         Thread.new do

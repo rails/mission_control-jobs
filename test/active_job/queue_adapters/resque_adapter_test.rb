@@ -44,7 +44,6 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
 
     adapter_1.activate
-
     5.times { DummyJob.perform_later }
 
     adapter_2.activate

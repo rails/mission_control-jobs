@@ -10,6 +10,6 @@ require "mission_control/jobs/engine"
 
 module MissionControl
   module Jobs
-    mattr_accessor :queue_adapters, default: []
+    mattr_accessor :applications, default: MissionControl::Jobs::Applications.new
   end
 end
