@@ -35,6 +35,23 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     end
   end
 
+  test "activating different redis connections is thread-safe" do
+    redis_1 = create_redis("redis_1")
+    adapter_1 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_1)
+    redis_2 = create_redis("redis_2")
+    adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
+
+    { redis_1 => adapter_1, redis_2 => adapter_2 }.collect do |redis, adapter|
+      50.times.collect do
+        Thread.new do
+          adapter.activate
+          sleep rand / 10.0 # 0.0Xs delays to minimize active delays while ensuring race conditions
+          assert_equal redis, current_resque_redis
+        end
+      end
+    end.flatten.each(&:join)
+  end
+
   private
     def current_resque_redis
       Resque.redis.instance_variable_get("@redis")
