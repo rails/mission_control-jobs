@@ -12,9 +12,9 @@ module MissionControl
 
       config.mission_control = ActiveSupport::OrderedOptions.new
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
-      config.mission_control.jobs.applications = MissionControl::Jobs::Applications
+      config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
 
-      initializer "mission_control-jobs.config" do
+      config.before_initialize do
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
         end
@@ -22,11 +22,14 @@ module MissionControl
 
       initializer "mission_control-jobs.active_job.extensions" do
         ActiveSupport.on_load :active_job do
-          ActiveJob::Base.include ActiveJob::Querying
-          ActiveJob::Base.include ActiveJob::Executing
+          include ActiveJob::Querying
+          include ActiveJob::Executing
           ActiveJob.extend ActiveJob::Querying::Root
-          ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
         end
+      end
+
+      config.before_initialize do
+        ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
       end
 
       initializer "mission_control-jobs.testing" do

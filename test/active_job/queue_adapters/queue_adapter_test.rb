@@ -11,7 +11,7 @@ class ActiveJob::QueueAdapters::QueueAdapterTest < ActiveSupport::TestCase
     adapter = ActiveJob::QueueAdapters::ResqueAdapter.new(new_redis)
 
     assert_changes -> { current_resque_redis }, from: old_redis, to: new_redis do
-      ActiveJob::Base.queue_adapter = adapter
+      ActiveJob::Base.current_queue_adapter = adapter
     end
   end
 
