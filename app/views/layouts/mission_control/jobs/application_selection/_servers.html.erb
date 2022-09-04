@@ -1,10 +1,8 @@
-<% servers = application.servers %>
-
-<% if servers.many? %>
+<% if application.servers.many? %>
   <div class="navbar-item">
     <div class="tabs is-toggle is-toggle-rounded is-small">
       <ul>
-        <% servers.each do |server| %>
+        <% application.servers.each do |server| %>
           <li class="<%= "is-active" if selected_server?(server) %>">
             <%= link_to application_queues_path(application, server_id: server) do %>
               <span><%= server.name %></span>
