@@ -30,7 +30,7 @@ module MissionControl::Jobs
 
       def find_server
         if params[:server_id]
-          Current.application.find_server(params[:server_id])
+          Current.application.servers[params[:server_id]]
         else
           @application.servers.first
         end
