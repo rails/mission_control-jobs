@@ -3,7 +3,7 @@ ENV["RAILS_ENV"] = "test"
 
 require_relative "../test/dummy/config/environment"
 
-ActiveRecord::Migrator.migrations_paths = [ File.expand_path("../test/dummy/db/migrate", __dir__) ]
+ActiveRecord::Migrator.migrations_paths = [File.expand_path("../test/dummy/db/migrate", __dir__)]
 ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __dir__)
 require "rails/test_help"
 
@@ -24,7 +24,7 @@ ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
 class ActiveSupport::TestCase
   include JobsHelper, JobQueuesHelper, ThreadHelper
 
-  unless ENV["CI"]
+  if ENV["CI"]
     parallelize workers: :number_of_processors
   end
 
@@ -51,12 +51,11 @@ class ActiveSupport::TestCase
     alias delete_all_jobs delete_adapters_data
 
     def delete_resque_data
-      redis = Resque.redis
-      if redis.try(:namespace)
-        all_keys = redis.keys("*")
-        redis.del all_keys if all_keys.any?
-      else
-        redis.flushdb
-      end
+      redis = root_resque_redis
+      redis.flushall
+    end
+
+    def root_resque_redis
+      @root_resque_redis ||= Redis.new(host: "localhost", port: 6379, thread_safe: true)
     end
 end

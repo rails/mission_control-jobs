@@ -33,15 +33,6 @@ module MissionControl
         ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
       end
 
-      initializer "mission_control-jobs.testing" do
-        ActiveSupport.on_load(:active_support_test_case) do
-          parallelize_setup do |worker|
-            redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
-            Resque.redis = Redis::Namespace.new "test-#{worker}", redis: redis
-          end
-        end
-      end
-
       initializer "mission_control-jobs.assets" do |app|
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]

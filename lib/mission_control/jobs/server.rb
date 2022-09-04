@@ -11,4 +11,12 @@ class MissionControl::Jobs::Server
   def activate
     ActiveJob::Base.current_queue_adapter = queue_adapter
   end
+
+  def activating(&block)
+    previous_adapter = ActiveJob::Base.current_queue_adapter
+    activate
+    block.call
+  ensure
+    ActiveJob::Base.current_queue_adapter = previous_adapter
+  end
 end
