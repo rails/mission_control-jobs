@@ -3,6 +3,6 @@ class MissionControl::Jobs::Current < ActiveSupport::CurrentAttributes
 
   def server=(server)
     super
-    ActiveJob::Base.current_queue_adapter = server.queue_adapter
+    server.activate
   end
 end
