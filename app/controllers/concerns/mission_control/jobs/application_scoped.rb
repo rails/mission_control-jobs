@@ -1,39 +1,37 @@
-module MissionControl::Jobs
-  module ApplicationScoped
-    extend ActiveSupport::Concern
+module MissionControl::Jobs::ApplicationScoped
+  extend ActiveSupport::Concern
 
-    included do
-      before_action :set_application
-      before_action :set_server
+  included do
+    before_action :set_application
+    before_action :set_server
 
-      delegate :applications, to: MissionControl::Jobs
+    delegate :applications, to: MissionControl::Jobs
+  end
+
+  private
+    def set_application
+      @application = find_application or raise MissionControl::Jobs::Errors::ResourceNotFound, "Application not found"
+      MissionControl::Jobs::Current.application = @application
     end
 
-    private
-      def set_application
-        @application = find_application or raise Errors::ResourceNotFound, "Application not found"
-        Current.application = @application
+    def find_application
+      if params[:application_id]
+        applications[params[:application_id]]
+      else
+        applications.first
       end
+    end
 
-      def find_application
-        if params[:application_id]
-          applications[params[:application_id]]
-        else
-          applications.first
-        end
-      end
+    def set_server
+      @server = find_server or raise MissionControl::Jobs::Errors::ResourceNotFound, "Server not found"
+      MissionControl::Jobs::Current.server = @server
+    end
 
-      def set_server
-        @server = find_server or raise Errors::ResourceNotFound, "Server not found"
-        Current.server = @server
+    def find_server
+      if params[:server_id]
+        MissionControl::Jobs::Current.application.servers[params[:server_id]]
+      else
+        @application.servers.first
       end
-
-      def find_server
-        if params[:server_id]
-          Current.application.servers[params[:server_id]]
-        else
-          @application.servers.first
-        end
-      end
-  end
+    end
 end
