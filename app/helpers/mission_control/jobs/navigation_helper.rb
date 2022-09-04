@@ -21,7 +21,7 @@ module MissionControl::Jobs::NavigationHelper
     MissionControl::Jobs::Current.application.name == application.name
   end
 
-  def not_selected_applications
+  def selectable_applications
     MissionControl::Jobs.applications.reject { |app| selected_application?(app) }
   end
 
