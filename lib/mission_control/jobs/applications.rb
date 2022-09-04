@@ -10,8 +10,9 @@ class MissionControl::Jobs::Applications
   end
 
   def add(name, queue_adapters_by_name = {})
-    @applications_by_name[name] ||= MissionControl::Jobs::Application.new(name: name)
-    @applications_by_name[name].add_servers(queue_adapters_by_name)
+    name_key = name.to_s.parameterize
+    @applications_by_name[name_key] ||= MissionControl::Jobs::Application.new(name: name)
+    @applications_by_name[name_key].add_servers(queue_adapters_by_name)
   end
 
   def to_a

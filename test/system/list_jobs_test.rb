@@ -5,7 +5,7 @@ class ListJobsTest < ApplicationSystemTestCase
     DummyJob.queue_as :queue_1
     10.times { |index| DummyJob.perform_later(index) }
 
-    visit application_queues_path
+    visit queues_path
   end
 
   test "view the jobs in a queue" do

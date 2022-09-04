@@ -3,7 +3,7 @@ class MissionControl::Jobs::Application
   attr_reader :name, :servers
 
   def initialize(name:)
-    @name = name
+    @name = name.to_s
     @servers = []
   end
 
@@ -14,7 +14,7 @@ class MissionControl::Jobs::Application
   end
 
   def find_server(name)
-    servers.find { |server| server.name == name }
+    servers.find { |server| name.parameterize == server.to_param }
   end
 
   alias to_s name

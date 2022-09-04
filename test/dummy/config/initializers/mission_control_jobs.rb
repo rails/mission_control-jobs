@@ -23,4 +23,7 @@ SERVERS_BY_APP.each do |app, servers|
   MissionControl::Jobs.applications.add(app, queue_adapters_by_name)
 end
 
-puts "AFTER INITIALIZER: #{  Resque.redis.instance_variable_get("@redis").inspect}"
+Rails.application.config.to_prepare do
+  default_server = MissionControl::Jobs.applications.first.servers.first
+  default_server.activate
+end

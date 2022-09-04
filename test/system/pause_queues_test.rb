@@ -4,7 +4,7 @@ class PauseQueuesTest < ApplicationSystemTestCase
   setup do
     create_queues "queue_1", "queue_2"
 
-    visit application_queues_path(@application)
+    visit queues_path
   end
 
   test "pause and resume a queue" do

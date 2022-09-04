@@ -1,2 +1,2 @@
-class MissionControl::Jobs::Errors::ResourceNotFound
+class MissionControl::Jobs::Errors::ResourceNotFound < StandardError
 end
