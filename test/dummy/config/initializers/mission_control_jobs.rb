@@ -1,4 +1,5 @@
 require "resque"
+require "resque_pause_helper"
 
 root_redis = Redis::Namespace.new "#{Rails.env}", redis: Redis.new(host: "localhost", port: 6379, thread_safe: true)
 Resque.redis = root_redis
