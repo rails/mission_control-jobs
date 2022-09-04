@@ -31,6 +31,7 @@ module MissionControl
 
       config.before_initialize do
         ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
+        Resque.extend Resque::ThreadSafeRedis
       end
 
       initializer "mission_control-jobs.assets" do |app|
@@ -41,10 +42,6 @@ module MissionControl
       initializer "mission_control-jobs.importmap", before: "importmap" do |app|
         app.config.importmap.paths << root.join("config/importmap.rb")
         app.config.importmap.cache_sweepers << root.join("app/javascript")
-      end
-
-      initializer "mission_control-jobs.resque" do
-        Resque.extend Resque::ThreadSafeRedis
       end
     end
   end

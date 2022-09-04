@@ -52,7 +52,8 @@ class ActiveSupport::TestCase
 
     def delete_resque_data
       redis = root_resque_redis
-      redis.flushall
+      all_keys = redis.keys("test*")
+      redis.del all_keys if all_keys.any?
     end
 
     def root_resque_redis
