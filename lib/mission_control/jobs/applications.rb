@@ -2,7 +2,8 @@
 class MissionControl::Jobs::Applications
   include Enumerable
 
-  delegate :each, to: :to_a
+  delegate :[], to: :applications_by_name
+  delegate :each, :last, to: :to_a
 
   def initialize
     @applications_by_name = HashWithIndifferentAccess.new
@@ -16,4 +17,7 @@ class MissionControl::Jobs::Applications
   def to_a
     @applications_by_name.values
   end
+
+  private
+    attr_reader :applications_by_name
 end

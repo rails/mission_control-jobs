@@ -5,4 +5,10 @@ class MissionControl::Jobs::Server
     @name = name
     @queue_adapter = queue_adapter
   end
+
+  alias to_s name
+
+  def to_param
+    name.parameterize
+  end
 end

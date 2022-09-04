@@ -1,10 +1,3 @@
-SERVERS_BY_APP = {
-  BC3: %w[ ashburn chicago ],
-  HEY: %w[ us-east-1 ]
-}
-
-DUMMY_APP_INITIALIZER_PATH = Rails.root.join("test/dummy/config/initializers")
-
 def clean_redis
   all_keys = Resque.redis.keys("*")
   Resque.redis.del all_keys if all_keys.any?
@@ -14,32 +7,31 @@ class JobsLoader
   FAILED_JOBS_COUNT = 100
   REGULAR_JOBS_COUNT = 50
 
-  attr_reader :app, :server
+  attr_reader :application, :server
 
-  def initialize(app, server)
-    @app = app
+  def initialize(application, server)
+    @application = application
     @server = server
   end
 
   def load
-    Resque.redis = redis_connection
+    ActiveJob::Base.current_queue_adapter = server.queue_adapter
 
     load_failed_jobs
     load_regular_jobs
   end
 
   private
-    def redis_connection
-      redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
-      Redis::Namespace.new "#{app}:#{server}", redis: redis
-    end
-
     def load_failed_jobs
-      puts "Generating #{failed_jobs_count} failed jobs for #{app} - #{server}..."
+      puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server} at #{current_redis.inspect}..."
       failed_jobs_count.times do |index|
         enqueue_one_of FailingJob, FailingReloadedJob, with: index
       end
       dispatch_jobs
+    end
+
+    def current_redis
+      Resque.redis.instance_variable_get("@redis")
     end
 
     def dispatch_jobs
@@ -81,8 +73,8 @@ end
 puts "Deleting existing jobs..."
 clean_redis
 
-SERVERS_BY_APP.each do |app, servers|
-  servers.each do |server|
-    JobsLoader.new(app, server).load
+MissionControl::Jobs.applications.each do |application|
+  application.servers.each do |server|
+    JobsLoader.new(application, server).load
   end
 end

@@ -12,4 +12,14 @@ class MissionControl::Jobs::Application
       servers << MissionControl::Jobs::Server.new(name: name.to_s, queue_adapter: queue_adapter)
     end
   end
+
+  def find_server(name)
+    servers.find { |server| server.name == name }
+  end
+
+  alias to_s name
+
+  def to_param
+    name.parameterize
+  end
 end

@@ -4,7 +4,7 @@ class ListQueuesTest < ApplicationSystemTestCase
   setup do
     create_queues *10.times.collect { |index| "queue_#{index}" }
 
-    visit queues_path
+    visit application_queues_path
   end
 
   test "list queues sorted by name" do

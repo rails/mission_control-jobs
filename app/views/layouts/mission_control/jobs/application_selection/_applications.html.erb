@@ -1,0 +1,13 @@
+<div class="navbar-item has-dropdown is-hoverable">
+  <a class="navbar-link">
+    <%= MissionControl::Jobs::Current.application.name %>
+  </a>
+
+  <div class="navbar-dropdown">
+    <% not_selected_applications.each do |application| %>
+      <%= link_to application_queues_path(application, server_id: nil), class: "navbar-item" do %>
+        <span><%= application.name %></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>

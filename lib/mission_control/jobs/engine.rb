@@ -12,9 +12,10 @@ module MissionControl
 
       config.mission_control = ActiveSupport::OrderedOptions.new
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
-      config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
 
       config.before_initialize do
+        config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
+
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
         end

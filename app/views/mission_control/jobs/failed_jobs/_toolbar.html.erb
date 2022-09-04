@@ -1,3 +1,3 @@
 <div class="buttons has-addons">
-  <%= button_to "Retry all", failed_jobs_bulk_retry_path, method: :post, class: "button is-success" %>
+  <%= button_to "Retry all", application_failed_jobs_bulk_retry_path(@application), method: :post, class: "button is-success" %>
 </div>
