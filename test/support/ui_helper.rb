@@ -5,9 +5,9 @@ module UIHelper
   end
 
   def click_on_server_selector(name)
-    # within ".server-selector" do
+    within ".server-selector" do
       click_on name
-    # end
+    end
   end
 
   def within_queue_row(text, &block)
