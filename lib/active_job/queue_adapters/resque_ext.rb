@@ -12,6 +12,30 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.queues
   end
 
+  # Returns an array with the list of queues. Each queue is represented as a hash
+  # with these attributes:
+  #   {
+  #    "name": "queue_name",
+  #    "size": 1,
+  #    active: true
+  #   }
+  def queues
+    queues = queue_names
+    active_statuses = []
+    counts = []
+
+    redis.multi do |multi|
+      queues.each do |queue_name|
+        active_statuses << multi.mget("pause:queue:#{queue_name}", "pause:all")
+        counts << multi.llen("queue:#{queue_name}")
+      end
+    end
+
+    queues.collect.with_index do |queue_name, index|
+      { name: queue_name, active: active_statuses[index].value.compact.empty?, size: counts[index].value }
+    end
+  end
+
   def queue_size(queue_name)
     Resque.size queue_name
   end
@@ -57,6 +81,8 @@ module ActiveJob::QueueAdapters::ResqueExt
   end
 
   private
+    attr_reader :redis
+
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation)
     end

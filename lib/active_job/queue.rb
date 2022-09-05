@@ -2,13 +2,16 @@
 class ActiveJob::Queue
   attr_reader :name
 
-  def initialize(name, queue_adapter: ActiveJob::Base.queue_adapter)
+  def initialize(name, size: nil, active: nil, queue_adapter: ActiveJob::Base.queue_adapter)
     @name = name
     @queue_adapter = queue_adapter
+
+    @size = size
+    @active = active
   end
 
   def size
-    queue_adapter.queue_size(name)
+    @size || queue_adapter.queue_size(name)
   end
 
   alias length size
@@ -30,16 +33,22 @@ class ActiveJob::Queue
   end
 
   def paused?
-    queue_adapter.queue_paused?(name)
+    !active?
   end
 
   def active?
-    !paused?
+    return @active unless @active.nil?
+    @active = !queue_adapter.queue_paused?(name)
   end
 
   # Return an +ActiveJob::JobsRelation+ with the jobs in the queue.
   def jobs
     ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).where(queue: name)
+  end
+
+  def reload
+    @active = @size = nil
+    self
   end
 
   private
