@@ -10,4 +10,3 @@ class MissionControl::Jobs::ServerTest < ActiveSupport::TestCase
     end
   end
 end
-
