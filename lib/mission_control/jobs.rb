@@ -11,5 +11,6 @@ require "mission_control/jobs/engine"
 module MissionControl
   module Jobs
     mattr_accessor :applications, default: MissionControl::Jobs::Applications.new
+    mattr_accessor :base_controller_class, default: "::ApplicationController"
   end
 end
