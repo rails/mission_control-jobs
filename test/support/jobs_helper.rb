@@ -12,4 +12,8 @@ module JobsHelper
     raise "No jobs server for application with id #{app_id} (#{server})" if server.nil?
     server.activating &block
   end
+
+  def default_job_server
+    MissionControl::Jobs.applications.first.servers.first
+  end
 end

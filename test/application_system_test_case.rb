@@ -10,7 +10,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   setup do
     # Activate default job server so that setup data before any navigation
     # happens is loaded there.
-    MissionControl::Jobs.applications.first.servers.first.activate
+    default_job_server.activate
   end
 
   # UI tests just use Resque for now
