@@ -1,4 +1,13 @@
 module ActiveJob::QueueAdapters::ResqueExt
+  def initialize(redis = Resque.redis)
+    super()
+    @redis = redis
+  end
+
+  def activate
+    Resque.redis = @redis
+  end
+
   def queue_names
     Resque.queues
   end

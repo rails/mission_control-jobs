@@ -22,15 +22,21 @@ Dir[File.join(__dir__, "active_job", "queue_adapters", "adapter_testing", "*.rb"
 ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
 
 class ActiveSupport::TestCase
-  include JobsHelper, JobQueuesHelper
+  include JobsHelper, JobQueuesHelper, ThreadHelper
 
   unless ENV["CI"]
     parallelize workers: :number_of_processors
   end
 
   setup do
+    @original_applications = MissionControl::Jobs.applications
     reset_executions_for_job_test_classes
     delete_adapters_data
+    ActiveJob::Base.current_queue_adapter = nil
+  end
+
+  teardown do
+    MissionControl::Jobs.applications = @original_applications
   end
 
   private
