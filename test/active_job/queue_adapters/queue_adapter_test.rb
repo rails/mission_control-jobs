@@ -25,7 +25,7 @@ class ActiveJob::QueueAdapters::QueueAdapterTest < ActiveSupport::TestCase
   end
 
   test "changing current resque adapter is thread-safe" do
-    2.times.collect { ActiveJob::QueueAdapters::ResqueAdapter.new }.collect do |new_adapter|
+    2.times.collect { ActiveJob::QueueAdapters::ResqueAdapter.new }.flat_map do |new_adapter|
       20.times.collect do
         Thread.new do
           ActiveJob::Base.current_queue_adapter = new_adapter
