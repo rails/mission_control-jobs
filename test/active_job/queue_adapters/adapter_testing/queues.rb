@@ -29,11 +29,11 @@ module ActiveJob::QueueAdapters::AdapterTesting::Queues
     assert_not queue.paused?
 
     queue.pause
-    assert_not queue.active?
+    assert_not queue.reload.active?
     assert queue.paused?
 
     queue.resume
-    assert queue.active?
+    assert queue.reload.active?
     assert_not queue.paused?
   end
 
