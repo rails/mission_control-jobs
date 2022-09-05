@@ -24,10 +24,6 @@ ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
 class ActiveSupport::TestCase
   include JobsHelper, JobQueuesHelper, ThreadHelper
 
-  if ENV["CI"]
-    parallelize workers: :number_of_processors
-  end
-
   setup do
     @original_applications = MissionControl::Jobs.applications
     reset_executions_for_job_test_classes
