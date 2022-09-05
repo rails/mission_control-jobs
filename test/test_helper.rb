@@ -24,10 +24,6 @@ ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
 class ActiveSupport::TestCase
   include JobsHelper, JobQueuesHelper, ThreadHelper
 
-  unless ENV["CI"]
-    parallelize workers: :number_of_processors
-  end
-
   setup do
     @original_applications = MissionControl::Jobs.applications
     reset_executions_for_job_test_classes
@@ -51,12 +47,12 @@ class ActiveSupport::TestCase
     alias delete_all_jobs delete_adapters_data
 
     def delete_resque_data
-      redis = Resque.redis
-      if redis.try(:namespace)
-        all_keys = redis.keys("*")
-        redis.del all_keys if all_keys.any?
-      else
-        redis.flushdb
-      end
+      redis = root_resque_redis
+      all_keys = redis.keys("test*")
+      redis.del all_keys if all_keys.any?
+    end
+
+    def root_resque_redis
+      @root_resque_redis ||= Redis.new(host: "localhost", port: 6379, thread_safe: true)
     end
 end

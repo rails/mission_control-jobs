@@ -25,6 +25,6 @@ module ResqueHelper
     end
 
     def create_resque_redis(name)
-      Redis::Namespace.new "resque:#{name}", redis: @old_data_store
+      Redis::Namespace.new name, redis: @old_data_store.instance_variable_get("@redis")
     end
 end

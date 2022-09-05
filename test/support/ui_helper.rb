@@ -1,4 +1,15 @@
 module UIHelper
+  def hover_app_selector(and_click:)
+    find(".application-selector").hover
+    find(".application-selector .navbar-item", text: and_click).click
+  end
+
+  def click_on_server_selector(name)
+    within ".server-selector" do
+      click_on name
+    end
+  end
+
   def within_queue_row(text, &block)
     row = find(".queues .queue", text: text)
     within row, &block

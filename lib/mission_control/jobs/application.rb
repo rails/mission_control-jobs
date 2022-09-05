@@ -1,10 +1,12 @@
 # An application containing backend jobs servers
 class MissionControl::Jobs::Application
-  attr_reader :name, :servers
+  include MissionControl::Jobs::IdentifiedByName
+
+  attr_reader :servers
 
   def initialize(name:)
-    @name = name
-    @servers = []
+    super
+    @servers = MissionControl::Jobs::IdentifiedElements.new
   end
 
   def add_servers(queue_adapters_by_name)

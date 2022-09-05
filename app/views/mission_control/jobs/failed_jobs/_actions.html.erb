@@ -1,3 +1,3 @@
 <div class="buttons is-right">
-  <%= button_to "Retry", failed_job_retry_path(job.job_id), class: "button is-danger" %>
+  <%= button_to "Retry", application_failed_job_retry_path(@application, job.job_id), class: "button is-danger" %>
 </div>

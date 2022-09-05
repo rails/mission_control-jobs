@@ -12,9 +12,10 @@ module MissionControl
 
       config.mission_control = ActiveSupport::OrderedOptions.new
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
-      config.mission_control.jobs.applications = MissionControl::Jobs::Applications
 
-      initializer "mission_control-jobs.config" do
+      config.before_initialize do
+        config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
+
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
         end
@@ -22,19 +23,23 @@ module MissionControl
 
       initializer "mission_control-jobs.active_job.extensions" do
         ActiveSupport.on_load :active_job do
-          ActiveJob::Base.include ActiveJob::Querying
-          ActiveJob::Base.include ActiveJob::Executing
+          include ActiveJob::Querying
+          include ActiveJob::Executing
           ActiveJob.extend ActiveJob::Querying::Root
-          ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
         end
       end
 
-      initializer "mission_control-jobs.testing" do
-        ActiveSupport.on_load(:active_support_test_case) do
-          parallelize_setup do |worker|
-            redis = Redis.new(host: "localhost", port: 6379, thread_safe: true)
-            Resque.redis = Redis::Namespace.new "test-#{worker}", redis: redis
-          end
+      config.before_initialize do
+        ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
+        Resque.extend Resque::ThreadSafeRedis
+      end
+
+      config.after_initialize do
+        unless Rails.application.config.eager_load
+          # When loading classes lazily (development), we want to make sure
+          # the base host +ApplicationController+ class is loaded when loading the
+          # Engine's +ApplicationController+, or it will fail to load the class.
+          MissionControl::Jobs.base_controller_class.constantize
         end
       end
 
@@ -46,10 +51,6 @@ module MissionControl
       initializer "mission_control-jobs.importmap", before: "importmap" do |app|
         app.config.importmap.paths << root.join("config/importmap.rb")
         app.config.importmap.cache_sweepers << root.join("app/javascript")
-      end
-
-      initializer "mission_control-jobs.resque" do
-        Resque.extend Resque::ThreadSafeRedis
       end
     end
   end
