@@ -34,6 +34,15 @@ module MissionControl
         Resque.extend Resque::ThreadSafeRedis
       end
 
+      config.after_initialize do
+        unless Rails.application.config.eager_load
+          # When loading classes lazily (development), we want to make sure
+          # the base host +ApplicationController+ class is loaded when loading the
+          # Engine's +ApplicationController+, or it will fail to load the class.
+          MissionControl::Jobs.base_controller_class.constantize
+        end
+      end
+
       initializer "mission_control-jobs.assets" do |app|
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
