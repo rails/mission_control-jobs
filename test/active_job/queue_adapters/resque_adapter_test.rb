@@ -26,7 +26,7 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     redis_2 = create_resque_redis("redis_2")
     adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
 
-    { redis_1 => adapter_1, redis_2 => adapter_2 }.collect do |redis, adapter|
+    { redis_1 => adapter_1, redis_2 => adapter_2 }.flat_map do |redis, adapter|
       20.times.collect do
         Thread.new do
           adapter.activate
@@ -34,7 +34,7 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
           assert_equal redis, current_resque_redis
         end
       end
-    end.flatten.each(&:join)
+    end.each(&:join)
   end
 
   test "use different queue adapters via active job" do
