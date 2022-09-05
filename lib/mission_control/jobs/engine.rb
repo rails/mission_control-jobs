@@ -16,7 +16,7 @@ module MissionControl
 
       initializer "mission_control-jobs.config" do
         config.mission_control.jobs.each do |key, value|
-          MissionControl::Jobs.send("#{key}=", value)
+          MissionControl::Jobs.public_send("#{key}=", value)
         end
       end
 
