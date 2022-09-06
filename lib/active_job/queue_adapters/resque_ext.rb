@@ -142,10 +142,6 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
       end
 
-      def queue_redis_key
-        jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name}"
-      end
-
       def find_job(job_id)
         jobs_by_id[job_id]
       end
@@ -237,6 +233,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def index_for!(job)
           index_for(job) or raise ActiveJob::Errors::JobNotFoundError.new(job)
+        end
+
+        def queue_redis_key
+          jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name}"
         end
 
         def clear_failed_queue
