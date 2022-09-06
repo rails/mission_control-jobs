@@ -42,6 +42,17 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     end
   end
 
+  test "discard only failed of a given class" do
+    5.times { FailingJob.perform_later }
+    10.times { FailingReloadedJob.perform_later }
+    perform_enqueued_jobs
+
+    ActiveJob.jobs.failed.where(job_class: "FailingJob").discard_all
+
+    assert_empty ApplicationJob.jobs.failed.where(job_class: "FailingJob")
+    assert_equal 10, ApplicationJob.jobs.failed.where(job_class: "FailingReloadedJob").count
+  end
+
   test "discard all pending withing a given page" do
     10.times { |index| DummyJob.perform_later(index) }
 

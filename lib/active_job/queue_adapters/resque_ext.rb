@@ -126,8 +126,8 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def discard_all
-        if jobs_relation.failed? && !offset_or_limit_provided?
-          direct_discard_all_failed
+        if jobs_relation.failed? && targeting_all_jobs?
+          clear_failed_queue
         else
           discard_all_one_by_one
         end
@@ -157,6 +157,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def offset_or_limit_provided?
           jobs_relation.offset_value > 0 || limit_value_provided?
+        end
+
+        def targeting_all_jobs?
+          !offset_or_limit_provided? && jobs_relation.job_class_name.blank?
         end
 
         def limit_value_provided?
@@ -235,7 +239,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           index_for(job) or raise ActiveJob::Errors::JobNotFoundError.new(job)
         end
 
-        def direct_discard_all_failed
+        def clear_failed_queue
           Resque::Failure.clear("failed")
         end
 
