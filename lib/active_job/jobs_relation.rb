@@ -122,13 +122,27 @@ class ActiveJob::JobsRelation
   # This operation is only valid for sets of failed jobs. It will
   # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
   def retry_all
-    raise ActiveJob::Errors::InvalidOperation, "You can only retry failed jobs, but these jobs are #{status}" unless failed?
+    ensure_failed_queue
     queue_adapter.retry_all_jobs(self)
   end
 
   # Retry the provided job.
+  #
+  # This operation is only valid for sets of failed jobs. It will
+  # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
   def retry_job(job)
+    ensure_failed_queue
     queue_adapter.retry_job(job, self)
+  end
+
+  # Discard all the jobs in the queue.
+  def discard_all
+    queue_adapter.discard_all_jobs(self)
+  end
+
+  # Discard the provided job.
+  def discard_job(job)
+    queue_adapter.discard_job(job, self)
   end
 
   # Find a job by id.
@@ -175,5 +189,9 @@ class ActiveJob::JobsRelation
 
     def satisfy_filter?(job)
       job.class_name == job_class_name
+    end
+
+    def ensure_failed_queue
+      raise ActiveJob::Errors::InvalidOperation, "This operation can only be performed on failed jobs, but these jobs are #{status}" unless failed?
     end
 end
