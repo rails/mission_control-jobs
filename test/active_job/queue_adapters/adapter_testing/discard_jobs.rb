@@ -19,7 +19,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
   test "discard all pending jobs" do
     10.times { |index| DummyJob.perform_later(index) }
 
-    pending_jobs = ActiveJob.jobs.where(queue: "default").pending
+    pending_jobs = ActiveJob.jobs.pending
     assert_not_empty pending_jobs
     pending_jobs.discard_all
 
@@ -45,7 +45,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
   test "discard all pending withing a given page" do
     10.times { |index| DummyJob.perform_later(index) }
 
-    pending_jobs = ActiveJob.jobs.where(queue: "default").pending
+    pending_jobs = ActiveJob.jobs.pending
     page_of_jobs = pending_jobs.offset(2).limit(3)
     page_of_jobs.discard_all
 
@@ -74,7 +74,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
   test "discard a single pending job" do
     DummyJob.perform_later
 
-    pending_jobs = ActiveJob.jobs.where(queue: "default").pending
+    pending_jobs = ActiveJob.jobs.pending
     assert_not_empty pending_jobs
 
     pending_job = pending_jobs.last

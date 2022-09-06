@@ -167,6 +167,7 @@ class ActiveJob::JobsRelation
       self.offset_value = 0
       self.limit_value = ALL_JOBS_LIMIT
       self.status = :pending
+      self.queue_name = ActiveJob::Base.default_queue_name
     end
 
     def clone_with(**properties)
