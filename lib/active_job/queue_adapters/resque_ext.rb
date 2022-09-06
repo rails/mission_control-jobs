@@ -155,12 +155,12 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         SENTINEL = "" # See +Resque::Datastore#remove_from_failed_queue+
 
-        def offset_or_limit_provided?
-          jobs_relation.offset_value > 0 || limit_value_provided?
-        end
-
         def targeting_all_jobs?
           !offset_or_limit_provided? && jobs_relation.job_class_name.blank?
+        end
+
+        def offset_or_limit_provided?
+          jobs_relation.offset_value > 0 || limit_value_provided?
         end
 
         def limit_value_provided?
