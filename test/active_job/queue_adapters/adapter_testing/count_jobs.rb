@@ -19,7 +19,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
   end
 
   test "count the pending jobs of a given class" do
-    [ DummyJob, DummyJob ].each { |job_class| job_class.queue_as :default }
     5.times { DummyJob.perform_later }
     10.times { DummyReloadedJob.perform_later }
 

@@ -29,6 +29,7 @@ class ActiveSupport::TestCase
     reset_executions_for_job_test_classes
     delete_adapters_data
     ActiveJob::Base.current_queue_adapter = nil
+    reset_configured_queues_for_job_classes
   end
 
   teardown do
@@ -54,5 +55,9 @@ class ActiveSupport::TestCase
 
     def root_resque_redis
       @root_resque_redis ||= Redis.new(host: "localhost", port: 6379, thread_safe: true)
+    end
+
+    def reset_configured_queues_for_job_classes
+      ApplicationJob.descendants.including(ApplicationJob).each { |klass| klass.queue_as :default }
     end
 end
