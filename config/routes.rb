@@ -11,11 +11,13 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :failed_jobs do
       scope module: :failed_jobs do
         resource :retry, only: :create
+        resource :discard, only: :create
       end
     end
 
     namespace :failed_jobs do
       resource :bulk_retry, only: :create
+      resource :bulk_discard, only: :create
     end
   end
 

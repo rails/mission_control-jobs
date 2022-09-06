@@ -1,3 +1,4 @@
 <div class="buttons is-right">
-  <%= button_to "Retry", application_failed_job_retry_path(@application, job.job_id), class: "button is-danger" %>
+  <%= button_to "Discard", application_failed_job_discard_path(@application, job.job_id), class: "button is-danger is-light" %>
+  <%= button_to "Retry", application_failed_job_retry_path(@application, job.job_id), class: "button is-warning is-light" %>
 </div>

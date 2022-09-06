@@ -1,7 +1,7 @@
 <div class="buttons is-right">
   <% if queue.active? %>
-    <%= button_to "Pause", pause_application_queue_status_path(@application, queue.name), method: :put, class: "button is-warning" %>
+    <%= button_to "Pause", pause_application_queue_status_path(@application, queue.name), method: :put, class: "button is-success is-light" %>
   <% else %>
-    <%= button_to "Resume", resume_application_queue_status_path(@application, queue.name), method: :put, class: "button is-success" %>
+    <%= button_to "Resume", resume_application_queue_status_path(@application, queue.name), method: :put, class: "button is-warning is-light" %>
   <% end %>
 </div>
