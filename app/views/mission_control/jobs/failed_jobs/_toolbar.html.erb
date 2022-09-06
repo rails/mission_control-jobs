@@ -1,9 +1,8 @@
 <div class="buttons is-right">
   <%= button_to "Discard all", application_failed_jobs_bulk_discard_path(@application),
-                method: :post, disabled: @jobs_count == 0,
-                form: { data: { turbo_confirm: "This will delete #{@jobs_count} jobs and can't be undone. Are you sure?" } },
-                class: "button is-danger is-light" %>
+    method: :post, disabled: @jobs_count == 0, class: "button is-danger is-light",
+    form: { data: { turbo_confirm: "This will delete #{@jobs_count} jobs and can't be undone. Are you sure?" } } %>
   <%= button_to "Retry all", application_failed_jobs_bulk_retry_path(@application),
-                method: :post, disabled: @jobs_count == 0,
-                class: "button is-warning is-light" %>
+    method: :post, disabled: @jobs_count == 0,
+    class: "button is-warning is-light" %>
 </div>
