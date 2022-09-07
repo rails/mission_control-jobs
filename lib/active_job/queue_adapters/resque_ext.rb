@@ -104,7 +104,7 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def count
-        if offset_or_limit_provided?
+        if paginated?
           count_fetched_jobs # no direct way of counting jobs
         else
           direct_jobs_count
@@ -152,10 +152,10 @@ module ActiveJob::QueueAdapters::ResqueExt
         SENTINEL = "" # See +Resque::Datastore#remove_from_failed_queue+
 
         def targeting_all_jobs?
-          !offset_or_limit_provided? && jobs_relation.job_class_name.blank?
+          !paginated? && jobs_relation.job_class_name.blank?
         end
 
-        def offset_or_limit_provided?
+        def paginated?
           jobs_relation.offset_value > 0 || limit_value_provided?
         end
 
