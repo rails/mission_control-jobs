@@ -136,4 +136,12 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal 3, ApplicationJob.jobs.where(queue: "queue_1").to_a.length
     assert_equal 5, ApplicationJob.jobs.where(queue: "queue_2").to_a.length
   end
+
+  test "fetch job classes in the first jobs" do
+    3.times { DummyJob.perform_later }
+    10.times { DummyReloadedJob.perform_later }
+    2.times { DummyJob.perform_later }
+    15.times { DummyReloadedJob.perform_later }
+    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.jobs.job_classes
+  end
 end

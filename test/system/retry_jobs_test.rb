@@ -2,7 +2,8 @@ require_relative "../application_system_test_case"
 
 class RetryJobsTest < ApplicationSystemTestCase
   setup do
-    10.times { |index| FailingJob.perform_later(index) }
+    5.times { |index| FailingJob.perform_later(index) }
+    5.times { |index| FailingReloadedJob.perform_later(5 + index) }
     perform_enqueued_jobs
 
     visit failed_jobs_path
@@ -28,5 +29,16 @@ class RetryJobsTest < ApplicationSystemTestCase
     assert_text "Retried job with id #{expected_job_id}"
 
     assert_equal 9, job_row_elements.length
+  end
+
+  test "retry a selection of filtered jobs" do
+    assert_equal 10, job_row_elements.length
+
+    fill_in "filter[job_class]", with: "FailingJob"
+    assert_text /5 jobs selected/i
+
+    click_on "Retry selection"
+    assert_text /retried 5 jobs/i
+    assert_equal 5, job_row_elements.length
   end
 end
