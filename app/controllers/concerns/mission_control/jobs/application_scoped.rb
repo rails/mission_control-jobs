@@ -3,7 +3,7 @@ module MissionControl::Jobs::ApplicationScoped
 
   included do
     before_action :set_application
-    before_action :set_server
+    around_action :activate_job_server
 
     delegate :applications, to: MissionControl::Jobs
   end
@@ -22,9 +22,13 @@ module MissionControl::Jobs::ApplicationScoped
       end
     end
 
-    def set_server
+    def activate_job_server
+      @original_redis = Resque.redis
       @server = find_server or raise MissionControl::Jobs::Errors::ResourceNotFound, "Server not found"
       MissionControl::Jobs::Current.server = @server
+      yield
+    ensure
+      Resque.redis = @original_redis
     end
 
     def find_server
