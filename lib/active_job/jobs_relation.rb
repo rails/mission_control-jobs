@@ -53,6 +53,11 @@ class ActiveJob::JobsRelation
     clone_with **arguments
   end
 
+  # This allows to unset a previous +job_class+ set in the relation.
+  def with_all_job_classes
+    clone_with job_class_name: nil
+  end
+
   STATUSES.each do |status|
     define_method status do
       clone_with status: status
