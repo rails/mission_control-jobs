@@ -9,6 +9,10 @@ module ActiveJob::Executing
     thread_cattr_accessor :_current_queue_adapter
   end
 
+  def failed?
+    last_execution_error.present?
+  end
+
   class_methods do
     def queue_adapter
       current_queue_adapter || super
@@ -27,4 +31,17 @@ module ActiveJob::Executing
   def retry
     ActiveJob.jobs.failed.retry_job(self)
   end
+
+  def discard
+    jobs_relation.discard_job(self)
+  end
+
+  private
+    def jobs_relation
+      if failed?
+        ActiveJob.jobs.failed
+      else
+        ActiveJob.jobs.where(queue: queue_name)
+      end
+    end
 end

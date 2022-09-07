@@ -115,7 +115,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
   end
 
   test "fetch pending jobs when pagination kicks in and the first pages are empty due to filtering" do
-    DummyJob.queue_as :default
     WithPaginationDummyJob1 = Class.new(DummyJob)
     WithPaginationDummyJob1.default_page_size = 2
     WithPaginationDummyJob2 = Class.new(DummyJob)

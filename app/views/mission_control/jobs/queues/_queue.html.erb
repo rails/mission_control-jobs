@@ -2,10 +2,12 @@
   <td>
     <%= link_to queue.name, application_queue_path(@application, queue.name) %>
     <% if queue.paused? %>
-      <span class="tag is-warning">Paused</span>
+      <span class="ml-5 tag is-warning">Paused</span>
     <% end %>
   </td>
-  <td> <%= queue.size %> </td>
+  <td>
+    <%= queue.size %>
+  </td>
   <td>
     <%= render "mission_control/jobs/queues/actions", queue: queue %>
   </td>

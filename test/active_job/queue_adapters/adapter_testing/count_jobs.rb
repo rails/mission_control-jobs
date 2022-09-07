@@ -19,12 +19,11 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
   end
 
   test "count the pending jobs of a given class" do
-    [ DummyJob, DummyJob ].each { |job_class| job_class.queue_as :default }
     5.times { DummyJob.perform_later }
     10.times { DummyReloadedJob.perform_later }
 
-    assert_equal 5, ApplicationJob.jobs.where(queue: "default", job_class: "DummyJob").count
-    assert_equal 10, ApplicationJob.jobs.where(queue: "default", job_class: "DummyReloadedJob").count
+    assert_equal 5, ApplicationJob.jobs.where(job_class: "DummyJob").count
+    assert_equal 10, ApplicationJob.jobs.where(job_class: "DummyReloadedJob").count
   end
 
   test "count the pending jobs in a given queue" do

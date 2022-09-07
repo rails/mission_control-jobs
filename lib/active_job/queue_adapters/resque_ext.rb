@@ -76,6 +76,14 @@ module ActiveJob::QueueAdapters::ResqueExt
     resque_jobs_for(jobs_relation).retry_job(job)
   end
 
+  def discard_all_jobs(jobs_relation)
+    resque_jobs_for(jobs_relation).discard_all
+  end
+
+  def discard_job(job, jobs_relation)
+    resque_jobs_for(jobs_relation).discard_job(job)
+  end
+
   def find_job(job_id, jobs_relation)
     resque_jobs_for(jobs_relation).find_job(job_id)
   end
@@ -84,18 +92,19 @@ module ActiveJob::QueueAdapters::ResqueExt
     attr_reader :redis
 
     def resque_jobs_for(jobs_relation)
-      ResqueJobs.new(jobs_relation)
+      ResqueJobs.new(jobs_relation, redis: redis)
     end
 
     class ResqueJobs
       attr_reader :jobs_relation
 
-      def initialize(jobs_relation)
+      def initialize(jobs_relation, redis:)
         @jobs_relation = jobs_relation
+        @redis = redis
       end
 
       def count
-        if jobs_relation.offset_value > 0 || limit_value_provided?
+        if paginated?
           count_fetched_jobs # no direct way of counting jobs
         else
           direct_jobs_count
@@ -116,11 +125,40 @@ module ActiveJob::QueueAdapters::ResqueExt
         resque_requeue_and_remove(index_for!(job))
       end
 
+      def discard_all
+        if jobs_relation.failed? && targeting_all_jobs?
+          clear_failed_queue
+        else
+          discard_all_one_by_one
+        end
+      end
+
+      def discard_job(job)
+        job_index = index_for!(job) # We want to resolve this outside the redis transaction
+
+        redis.multi do |multi|
+          multi.lset(queue_redis_key, job_index, SENTINEL)
+          multi.lrem(queue_redis_key, 1, SENTINEL)
+        end
+      end
+
       def find_job(job_id)
         jobs_by_id[job_id]
       end
 
       private
+        attr_reader :redis
+
+        SENTINEL = "" # See +Resque::Datastore#remove_from_failed_queue+
+
+        def targeting_all_jobs?
+          !paginated? && jobs_relation.job_class_name.blank?
+        end
+
+        def paginated?
+          jobs_relation.offset_value > 0 || limit_value_provided?
+        end
+
         def limit_value_provided?
           jobs_relation.limit_value.present? && jobs_relation.limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
         end
@@ -197,6 +235,20 @@ module ActiveJob::QueueAdapters::ResqueExt
           index_for(job) or raise ActiveJob::Errors::JobNotFoundError.new(job)
         end
 
+        def queue_redis_key
+          jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name}"
+        end
+
+        def clear_failed_queue
+          Resque::Failure.clear("failed")
+        end
+
+        def discard_all_one_by_one
+          jobs_relation.reverse.each do |job|
+            discard_job(job)
+          end
+        end
+
         def resque_requeue_and_remove(job_index)
           Resque::Failure.requeue(job_index)
           Resque::Failure.remove(job_index)
@@ -217,7 +269,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           Enumerator.new do |enumerator|
             begin
               current_page = jobs_relation.offset(from).limit(jobs_relation.default_page_size)
-              jobs = self.class.new(current_page).all
+              jobs = self.class.new(current_page, redis: redis).all
               jobs.each { |job| enumerator << job }
               from += jobs_relation.default_page_size
             end until jobs.empty?
