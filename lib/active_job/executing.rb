@@ -6,7 +6,7 @@ module ActiveJob::Executing
   included do
     attr_accessor :last_execution_error
     attr_reader :serialized_arguments
-    thread_cattr_accessor :_current_queue_adapter
+    thread_cattr_accessor :current_queue_adapter
   end
 
   def failed?
@@ -16,15 +16,6 @@ module ActiveJob::Executing
   class_methods do
     def queue_adapter
       current_queue_adapter || super
-    end
-
-    def current_queue_adapter=(adapter)
-      self._current_queue_adapter = adapter
-      adapter.try(:activate)
-    end
-
-    def current_queue_adapter
-      _current_queue_adapter
     end
   end
 

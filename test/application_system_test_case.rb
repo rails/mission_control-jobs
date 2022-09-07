@@ -7,10 +7,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   include MissionControl::Jobs::Engine.routes.url_helpers
 
-  setup do
+  def run
     # Activate default job server so that setup data before any navigation
     # happens is loaded there.
-    default_job_server.activate
+    default_job_server.activating do
+      super
+    end
   end
 
   # UI tests just use Resque for now
