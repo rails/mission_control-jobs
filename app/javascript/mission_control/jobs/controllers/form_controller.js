@@ -1,14 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-
-function debounce(fn, delay = 10) {
-  let timeoutId = null
-
-  return (...args) => {
-    const callback = () => fn.apply(this, args)
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(callback, delay)
-  }
-}
+import { debounce } from "helpers"
 
 export default class extends Controller {
   static values = {
