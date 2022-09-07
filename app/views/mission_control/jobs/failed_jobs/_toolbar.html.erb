@@ -1,4 +1,4 @@
-<div class="buttons is-right">
+<div class="buttons is-right level-right">
   <%= button_to "Discard all", application_failed_jobs_bulk_discard_path(@application),
     method: :post, disabled: @jobs_count == 0, class: "button is-danger is-light",
     form: { data: { turbo_confirm: "This will delete #{@jobs_count} jobs and can't be undone. Are you sure?" } } %>

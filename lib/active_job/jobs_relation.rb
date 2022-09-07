@@ -159,6 +159,10 @@ class ActiveJob::JobsRelation
     queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
   end
 
+  def job_classes(from_first: 500)
+    first(from_first).collect(&:class_name).uniq
+  end
+
   private
     attr_reader :queue_adapter
     attr_writer *PROPERTIES
