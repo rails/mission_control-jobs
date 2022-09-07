@@ -1,12 +1,19 @@
 require "test_helper"
 
 class MissionControl::Jobs::ServerTest < ActiveSupport::TestCase
-  test "activate changes Active Job's current queue adapter" do
-    queue_adapter = ActiveJob::QueueAdapters::ResqueAdapter.new
-    server = MissionControl::Jobs::Server.new(name: "foo", queue_adapter: queue_adapter)
+  test "activating a queue adapter" do
+    current_adapter = ActiveJob::Base.queue_adapter
+    new_adapter = ActiveJob::QueueAdapters::ResqueAdapter.new
+    server = MissionControl::Jobs::Server.new(name: "bc3", queue_adapter: new_adapter)
 
-    assert_changes -> { ActiveJob::Base.current_queue_adapter }, to: queue_adapter do
-      server.activate
+    assert_equal current_adapter, ActiveJob::Base.queue_adapter
+
+    server.activating do
+      @executed = true
+      assert_equal new_adapter, ActiveJob::Base.queue_adapter
     end
+
+    assert @executed
+    assert_equal current_adapter, ActiveJob::Base.queue_adapter
   end
 end
