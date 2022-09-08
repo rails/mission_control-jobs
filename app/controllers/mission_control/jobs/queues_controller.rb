@@ -1,6 +1,4 @@
 class MissionControl::Jobs::QueuesController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::ApplicationScoped
-
   before_action :set_queue
 
   def index

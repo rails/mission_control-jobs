@@ -1,5 +1,5 @@
 class MissionControl::Jobs::FailedJobs::RetriesController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::FailedJobScoped, MissionControl::Jobs::ApplicationScoped
+  include MissionControl::Jobs::FailedJobScoped
 
   def create
     @job.retry

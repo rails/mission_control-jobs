@@ -15,7 +15,7 @@ module ActiveJob::Executing
 
   class_methods do
     def queue_adapter
-      current_queue_adapter || super
+      ActiveJob::Base.current_queue_adapter || super
     end
   end
 

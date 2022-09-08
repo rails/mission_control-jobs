@@ -272,7 +272,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           from = 0
           Enumerator.new do |enumerator|
             begin
-              current_page = jobs_relation.offset(from).limit(jobs_relation.default_page_size)
+              current_page = jobs_relation.with_all_job_classes.offset(from).limit(jobs_relation.default_page_size)
               jobs = self.class.new(current_page, redis: redis).all
               jobs.each { |job| enumerator << job }
               from += jobs_relation.default_page_size

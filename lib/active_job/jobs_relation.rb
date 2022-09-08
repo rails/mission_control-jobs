@@ -53,6 +53,11 @@ class ActiveJob::JobsRelation
     clone_with **arguments
   end
 
+  # This allows to unset a previous +job_class+ set in the relation.
+  def with_all_job_classes
+    clone_with job_class_name: nil
+  end
+
   STATUSES.each do |status|
     define_method status do
       clone_with status: status
@@ -157,6 +162,10 @@ class ActiveJob::JobsRelation
   # Raises +ActiveJob::Errors::JobNotFoundError+ when not found.
   def find_by_id!(job_id)
     queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+  end
+
+  def job_classes(from_first: 500)
+    first(from_first).collect(&:class_name).uniq
   end
 
   private

@@ -15,10 +15,10 @@ class JobsLoader
   end
 
   def load
-    ActiveJob::Base.current_queue_adapter = server.queue_adapter
-
-    load_failed_jobs
-    load_regular_jobs
+    server.activating do
+      load_failed_jobs
+      load_regular_jobs
+    end
   end
 
   private

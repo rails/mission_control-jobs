@@ -1,0 +1,4 @@
+/* Hide the HTML datalist wonky arrow in Safari and Chrome, since we add it via bulma. */
+[list]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+}

@@ -38,4 +38,9 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert_equal "my_queue", jobs.queue_name
     assert_equal "MyJob", jobs.job_class_name
   end
+
+  test "allow removing the job class previously set" do
+    jobs = @jobs.where(job_class: "MyJob").with_all_job_classes
+    assert_nil jobs.job_class_name
+  end
 end
