@@ -4,14 +4,13 @@ def clean_redis
 end
 
 class JobsLoader
-  FAILED_JOBS_COUNT = 100
-  REGULAR_JOBS_COUNT = 50
+  attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count
 
-  attr_reader :application, :server
-
-  def initialize(application, server)
+  def initialize(application, server, failed_jobs_count: 100, regular_jobs_count: 50)
     @application = application
     @server = server
+    @failed_jobs_count = randomize(failed_jobs_count)
+    @regular_jobs_count = randomize(regular_jobs_count)
   end
 
   def load
@@ -57,14 +56,6 @@ class JobsLoader
       with_random_queue(jobs.sample).perform_later(*Array(with))
     end
 
-    def failed_jobs_count
-      @failed_jobs_count ||= randomize(FAILED_JOBS_COUNT)
-    end
-
-    def regular_jobs_count
-      @regular_jobs_count ||= randomize(REGULAR_JOBS_COUNT)
-    end
-
     def randomize(value)
       (value * (1 + rand)).to_i
     end
@@ -73,8 +64,10 @@ end
 puts "Deleting existing jobs..."
 clean_redis
 
+BASE_COUNT = (ENV["COUNT"].presence || 100).to_i
+
 MissionControl::Jobs.applications.each do |application|
   application.servers.each do |server|
-    JobsLoader.new(application, server).load
+    JobsLoader.new(application, server, failed_jobs_count: BASE_COUNT, regular_jobs_count: BASE_COUNT / 2).load
   end
 end
