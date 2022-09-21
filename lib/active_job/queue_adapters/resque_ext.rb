@@ -85,7 +85,7 @@ module ActiveJob::QueueAdapters::ResqueExt
   end
 
   def discard_job(job, jobs_relation)
-    resque_jobs_for(jobs_relation).discard_job(job)
+    resque_jobs_for(jobs_relation).discard(job)
   end
 
   def find_job(job_id, jobs_relation)
@@ -120,13 +120,14 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def retry_all
-        jobs_relation.reverse.each do |job|
-          retry_job(job)
+        reverse_each_batch do |jobs|
+          retry_jobs(jobs)
         end
       end
 
       def retry_job(job)
-        resque_requeue_and_remove(index_for!(job))
+        # Not named just +retry+ because it collides with reserved Ruby keyword.
+        resque_requeue_and_discard(job)
       end
 
       def discard_all
@@ -137,7 +138,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
       end
 
-      def discard_job(job)
+      def discard(job)
         job_index = index_for!(job) # We want to resolve this outside the redis transaction
 
         redis.multi do |multi|
@@ -190,15 +191,16 @@ module ActiveJob::QueueAdapters::ResqueExt
           args_hash = resque_job_hash.dig("payload", "args") || resque_job_hash.dig("args")
           ActiveJob::JobProxy.new(args_hash&.first).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
+            job.raw_data = resque_job_hash
           end
         end
 
         def execution_error_from_resque_job(resque_job_hash)
           if resque_job_hash["exception"].present?
             ActiveJob::ExecutionError.new \
-          error_class: resque_job_hash["exception"],
-          message: resque_job_hash["error"],
-          backtrace: resque_job_hash["backtrace"]
+              error_class: resque_job_hash["exception"],
+              message: resque_job_hash["error"],
+              backtrace: resque_job_hash["backtrace"]
           end
         end
 
@@ -247,20 +249,51 @@ module ActiveJob::QueueAdapters::ResqueExt
           Resque::Failure.clear("failed")
         end
 
-        def discard_all_one_by_one
-          jobs_relation.reverse.each do |job|
-            discard_job(job)
+        # Looping resque jobs in reverse order lets you remove them from the queue  without affecting the
+        # indexes of the remaining jobs in the collection by doing so.
+        #
+        # We do that in batches to avoid loading large sets in memory in a single operation, and also to avoid
+        # gigantic redis transactions.
+        def reverse_each_batch(&block)
+          load_job_indexes # we need to do this outside of the transaction
+          jobs_relation.reverse.each_slice(jobs_relation.default_page_size, &block)
+        end
+
+        def retry_jobs(jobs)
+          redis.multi do |multi|
+            jobs.each { |job| retry_job(job) }
           end
         end
 
-        def resque_requeue_and_remove(job_index)
-          Resque::Failure.requeue(job_index)
-          Resque::Failure.remove(job_index)
+        def resque_requeue_and_discard(job)
+          requeue(job)
+          discard(job)
+        end
+
+        def requeue(job)
+          resque_job = job.raw_data
+          resque_job["retried_at"] = Time.now.strftime("%Y/%m/%d %H:%M:%S")
+          redis.lset(queue_redis_key, index_for!(job), resque_job)
+          Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])
+        end
+
+        def discard_all_one_by_one
+          reverse_each_batch do |jobs|
+            discard_jobs(jobs)
+          end
+        end
+
+        def discard_jobs(jobs)
+          redis.multi do |multi|
+            jobs.each { |job| discard(job) }
+          end
         end
 
         def job_indexes_by_job_id
           @job_indexes_by_job_id ||= all_without_pagination_enumerator.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
         end
+
+        alias load_job_indexes job_indexes_by_job_id
 
         def jobs_by_id
           @jobs_by_id ||= all_without_pagination_enumerator.index_by(&:job_id)
