@@ -8,7 +8,10 @@
   </tr>
   </thead>
 
-  <%= render partial: "mission_control/jobs/queues/job", collection: @jobs %>
+  <%= render partial: "mission_control/jobs/queues/job", collection: @jobs_page.jobs %>
 
   </tbody>
 </table>
+
+<%= render "mission_control/jobs/shared/pagination_toolbar", jobs_page: @jobs_page %>
+

@@ -6,7 +6,7 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
   end
 
   def show
-    @jobs = @queue.jobs
+    @jobs_page = MissionControl::Jobs::Page.new(@queue.jobs, page: params[:page].to_i)
   end
 
   private
