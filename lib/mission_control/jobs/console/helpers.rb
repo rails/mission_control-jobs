@@ -22,7 +22,7 @@ module MissionControl::Jobs::Console::Helpers
     MissionControl::Jobs.applications.each do |application|
       application.servers.each do |server|
         suffix = ":#{server.id}" if application.servers.length > 1
-        puts "\t * #{application.id}#{suffix}"
+        puts "  * #{application.id}#{suffix}"
       end
     end
 
