@@ -2,3 +2,7 @@
 [list]::-webkit-calendar-picker-indicator {
     opacity: 0;
 }
+
+a[disabled] {
+    pointer-events: none;
+}

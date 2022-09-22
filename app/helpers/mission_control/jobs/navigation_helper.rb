@@ -28,4 +28,12 @@ module MissionControl::Jobs::NavigationHelper
   def selected_server?(server)
     MissionControl::Jobs::Current.server.name == server.name
   end
+
+  def jobs_filter_param
+    if @job_class_filter
+      { filter: { job_class: @job_class_filter } }
+    else
+      {}
+    end
+  end
 end
