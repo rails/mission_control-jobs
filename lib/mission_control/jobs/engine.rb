@@ -46,6 +46,8 @@ module MissionControl
       console do
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
         Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
+
+        puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
       end
 
       initializer "mission_control-jobs.assets" do |app|
