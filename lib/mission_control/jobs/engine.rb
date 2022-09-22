@@ -43,6 +43,11 @@ module MissionControl
         end
       end
 
+      console do
+        IRB::Context.prepend(MissionControl::Jobs::Console::Context)
+        Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
+      end
+
       initializer "mission_control-jobs.assets" do |app|
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]

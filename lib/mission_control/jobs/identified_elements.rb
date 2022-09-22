@@ -4,7 +4,7 @@ class MissionControl::Jobs::IdentifiedElements
   include Enumerable
 
   delegate :[], to: :elements
-  delegate :each, :last, to: :to_a
+  delegate :each, :last, :length, to: :to_a
 
   def initialize
     @elements = HashWithIndifferentAccess.new
