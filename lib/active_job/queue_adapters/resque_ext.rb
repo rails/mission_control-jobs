@@ -252,8 +252,8 @@ module ActiveJob::QueueAdapters::ResqueExt
         # Looping resque jobs in reverse order lets you remove them from the queue  without affecting the
         # indexes of the remaining jobs in the collection by doing so.
         #
-        # We do that in batches to avoid loading large sets in memory in a single operation, and also to avoid
-        # gigantic redis transactions.
+        # We do that in batches so that, if you create a redis transaction for processing each batch, it
+        # has a controlled size.
         def reverse_each_batch(&block)
           load_job_indexes # we need to do this outside of the transaction
           jobs_relation.reverse.each_slice(jobs_relation.default_page_size, &block)
