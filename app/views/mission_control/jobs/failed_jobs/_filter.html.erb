@@ -5,6 +5,7 @@
         data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
         <div class="select is-rounded">
           <%= form.text_field :job_class, value: @job_class_filter, class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
+          <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
         </div>
 
         <datalist id="job-classes" style="display: none;">
