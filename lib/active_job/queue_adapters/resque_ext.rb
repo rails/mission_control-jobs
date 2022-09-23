@@ -261,7 +261,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def single_page?
-          jobs_relation.count < default_page_size
+          jobs_relation.count <= default_page_size
         end
 
         def retry_all_in_batches
