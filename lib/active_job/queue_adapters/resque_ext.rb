@@ -261,7 +261,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def use_batches?
-          jobs_relation.limit_value.blank? && jobs_relation.count > default_page_size
+          !jobs_relation.limit_value_provided? && jobs_relation.count > default_page_size
         end
 
         def retry_all_in_batches

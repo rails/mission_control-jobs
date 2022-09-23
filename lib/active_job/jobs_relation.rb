@@ -28,6 +28,7 @@ class ActiveJob::JobsRelation
   attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
+  delegate :logger, to: MissionControl::Jobs
 
   ALL_JOBS_LIMIT = 100_000_000 # When no limit value it defaults to "all jobs"
 
@@ -129,6 +130,7 @@ class ActiveJob::JobsRelation
   def retry_all
     ensure_failed_queue
     queue_adapter.retry_all_jobs(self)
+    nil
   end
 
   # Retry the provided job.
@@ -143,6 +145,7 @@ class ActiveJob::JobsRelation
   # Discard all the jobs in the queue.
   def discard_all
     queue_adapter.discard_all_jobs(self)
+    nil
   end
 
   # Discard the provided job.
@@ -183,6 +186,10 @@ class ActiveJob::JobsRelation
 
   def paginated?
     offset_value > 0 || limit_value_provided?
+  end
+
+  def limit_value_provided?
+    limit_value.present? && limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
   end
 
   private
@@ -232,7 +239,9 @@ class ActiveJob::JobsRelation
       begin
         page = offset(current_offset).limit(of)
         current_offset += of
+        logger.info page
         yield page
+        wait_batch_delay
       end until current_offset >= max
     end
 
@@ -243,11 +252,13 @@ class ActiveJob::JobsRelation
         limit = current_offset < 0 ? of + current_offset : of
         page = offset([ current_offset, 0 ].max).limit(limit)
         current_offset -= of
+        logger.info page
         yield page
+        wait_batch_delay
       end until current_offset + of <= 0
     end
 
-    def limit_value_provided?
-      limit_value.present? && limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
+    def wait_batch_delay
+      sleep MissionControl::Jobs.delay_between_bulk_operation_batches if MissionControl::Jobs.delay_between_bulk_operation_batches.to_i > 0
     end
 end

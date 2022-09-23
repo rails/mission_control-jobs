@@ -12,5 +12,7 @@ module MissionControl
   module Jobs
     mattr_accessor :applications, default: MissionControl::Jobs::Applications.new
     mattr_accessor :base_controller_class, default: "::ApplicationController"
+    mattr_accessor :delay_between_bulk_operation_batches, default: 0
+    mattr_accessor :logger, default: ActiveSupport::Logger.new(nil)
   end
 end

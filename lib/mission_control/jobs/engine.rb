@@ -47,6 +47,9 @@ module MissionControl
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
         Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
 
+        MissionControl::Jobs.delay_between_bulk_operation_batches = 2
+        MissionControl::Jobs.logger = ActiveSupport::Logger.new(STDOUT)
+
         puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
       end
 
