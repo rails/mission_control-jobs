@@ -168,6 +168,23 @@ class ActiveJob::JobsRelation
     first(from_first).collect(&:class_name).uniq
   end
 
+  def in_batches(of: default_page_size, order: :asc, &block)
+    validate_looping_in_batches_is_possible
+
+    case order
+    when :asc
+      in_ascending_batches(of: of, &block)
+    when :desc
+      in_descending_batches(of: of, &block)
+    else
+      raise "Unsupported order: #{order}. Valid values: :asc, :desc."
+    end
+  end
+
+  def paginated?
+    offset_value > 0 || limit_value_provided?
+  end
+
   private
     attr_reader :queue_adapter
     attr_writer *PROPERTIES
@@ -203,5 +220,34 @@ class ActiveJob::JobsRelation
 
     def ensure_failed_queue
       raise ActiveJob::Errors::InvalidOperation, "This operation can only be performed on failed jobs, but these jobs are #{status}" unless failed?
+    end
+
+    def validate_looping_in_batches_is_possible
+      raise ActiveJob::Errors::InvalidOperation, "Looping in batches is not compatible with providing offset or limit" if paginated?
+    end
+
+    def in_ascending_batches(of:)
+      current_offset = 0
+      max = count
+      begin
+        page = offset(current_offset).limit(of)
+        current_offset += of
+        yield page
+      end until current_offset >= max
+    end
+
+    def in_descending_batches(of:)
+      current_offset = count - of
+
+      begin
+        limit = current_offset < 0 ? of + current_offset : of
+        page = offset([ current_offset, 0 ].max).limit(limit)
+        current_offset -= of
+        yield page
+      end until current_offset + of <= 0
+    end
+
+    def limit_value_provided?
+      limit_value.present? && limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
     end
 end

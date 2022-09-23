@@ -102,6 +102,8 @@ module ActiveJob::QueueAdapters::ResqueExt
     class ResqueJobs
       attr_reader :jobs_relation
 
+      delegate :default_page_size, to: :jobs_relation
+
       def initialize(jobs_relation, redis:)
         @jobs_relation = jobs_relation
         @redis = redis
@@ -120,8 +122,10 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def retry_all
-        reverse_each_batch do |jobs|
-          retry_jobs(jobs)
+        if single_page?
+          retry_jobs(jobs_relation.to_a.reverse)
+        else
+          retry_all_in_batches
         end
       end
 
@@ -249,20 +253,19 @@ module ActiveJob::QueueAdapters::ResqueExt
           Resque::Failure.clear("failed")
         end
 
-        # Looping resque jobs in reverse order lets you remove them from the queue  without affecting the
-        # indexes of the remaining jobs in the collection by doing so.
-        #
-        # We do that in batches so that, if you create a redis transaction for processing each batch, it
-        # has a controlled size.
-        def reverse_each_batch(&block)
-          load_job_indexes # we need to do this outside of the transaction
-          jobs_relation.reverse.each_slice(jobs_relation.default_page_size, &block)
-        end
-
         def retry_jobs(jobs)
+          load_job_indexes
           redis.multi do |multi|
             jobs.each { |job| retry_job(job) }
           end
+        end
+
+        def single_page?
+          jobs_relation.count < default_page_size
+        end
+
+        def retry_all_in_batches
+          jobs.relation.in_batches(order: :desc, &:retry_all)
         end
 
         def resque_requeue_and_discard(job)
@@ -278,15 +281,22 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_all_one_by_one
-          reverse_each_batch do |jobs|
-            discard_jobs(jobs)
+          if single_page?
+            discard_jobs(jobs_relation.to_a.reverse)
+          else
+            discard_all_in_batches
           end
         end
 
         def discard_jobs(jobs)
+          load_job_indexes
           redis.multi do |multi|
             jobs.each { |job| discard(job) }
           end
+        end
+
+        def discard_all_in_batches
+          jobs.relation.in_batches(order: :desc, &:discard_all)
         end
 
         def job_indexes_by_job_id
