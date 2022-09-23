@@ -122,10 +122,10 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def retry_all
-        if single_page?
-          retry_jobs(jobs_relation.to_a.reverse)
-        else
+        if use_batches?
           retry_all_in_batches
+        else
+          retry_jobs(jobs_relation.to_a.reverse)
         end
       end
 
@@ -260,8 +260,8 @@ module ActiveJob::QueueAdapters::ResqueExt
           end
         end
 
-        def single_page?
-          jobs_relation.count <= default_page_size
+        def use_batches?
+          jobs_relation.limit_value.blank? && jobs_relation.count > default_page_size
         end
 
         def retry_all_in_batches
@@ -281,10 +281,10 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_all_one_by_one
-          if single_page?
-            discard_jobs(jobs_relation.to_a.reverse)
-          else
+          if use_batches?
             discard_all_in_batches
+          else
+            discard_jobs(jobs_relation.to_a.reverse)
           end
         end
 
