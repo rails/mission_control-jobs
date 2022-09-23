@@ -265,9 +265,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def retry_all_in_batches
-          jobs.relation.in_batches(order: :desc) do |batch|
-            batch.retry_all
-          end
+          jobs.relation.in_batches(order: :desc, &:retry_all)
         end
 
         def resque_requeue_and_discard(job)
@@ -298,9 +296,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_all_in_batches
-          jobs.relation.in_batches(order: :desc) do |batch|
-            batch.discard_all
-          end
+          jobs.relation.in_batches(order: :desc, &:discard_all)
         end
 
         def job_indexes_by_job_id
