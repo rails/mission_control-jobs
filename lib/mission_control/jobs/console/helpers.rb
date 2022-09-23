@@ -1,13 +1,9 @@
 module MissionControl::Jobs::Console::Helpers
-  def connect_to(url)
-    app_id, server_id = url.split(":")
-    application = MissionControl::Jobs.applications[app_id] or raise MissionControl::Jobs::Errors::ResourceNotFound, "No application with id #{app_id} found"
-    server = (application.servers[server_id] || application.servers.first) or raise MissionControl::Jobs::Errors::ResourceNotFound, "No jobs server with id #{server_id} found in #{application.name}"
-
-    MissionControl::Jobs::Current.application = application
+  def connect_to(server_locator)
+    server = MissionControl::Jobs::Server.from_global_id(server_locator)
     MissionControl::Jobs::Current.server = server
 
-    puts "Connected to #{application.name} (#{server.name})"
+    puts "Connected to #{server_locator}"
     nil
   end
 
@@ -21,8 +17,7 @@ module MissionControl::Jobs::Console::Helpers
 
     MissionControl::Jobs.applications.each do |application|
       application.servers.each do |server|
-        suffix = ":#{server.id}" if application.servers.length > 1
-        puts "  * #{application.id}#{suffix}"
+        puts "  * #{server.to_global_id}"
       end
     end
 
