@@ -30,7 +30,11 @@ class MissionControl::Jobs::Page
   end
 
   def pages_count
-    (jobs_relation.count.to_f / 10).ceil
+    (total_count.to_f / 10).ceil
+  end
+
+  def total_count
+    @total_count ||= jobs_relation.count # Potentially expensive when filtering and a lot of jobs, with adapter in charge of doing the filtering in memory
   end
 
   private

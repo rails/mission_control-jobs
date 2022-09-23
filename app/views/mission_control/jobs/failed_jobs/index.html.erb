@@ -2,7 +2,7 @@
 
 <div class="level">
   <%= render "mission_control/jobs/failed_jobs/filter" %>
-  <%= render "mission_control/jobs/failed_jobs/toolbar" %>
+  <%= render "mission_control/jobs/failed_jobs/toolbar", jobs_count: @jobs_count %>
 </div>
 
 <table class="jobs failed table queues is-hoverable is-fullwidth">

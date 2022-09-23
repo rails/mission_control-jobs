@@ -3,8 +3,7 @@ class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::Applica
 
   def index
     @job_classes = ApplicationJob.jobs.failed.job_classes
-    @jobs_count = filtered_failed_jobs.count # Capturing to save redis queries, which can be expensive with remote resque hosts
-
     @jobs_page = MissionControl::Jobs::Page.new(filtered_failed_jobs, page: params[:page].to_i)
+    @jobs_count = @jobs_page.total_count
   end
 end
