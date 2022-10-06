@@ -56,7 +56,11 @@ class ActiveJob::JobsRelation
 
   # This allows to unset a previous +job_class+ set in the relation.
   def with_all_job_classes
-    clone_with job_class_name: nil
+    if job_class_name.present?
+      clone_with job_class_name: nil
+    else
+      self
+    end
   end
 
   STATUSES.each do |status|
