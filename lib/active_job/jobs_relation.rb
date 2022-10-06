@@ -227,6 +227,7 @@ class ActiveJob::JobsRelation
     def perform_each
       current_offset = offset_value
       pending_count = limit_value || Float::INFINITY
+
       begin
         limit = [ pending_count, default_page_size ].min
         page = offset(current_offset).limit(limit)
