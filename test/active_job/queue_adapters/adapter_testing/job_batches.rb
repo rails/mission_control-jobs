@@ -28,6 +28,21 @@ module ActiveJob::QueueAdapters::AdapterTesting::JobBatches
           assert_equal batch_range.to_a, batches[index].to_a.collect(&:serialized_arguments).flatten
         end
       end
+
+      test "loop for #{jobs_count} jobs in #{order} order with #{batch_size} batch size and using a class name filter: expecting #{expected_batches.inspect}" do
+        jobs_count.times { |index| FailingJob.perform_later(index) }
+        perform_enqueued_jobs
+
+        batches = []
+        ActiveJob.jobs.failed.where(job_class: "FailingJob").in_batches(of: batch_size, order: order) { |batch| batches << batch }
+
+        assert_equal expected_batches.length, batches.length
+        batches.each { |batch| assert_instance_of ActiveJob::JobsRelation, batch }
+
+        expected_batches.each.with_index do |batch_range, index|
+          assert_equal batch_range.to_a, batches[index].to_a.collect(&:serialized_arguments).flatten
+        end
+      end
     end
   end
 end

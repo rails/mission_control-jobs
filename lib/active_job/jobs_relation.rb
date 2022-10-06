@@ -107,7 +107,7 @@ class ActiveJob::JobsRelation
       value = public_send(name)
       "#{name}: #{value}" unless value.nil?
     end.compact.join(", ")
-    "<Jobs with [#{properties_with_values}]>"
+    "<Jobs with [#{properties_with_values}]> (loaded: #{loaded?})"
   end
 
   alias inspect to_s
@@ -205,7 +205,7 @@ class ActiveJob::JobsRelation
     end
 
     def clone_with(**properties)
-      dup.tap do |relation|
+      dup.reload.tap do |relation|
         properties.each do |key, value|
           relation.send("#{key}=", value)
         end
