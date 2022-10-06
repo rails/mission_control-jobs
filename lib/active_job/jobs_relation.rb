@@ -236,7 +236,7 @@ class ActiveJob::JobsRelation
         Array(jobs).each { |job| yield job }
         current_offset += limit
         pending_count -= jobs.length
-      end until finished
+      end until finished || pending_count.zero?
     end
 
     def loaded?
