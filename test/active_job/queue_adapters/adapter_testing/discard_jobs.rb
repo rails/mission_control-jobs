@@ -10,7 +10,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     assert_not_empty failed_jobs
     failed_jobs.discard_all
 
-    assert_empty failed_jobs
+    assert_empty failed_jobs.reload
 
     perform_enqueued_jobs
     assert_equal 10, FailingJob.invocations.count # not retried
@@ -23,7 +23,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     assert_not_empty pending_jobs
     pending_jobs.discard_all
 
-    assert_empty pending_jobs
+    assert_empty pending_jobs.reload
 
     perform_enqueued_jobs
   end
@@ -91,6 +91,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     pending_job = pending_jobs.last
     pending_job.discard
 
-    assert_empty pending_jobs
+    assert_empty pending_jobs.reload
   end
 end

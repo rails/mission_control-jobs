@@ -17,7 +17,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_not_empty failed_jobs
     failed_jobs.retry_all
 
-    assert_empty failed_jobs
+    assert_empty failed_jobs.reload
 
     perform_enqueued_jobs
     assert_equal 2 * 10, FailingJob.invocations.count
@@ -34,7 +34,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_not_empty failed_jobs
     failed_jobs.retry_all
 
-    assert_empty failed_jobs
+    assert_empty failed_jobs.reload
   end
 
   test "retry all failed withing a given page" do

@@ -211,11 +211,11 @@ module ActiveJob::QueueAdapters::ResqueExt
         def direct_jobs_count
           case jobs_relation.status
           when :pending
-              pending_jobs_count
+            pending_jobs_count
           when :failed
-              failed_jobs_count
+            failed_jobs_count
           else
-              raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
           end
         end
 
