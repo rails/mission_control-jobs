@@ -56,7 +56,11 @@ class ActiveJob::JobsRelation
 
   # This allows to unset a previous +job_class+ set in the relation.
   def with_all_job_classes
-    clone_with job_class_name: nil
+    if job_class_name.present?
+      clone_with job_class_name: nil
+    else
+      self
+    end
   end
 
   STATUSES.each do |status|
@@ -84,10 +88,10 @@ class ActiveJob::JobsRelation
   # When filtering jobs by class name, if the adapter doesn't support
   # it directly, this will imply loading all the jobs in memory.
   def count
-    if filtering_needed?
+    if loaded? || filtering_needed?
       to_a.length
     else
-      queue_adapter.jobs_count(self)
+      query_count
     end
   end
 
@@ -103,24 +107,13 @@ class ActiveJob::JobsRelation
       value = public_send(name)
       "#{name}: #{value}" unless value.nil?
     end.compact.join(", ")
-    "<Jobs with [#{properties_with_values}]>"
+    "<Jobs with [#{properties_with_values}]> (loaded: #{loaded?})"
   end
 
   alias inspect to_s
 
-  def each
-    current_offset = offset_value
-    pending_count = limit_value || Float::INFINITY
-    begin
-      limit = [ pending_count, default_page_size ].min
-      page = offset(current_offset).limit(limit)
-      jobs = queue_adapter.fetch_jobs(page)
-      finished = jobs.empty?
-      jobs = filter(jobs) if filtering_needed?
-      Array(jobs).each { |job| yield job }
-      current_offset += limit
-      pending_count -= jobs.length
-    end until finished
+  def each(&block)
+    loaded_jobs&.each(&block) || load_jobs(&block)
   end
 
   # Retry all the jobs in the queue.
@@ -167,8 +160,16 @@ class ActiveJob::JobsRelation
     queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
   end
 
+  # Returns an array of jobs classes in the first +from_first+ jobs.
   def job_classes(from_first: 500)
     first(from_first).collect(&:class_name).uniq
+  end
+
+  def reload
+    @count = nil
+    @loaded_jobs = nil
+
+    self
   end
 
   def in_batches(of: default_page_size, order: :asc, &block)
@@ -193,7 +194,7 @@ class ActiveJob::JobsRelation
   end
 
   private
-    attr_reader :queue_adapter
+    attr_reader :queue_adapter, :loaded_jobs
     attr_writer *PROPERTIES
 
     def set_defaults
@@ -204,11 +205,43 @@ class ActiveJob::JobsRelation
     end
 
     def clone_with(**properties)
-      dup.tap do |relation|
+      dup.reload.tap do |relation|
         properties.each do |key, value|
           relation.send("#{key}=", value)
         end
       end
+    end
+
+    def query_count
+      @count ||= queue_adapter.jobs_count(self)
+    end
+
+    def load_jobs
+      @loaded_jobs = []
+      perform_each do |job|
+        @loaded_jobs << job
+        yield job
+      end
+    end
+
+    def perform_each
+      current_offset = offset_value
+      pending_count = limit_value || Float::INFINITY
+
+      begin
+        limit = [ pending_count, default_page_size ].min
+        page = offset(current_offset).limit(limit)
+        jobs = queue_adapter.fetch_jobs(page)
+        finished = jobs.empty?
+        jobs = filter(jobs) if filtering_needed?
+        Array(jobs).each { |job| yield job }
+        current_offset += limit
+        pending_count -= jobs.length
+      end until finished || pending_count.zero?
+    end
+
+    def loaded?
+      !@loaded_jobs.nil?
     end
 
     def filter(jobs)

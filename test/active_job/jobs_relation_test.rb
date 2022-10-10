@@ -43,4 +43,23 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     jobs = @jobs.where(job_class: "MyJob").with_all_job_classes
     assert_nil jobs.job_class_name
   end
+
+  test "caches the fetched set of jobs" do
+    ActiveJob::Base.queue_adapter.expects(:fetch_jobs).twice.returns([ :job_1, :job_2 ], [])
+    jobs = @jobs.where(queue: "my_queue")
+
+    5.times do
+      assert_equal [ :job_1, :job_2 ], jobs.to_a
+    end
+  end
+
+  test "caches the count of jobs" do
+    ActiveJob::Base.queue_adapter.expects(:jobs_count).once.returns(2)
+
+    jobs = @jobs.where(queue: "my_queue")
+
+    3.times do
+      assert_equal 2, jobs.count
+    end
+  end
 end

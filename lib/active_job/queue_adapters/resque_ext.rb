@@ -118,7 +118,7 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def all
-        fetch_resque_jobs.collect { |resque_job| deserialize_resque_job(resque_job) if resque_job.is_a?(Hash) }.compact
+        @all ||= fetch_resque_jobs.collect.with_index { |resque_job, index| deserialize_resque_job(resque_job, index) if resque_job.is_a?(Hash) }.compact
       end
 
       def retry_all
@@ -143,12 +143,12 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def discard(job)
-        job_index = index_for!(job) # We want to resolve this outside the redis transaction
-
         redis.multi do |multi|
-          multi.lset(queue_redis_key, job_index, SENTINEL)
+          multi.lset(queue_redis_key, job.position, SENTINEL)
           multi.lrem(queue_redis_key, 1, SENTINEL)
         end
+      rescue Redis::CommandError => error
+        handle_resque_job_error(job, error)
       end
 
       def find_job(job_id)
@@ -159,6 +159,10 @@ module ActiveJob::QueueAdapters::ResqueExt
         attr_reader :redis
 
         SENTINEL = "" # See +Resque::Datastore#remove_from_failed_queue+
+
+        # Redis transactions severely speed up operations, specially when the network latency is high.
+        # We limit the transaction size because large batches can result in redis timeout errors.
+        MAX_REDIS_TRANSACTION_SIZE = 100
 
         def targeting_all_jobs?
           !paginated? && jobs_relation.job_class_name.blank?
@@ -191,11 +195,12 @@ module ActiveJob::QueueAdapters::ResqueExt
           Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value))
         end
 
-        def deserialize_resque_job(resque_job_hash)
+        def deserialize_resque_job(resque_job_hash, index)
           args_hash = resque_job_hash.dig("payload", "args") || resque_job_hash.dig("args")
           ActiveJob::JobProxy.new(args_hash&.first).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash
+            job.position = jobs_relation.offset_value + index
           end
         end
 
@@ -211,11 +216,11 @@ module ActiveJob::QueueAdapters::ResqueExt
         def direct_jobs_count
           case jobs_relation.status
           when :pending
-              pending_jobs_count
+            pending_jobs_count
           when :failed
-              failed_jobs_count
+            failed_jobs_count
           else
-              raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
           end
         end
 
@@ -237,14 +242,6 @@ module ActiveJob::QueueAdapters::ResqueExt
           all.size
         end
 
-        def index_for(job)
-          job_indexes_by_job_id[job.job_id]
-        end
-
-        def index_for!(job)
-          index_for(job) or raise ActiveJob::Errors::JobNotFoundError.new(job)
-        end
-
         def queue_redis_key
           jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name}"
         end
@@ -254,9 +251,16 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def retry_jobs(jobs)
-          load_job_indexes
-          redis.multi do |multi|
-            jobs.each { |job| retry_job(job) }
+          in_transactional_jobs_batches(jobs) do |jobs_batch|
+            jobs_batch.each { |job| retry_job(job) }
+          end
+        end
+
+        def in_transactional_jobs_batches(jobs)
+          jobs.each_slice(MAX_REDIS_TRANSACTION_SIZE) do |jobs_batch|
+            redis.multi do |multi|
+              yield jobs_batch
+            end
           end
         end
 
@@ -276,8 +280,10 @@ module ActiveJob::QueueAdapters::ResqueExt
         def requeue(job)
           resque_job = job.raw_data
           resque_job["retried_at"] = Time.now.strftime("%Y/%m/%d %H:%M:%S")
-          redis.lset(queue_redis_key, index_for!(job), resque_job)
+          redis.lset(queue_redis_key, job.position, resque_job)
           Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])
+        rescue Redis::CommandError => error
+          handle_resque_job_error(job, error)
         end
 
         def discard_all_one_by_one
@@ -289,9 +295,8 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_jobs(jobs)
-          load_job_indexes
-          redis.multi do |multi|
-            jobs.each { |job| discard(job) }
+          in_transactional_jobs_batches(jobs) do |jobs_batch|
+            jobs_batch.each { |job| discard(job) }
           end
         end
 
@@ -299,27 +304,19 @@ module ActiveJob::QueueAdapters::ResqueExt
           jobs_relation.in_batches(order: :desc, &:discard_all)
         end
 
-        def job_indexes_by_job_id
-          @job_indexes_by_job_id ||= all_without_pagination_enumerator.collect.with_index { |job, index| [ job.job_id, index ] }.to_h
-        end
-
-        alias load_job_indexes job_indexes_by_job_id
-
         def jobs_by_id
-          @jobs_by_id ||= all_without_pagination_enumerator.index_by(&:job_id)
+          @jobs_by_id ||= all.index_by(&:job_id)
         end
 
-        # Returns an enumerator that loops through all the jobs in the relation, without
-        # taking limit/offset into consideration. Internally, it will paginate jobs in batches.
-        def all_without_pagination_enumerator
-          from = 0
-          Enumerator.new do |enumerator|
-            begin
-              current_page = jobs_relation.with_all_job_classes.offset(from).limit(jobs_relation.default_page_size)
-              jobs = self.class.new(current_page, redis: redis).all
-              jobs.each { |job| enumerator << job }
-              from += jobs_relation.default_page_size
-            end until jobs.empty?
+        def all_ignoring_filters
+          @all_ignoring_filters ||= jobs_relation.with_all_job_classes.to_a
+        end
+
+        def handle_resque_job_error(job, error)
+          if error.message =~/no such key/i
+            raise ActiveJob::Errors::JobNotFoundError.new(job)
+          else
+            raise error
           end
         end
     end

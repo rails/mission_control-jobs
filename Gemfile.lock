@@ -121,6 +121,7 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     minitest (5.16.2)
+    mocha (1.14.0)
     mono_logger (1.1.1)
     multi_json (1.15.0)
     mustermann (2.0.2)
@@ -267,6 +268,7 @@ PLATFORMS
 DEPENDENCIES
   capybara
   mission_control-jobs!
+  mocha
   puma
   redis (~> 4.0.0)
   redis-namespace
