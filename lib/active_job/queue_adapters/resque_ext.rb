@@ -160,6 +160,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         SENTINEL = "" # See +Resque::Datastore#remove_from_failed_queue+
 
+        # Redis transactions severely speed up operations, specially when the network latency is high.
+        # We limit the transaction size because large batches can result in redis timeout errors.
+        MAX_REDIS_TRANSACTION_SIZE = 100
+
         def targeting_all_jobs?
           !paginated? && jobs_relation.job_class_name.blank?
         end
@@ -247,8 +251,16 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def retry_jobs(jobs)
-          redis.multi do |multi|
-            jobs.each { |job| retry_job(job) }
+          in_transactional_jobs_batches(jobs) do |jobs_batch|
+            jobs_batch.each { |job| retry_job(job) }
+          end
+        end
+
+        def in_transactional_jobs_batches(jobs)
+          jobs.each_slice(MAX_REDIS_TRANSACTION_SIZE) do |jobs_batch|
+            redis.multi do |multi|
+              yield jobs_batch
+            end
           end
         end
 
@@ -283,8 +295,8 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_jobs(jobs)
-          redis.multi do |multi|
-            jobs.each { |job| discard(job) }
+          in_transactional_jobs_batches(jobs) do |jobs_batch|
+            jobs_batch.each { |job| discard(job) }
           end
         end
 
