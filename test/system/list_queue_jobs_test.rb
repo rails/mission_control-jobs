@@ -1,6 +1,6 @@
 require_relative "../application_system_test_case"
 
-class ListJobsTest < ApplicationSystemTestCase
+class ListQueueJobsTest < ApplicationSystemTestCase
   setup do
     DummyJob.queue_as :queue_1
     10.times { |index| DummyJob.perform_later(index) }
