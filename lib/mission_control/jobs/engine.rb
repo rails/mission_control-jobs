@@ -25,6 +25,7 @@ module MissionControl
         ActiveSupport.on_load :active_job do
           include ActiveJob::Querying
           include ActiveJob::Executing
+          include ActiveJob::Failed
           ActiveJob.extend ActiveJob::Querying::Root
         end
       end

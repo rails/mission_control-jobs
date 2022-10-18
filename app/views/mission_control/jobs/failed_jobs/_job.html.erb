@@ -1,11 +1,17 @@
 <tr class="job">
   <td>
-    <%= job.class_name %>
-    (<%= job.serialized_arguments.inspect %>)
+    <%= link_to failed_job_path(job.job_id) do %>
+      <%= job.class_name %>
+    <% end %>
+    <% if job.serialized_arguments.present? %>
+      <div class="is-family-monospace">
+        (<%= job.serialized_arguments.join(",") %>)
+      </div>
+    <% end %>
   </td>
   <td>
-    <%= job.last_execution_error.error_class %>:
-    <%= job.last_execution_error.message %>
+    <%= link_to failed_job_error(job), "#" %>
+    <div class="has-text-grey"><%= time_ago_in_words(job.failed_at) %> ago</div>
   </td>
   <td class="pr-0">
     <%= render "mission_control/jobs/failed_jobs/actions", job: job %>

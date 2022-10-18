@@ -201,6 +201,7 @@ module ActiveJob::QueueAdapters::ResqueExt
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash
             job.position = jobs_relation.offset_value + index
+            job.failed_at = resque_job_hash["failed_at"]&.to_datetime
           end
         end
 
@@ -280,6 +281,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         def requeue(job)
           resque_job = job.raw_data
           resque_job["retried_at"] = Time.now.strftime("%Y/%m/%d %H:%M:%S")
+
           redis.lset(queue_redis_key, job.position, resque_job)
           Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])
         rescue Redis::CommandError => error

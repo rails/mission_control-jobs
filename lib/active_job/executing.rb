@@ -4,13 +4,9 @@ module ActiveJob::Executing
   extend ActiveSupport::Concern
 
   included do
-    attr_accessor :last_execution_error, :raw_data, :position
+    attr_accessor :raw_data, :position
     attr_reader :serialized_arguments
     thread_cattr_accessor :current_queue_adapter
-  end
-
-  def failed?
-    last_execution_error.present?
   end
 
   class_methods do
