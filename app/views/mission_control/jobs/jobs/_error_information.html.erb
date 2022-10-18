@@ -12,12 +12,8 @@
       <th>Message</th>
       <td> <%= job.last_execution_error.try(:message) || job.last_execution_error.inspect %> </td>
     </tr>
-    <tr>
-      <th>Backtrace</th>
-      <td>
-        <pre class="is-family-monospace"><%= failed_job_backtrace(job) %></pre>
-      </td>
-    </tr>
     </tbody>
   </table>
+
+  <pre class="is-family-monospace mb-4"><%= failed_job_backtrace(job) %></pre>
 <% end %>
