@@ -21,13 +21,17 @@ module MissionControl::Jobs::JobsHelper
 
   private
     def renderable_job_arguments_for(job)
-      ActiveJob::Arguments.deserialize(job.serialized_arguments).collect do |argument|
-        case argument
-        when ActiveRecord::Base
-          argument.to_gid.uri.to_s
-        else
-          argument
-        end
+      job.serialized_arguments.collect do |argument|
+        as_renderable_argument(argument)
+      end
+    end
+
+    def as_renderable_argument(argument)
+      if argument.is_a?(Hash) && argument["_aj_globalid"]
+        # don't deserialize as the class might not exist in the host app running the engine
+        argument["_aj_globalid"]
+      else
+        ActiveJob::Arguments.deserialize([ argument ])
       end
     end
 end
