@@ -1,13 +1,11 @@
 class MissionControl::Jobs::Queues::JobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::QueueScoped
-
-  before_action :set_job, only: %i[ show ]
+  include MissionControl::Jobs::JobsScoped, MissionControl::Jobs::QueueScoped
 
   def show
   end
 
   private
-    def set_job
-      @job = @queue.jobs.pending.find_by_id!(params[:id])
+    def jobs_relation
+      @queue.jobs.pending
     end
 end

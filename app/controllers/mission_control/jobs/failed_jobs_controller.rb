@@ -1,7 +1,5 @@
 class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::FailedJobFiltering
-
-  before_action :set_job, only: %i[ show ]
+  include MissionControl::Jobs::JobsScoped,  MissionControl::Jobs::FailedJobFiltering
 
   def index
     @job_classes = ApplicationJob.jobs.failed.job_classes
@@ -13,7 +11,7 @@ class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::Applica
   end
 
   private
-    def set_job
-      @job = ActiveJob.jobs.failed.find_by_id(params[:id])
+    def jobs_relation
+      ActiveJob.jobs.failed
     end
 end
