@@ -1,0 +1,38 @@
+<table class="table">
+  <tbody>
+  <tr>
+    <th>Arguments</th>
+    <td>
+      <div class="is-family-monospace">
+        <%= job_arguments(job) %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th>Job id</th>
+    <td><%= job.job_id %>    </td>
+  </tr>
+  <tr>
+    <th>Queue</th>
+    <td>
+      <div class="tag">
+        <%= job.queue_name %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th>Enqueued</th>
+    <td>
+      <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago
+    </td>
+  </tr>
+  <% if job.failed? %>
+    <tr>
+      <th>Failed</th>
+      <td>
+        <%= time_ago_in_words_with_title(job.failed_at) %> ago
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

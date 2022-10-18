@@ -1,0 +1,12 @@
+<% navigation(title: "Failed jobs", section: :failed_jobs) %>
+
+<h1 class="title">
+  <%= job_title(job) %>
+  <% if job.failed? %>
+    <div class="tag is-danger">failed</div>
+  <% end %>
+</h1>
+
+<%= render "mission_control/jobs/jobs/general_information", job: job %>
+<%= render "mission_control/jobs/jobs/error_information", job: job %>
+<%= render "mission_control/jobs/jobs/raw_data", job: job %>
