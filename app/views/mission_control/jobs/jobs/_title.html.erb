@@ -1,0 +1,15 @@
+<h1 class="title">
+  <div class="level">
+    <div class="level-left">
+      <%= job_title(job) %>
+      <% if job.failed? %>
+        <div class="tag is-danger">failed</div>
+      <% end %>
+    </div>
+    <div class="level-right">
+      <% if job.failed? %>
+        <%= render "mission_control/jobs/failed_jobs/actions", job: job %>
+      <% end %>
+    </div>
+  </div>
+</h1>
