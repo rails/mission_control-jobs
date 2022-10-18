@@ -16,7 +16,7 @@
     <th>Queue</th>
     <td>
       <div class="tag">
-        <%= link_to job.queue_name, queue_path(job.queue) %>
+        <%= link_to job.queue_name, application_queue_path(@application, job.queue) %>
       </div>
     </td>
   </tr>
