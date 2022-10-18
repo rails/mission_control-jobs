@@ -1,11 +1,12 @@
 <tr class="job">
   <td>
     <%= link_to failed_job_path(job.job_id) do %>
-      <%= job.class_name %>
+      <%= job_title(job) %>
     <% end %>
+
     <% if job.serialized_arguments.present? %>
       <div class="is-family-monospace">
-        (<%= job.serialized_arguments.join(",") %>)
+        <%= job_arguments(job) %>
       </div>
     <% end %>
   </td>
