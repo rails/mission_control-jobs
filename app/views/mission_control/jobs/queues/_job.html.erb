@@ -1,6 +1,15 @@
 <tr class="job">
   <td>
-    <%= job.class_name %>
-    (<%= job.serialized_arguments.inspect %>)
+    <%= link_to application_queue_job_path(MissionControl::Jobs::Current.application, job.queue, job.job_id) do %>
+      <%= job_title(job) %>
+    <% end %>
+    <div class="has-text-grey">Enqueued <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+  </td>
+  <td>
+    <% if job.serialized_arguments.present? %>
+      <span class="is-family-monospace">
+        <%= job_arguments(job) %>
+      </span>
+    <% end %>
   </td>
 </tr>

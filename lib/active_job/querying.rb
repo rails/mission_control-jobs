@@ -27,6 +27,10 @@ module ActiveJob::Querying
       end
   end
 
+  def queue
+    self.class.queues[queue_name]
+  end
+
   # Top-level query methods added to `ActiveJob`
   module Root
     def queues

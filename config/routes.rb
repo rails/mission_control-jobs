@@ -5,6 +5,8 @@ MissionControl::Jobs::Engine.routes.draw do
         resource :status, controller: "status", only: [] do
           put "pause", "resume", on: :member
         end
+
+        resources :jobs
       end
     end
 

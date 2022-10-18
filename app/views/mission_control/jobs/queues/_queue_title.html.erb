@@ -1,0 +1,15 @@
+<h1 class="title">
+  <div class="level">
+    <div class="level-left">
+      <%= queue.name %>
+      <% if queue.paused? %>
+        <span class="ml-4 tag is-warning">Paused</span>
+      <% end %>
+    </div>
+    <div class="level-right">
+      <%= render "mission_control/jobs/queues/actions", queue: queue %>
+    </div>
+  </div>
+</h1>
+
+<h2 class="subtitle"><%= queue.size %> pending jobs</h2>
