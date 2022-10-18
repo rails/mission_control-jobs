@@ -23,14 +23,14 @@ class PaginateJobsTest < ApplicationSystemTestCase
       expected_indexes = range.to_a
 
       # Wait for page to load
-      assert_text /FailingJob.*#{expected_indexes.first}/i
-      assert_text /FailingJob.*#{expected_indexes.last}/i
+      assert_text /FailingJob\s*#{expected_indexes.first}/i
+      assert_text /FailingJob\s*#{expected_indexes.last}/i
 
       assert_equal expected_indexes.length, job_row_elements.length
 
       job_row_elements.each.with_index do |job_element, index|
         within job_element do
-          assert_text /FailingJob.*#{expected_indexes[index]}/i
+          assert_text /FailingJob\s*#{expected_indexes[index]}/i
         end
       end
     end
