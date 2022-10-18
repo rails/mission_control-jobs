@@ -24,9 +24,9 @@ module MissionControl::Jobs::JobsHelper
       ActiveJob::Arguments.deserialize(job.serialized_arguments).collect do |argument|
         case argument
         when ActiveRecord::Base
-            argument.to_gid.uri.to_s
+          argument.to_gid.uri.to_s
         else
-            argument
+          argument
         end
       end
     end
