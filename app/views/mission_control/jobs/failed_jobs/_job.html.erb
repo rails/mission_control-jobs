@@ -11,8 +11,8 @@
     <% end %>
   </td>
   <td>
-    <%= link_to failed_job_error(job), "#" %>
-    <div class="has-text-grey"><%= time_ago_in_words(job.failed_at) %> ago</div>
+    <%= link_to failed_job_error(job), failed_job_path(job.job_id, anchor: "error") %>
+    <div class="has-text-grey"><%= time_ago_in_words_with_title(job.failed_at) %> ago</div>
   </td>
   <td class="pr-0">
     <%= render "mission_control/jobs/failed_jobs/actions", job: job %>

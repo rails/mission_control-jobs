@@ -1,3 +1,78 @@
 <% navigation(title: "Failed jobs", section: :failed_jobs) %>
 
-Showing <%= @job.job_id %>!
+<h1 class="title">
+  <%= job_title(@job) %>
+  <% if @job.failed? %>
+  <div class="tag is-danger">failed</div>
+  <% end %>
+</h1>
+
+<table class="table">
+  <tbody>
+  <tr>
+    <th>Arguments</th>
+    <td>
+      <div class="is-family-monospace">
+        <%= job_arguments(@job) %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th>Job id</th>
+    <td><%= @job.job_id %>    </td>
+  </tr>
+  <tr>
+    <th>Queue</th>
+    <td>
+      <div class="tag">
+        <%= @job.queue_name %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th>Enqueued</th>
+    <td>
+      <%= time_ago_in_words_with_title(@job.enqueued_at.to_datetime) %> ago
+    </td>
+  </tr>
+  <% if @job.failed? %>
+    <tr>
+      <th>Failed</th>
+      <td>
+        <%= time_ago_in_words_with_title(@job.failed_at) %> ago
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<% if @job.failed? %>
+
+  <a id="error"></a>
+  <h2 class="subtitle">Error information</h2>
+
+  <table class="table">
+    <tbody>
+    <tr>
+      <th>Type</th>
+      <td> <%= @job.last_execution_error.error_class %> </td>
+    </tr>
+    <tr>
+      <th>Message</th>
+      <td> <%= @job.last_execution_error.try(:message) || @job.last_execution_error.inspect %> </td>
+    </tr>
+    <tr>
+      <th>Backtrace</th>
+      <td>
+        <pre class="is-family-monospace"><%= failed_job_backtrace(@job) %></pre>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+<% end %>
+
+<h2 class="subtitle">Raw data</h2>
+
+<pre>
+  <%= JSON.pretty_generate(@job.raw_data.without("backtrace")) %>
+</pre>

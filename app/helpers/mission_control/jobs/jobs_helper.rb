@@ -15,6 +15,10 @@ module MissionControl::Jobs::JobsHelper
     "#{job.last_execution_error.error_class}: #{job.last_execution_error.message}"
   end
 
+  def failed_job_backtrace(job)
+    job.last_execution_error.backtrace.join("\n")
+  end
+
   private
     def renderable_job_arguments_for(job)
       ActiveJob::Arguments.deserialize(job.serialized_arguments).collect do |argument|
