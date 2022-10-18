@@ -48,4 +48,17 @@ class DiscardJobsTest < ApplicationSystemTestCase
     assert_text /discarded 5 jobs/i
     assert_equal 5, job_row_elements.length
   end
+
+  test "discard a job from its details screen" do
+    assert_equal 10, job_row_elements.length
+    failed_job = ApplicationJob.jobs.failed[2]
+    visit failed_job_path(failed_job.job_id)
+
+    accept_confirm do
+      click_on "Discard"
+    end
+
+    assert_text "Discarded job with id #{failed_job.job_id}"
+    assert_equal 9, job_row_elements.length
+  end
 end
