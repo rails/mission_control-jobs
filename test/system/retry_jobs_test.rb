@@ -41,4 +41,15 @@ class RetryJobsTest < ApplicationSystemTestCase
     assert_text /retried 5 jobs/i
     assert_equal 5, job_row_elements.length
   end
+
+  test "retry a job from its details screen" do
+    assert_equal 10, job_row_elements.length
+    failed_job = ApplicationJob.jobs.failed[2]
+    visit failed_job_path(failed_job.job_id)
+
+    click_on "Retry"
+
+    assert_text "Retried job with id #{failed_job.job_id}"
+    assert_equal 9, job_row_elements.length
+  end
 end

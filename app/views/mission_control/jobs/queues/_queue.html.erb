@@ -2,7 +2,7 @@
   <td>
     <%= link_to queue.name, application_queue_path(@application, queue.name) %>
     <% if queue.paused? %>
-      <span class="ml-5 tag is-warning">Paused</span>
+      <span class="ml-4 tag is-warning">Paused</span>
     <% end %>
   </td>
   <td>

@@ -1,10 +1,13 @@
-<% navigation(title: "Queue #{@queue.name}", section: :queues)  %>
+<% navigation(title: "Queue #{@queue.name}", section: :queues) %>
 
-<table class="jobs table queues is-striped is-hoverable is-fullwidth">
+<%= render "mission_control/jobs/queues/queue_title", queue: @queue %>
+
+<table class="jobs failed table queues is-hoverable is-fullwidth">
   <tbody>
   <thead>
   <tr>
-    <th>Job</th>
+    <th style="width: 35%;">Job</th>
+    <th></th>
   </tr>
   </thead>
 

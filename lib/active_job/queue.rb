@@ -51,6 +51,12 @@ class ActiveJob::Queue
     self
   end
 
+  def id
+    name.parameterize
+  end
+
+  alias to_param id
+
   private
     attr_reader :queue_adapter
 end

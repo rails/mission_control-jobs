@@ -23,9 +23,7 @@ class JobsLoader
   private
     def load_failed_jobs
       puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server} at #{current_redis.inspect}..."
-      failed_jobs_count.times do |index|
-        enqueue_one_of FailingJob, FailingReloadedJob, with: index
-      end
+      failed_jobs_count.times { |index| enqueue_one_of FailingJob => index, FailingReloadedJob => index, FailingPostJob => [ Post.last, 1.year.ago ] }
       dispatch_jobs
     end
 
@@ -41,7 +39,7 @@ class JobsLoader
     def load_regular_jobs
       puts "Generating #{regular_jobs_count} regular jobs..."
       regular_jobs_count.times do |index|
-        enqueue_one_of DummyJob, DummyReloadedJob, with: index
+        enqueue_one_of DummyJob => index, DummyReloadedJob => index
       end
     end
 
@@ -52,8 +50,10 @@ class JobsLoader
       end
     end
 
-    def enqueue_one_of(*jobs, with:)
-      with_random_queue(jobs.sample).perform_later(*Array(with))
+    def enqueue_one_of(arguments_by_job_class)
+      job_class = arguments_by_job_class.keys.sample
+      arguments = arguments_by_job_class[job_class]
+      with_random_queue(job_class).perform_later(*Array(arguments))
     end
 
     def randomize(value)
@@ -65,6 +65,8 @@ puts "Deleting existing jobs..."
 clean_redis
 
 BASE_COUNT = (ENV["COUNT"].presence || 100).to_i
+
+Post.find_or_create_by!(title: "Hello World!", body: "This is my first post.")
 
 MissionControl::Jobs.applications.each do |application|
   application.servers.each do |server|
