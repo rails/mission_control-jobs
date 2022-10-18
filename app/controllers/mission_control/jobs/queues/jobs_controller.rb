@@ -1,6 +1,4 @@
 class MissionControl::Jobs::Queues::JobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::FailedJobFiltering
-
   before_action :set_queue
   before_action :set_job, only: %i[ show ]
 
