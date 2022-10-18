@@ -31,7 +31,7 @@ module MissionControl::Jobs::JobsHelper
         # don't deserialize as the class might not exist in the host app running the engine
         argument["_aj_globalid"]
       else
-        ActiveJob::Arguments.deserialize([argument])
+        ActiveJob::Arguments.deserialize([ argument ])
       end
     rescue ActiveJob::DeserializationError
       argument.to_s
