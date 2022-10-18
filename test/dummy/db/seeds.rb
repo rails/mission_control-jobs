@@ -51,9 +51,9 @@ class JobsLoader
     end
 
     def enqueue_one_of(arguments_by_job_class)
-      arguments_by_job_class.each do |job_class, arguments|
-        with_random_queue(job_class).perform_later(*Array(arguments))
-      end
+      job_class = arguments_by_job_class.keys.sample
+      arguments = arguments_by_job_class[job_class]
+      with_random_queue(job_class).perform_later(*Array(arguments))
     end
 
     def randomize(value)
