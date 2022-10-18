@@ -18,7 +18,7 @@ class MissionControl::Jobs::Page
   end
 
   def last?
-    index == pages_count
+    index == pages_count || total_count == 0
   end
 
   def previous_index
