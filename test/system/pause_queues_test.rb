@@ -7,7 +7,7 @@ class PauseQueuesTest < ApplicationSystemTestCase
     visit queues_path
   end
 
-  test "pause and resume a queue" do
+  test "pause and resume a queue from the list of queues" do
     within_queue_row "queue_2" do
       assert_no_text "Resume"
       click_on "Pause"
@@ -17,5 +17,17 @@ class PauseQueuesTest < ApplicationSystemTestCase
       assert_no_text "Resume"
       assert_text "Pause"
     end
+  end
+
+  test "pause and resume a queue in the details screen" do
+    click_on "queue_2"
+
+    assert_no_text "Resume"
+    click_on "Pause"
+    assert_text "Resume"
+
+    click_on "Resume"
+    assert_no_text "Resume"
+    assert_text "Pause"
   end
 end
