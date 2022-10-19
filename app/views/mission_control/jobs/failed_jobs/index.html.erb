@@ -1,23 +1,28 @@
 <% navigation(title: "Failed jobs", section: :failed_jobs) %>
 
-<div class="level">
-  <%= render "mission_control/jobs/failed_jobs/filter" %>
-  <%= render "mission_control/jobs/failed_jobs/toolbar", jobs_count: @jobs_count %>
-</div>
+<% if @jobs_page.empty? %>
+  <%= blank_status_notice "There are no failed jobs 😌" %>
+<% else %>
+  <div class="level">
+    <%= render "mission_control/jobs/failed_jobs/filter" %>
+    <%= render "mission_control/jobs/failed_jobs/toolbar", jobs_count: @jobs_count %>
+  </div>
 
-<table class="jobs failed table queues is-hoverable is-fullwidth">
-  <tbody>
-  <thead>
-  <tr>
-    <th style="width: 35%;">Job</th>
-    <th style="width: 40%;">Error</th>
-    <th></th>
-  </tr>
-  </thead>
+  <table class="jobs failed table queues is-hoverable is-fullwidth">
+    <tbody>
+    <thead>
+    <tr>
+      <th style="width: 35%;">Job</th>
+      <th style="width: 40%;">Error</th>
+      <th></th>
+    </tr>
+    </thead>
 
-  <%= render partial: "mission_control/jobs/failed_jobs/job", collection: @jobs_page.jobs %>
+    <%= render partial: "mission_control/jobs/failed_jobs/job", collection: @jobs_page.jobs %>
 
-  </tbody>
-</table>
+    </tbody>
+  </table>
 
-<%= render "mission_control/jobs/shared/pagination_toolbar", jobs_page: @jobs_page %>
+  <%= render "mission_control/jobs/shared/pagination_toolbar", jobs_page: @jobs_page %>
+<% end %>
+
