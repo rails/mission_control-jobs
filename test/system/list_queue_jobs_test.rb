@@ -19,4 +19,10 @@ class ListQueueJobsTest < ApplicationSystemTestCase
       end
     end
   end
+
+  test "show empty notice when no jobs" do
+    perform_enqueued_jobs
+    click_on "queue_1"
+    assert_text /queue is empty/i
+  end
 end

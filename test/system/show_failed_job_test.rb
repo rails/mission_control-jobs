@@ -23,4 +23,10 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
 
     assert_text /failing_job.rb/
   end
+
+  test "show empty notice when no jobs" do
+    ActiveJob.jobs.failed.discard_all
+    visit failed_jobs_path
+    assert_text /there are no failed jobs/i
+  end
 end
