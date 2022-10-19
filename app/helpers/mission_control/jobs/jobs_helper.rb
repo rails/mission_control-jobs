@@ -51,6 +51,6 @@ module MissionControl::Jobs::JobsHelper
     end
 
     def as_renderable_array(argument)
-      argument.collect { |part| as_renderable_argument(part) }
+      "(#{argument.collect { |part| as_renderable_argument(part) }.join(", ")})"
     end
 end
