@@ -27,13 +27,30 @@ module MissionControl::Jobs::JobsHelper
     end
 
     def as_renderable_argument(argument)
-      if argument.is_a?(Hash) && argument["_aj_globalid"]
-        # don't deserialize as the class might not exist in the host app running the engine
-        argument["_aj_globalid"]
+      case argument
+      when Hash
+        as_renderable_hash(argument)
+      when Array
+        as_renderable_array(argument)
       else
         ActiveJob::Arguments.deserialize([ argument ])
       end
     rescue ActiveJob::DeserializationError
       argument.to_s
+    end
+
+    def as_renderable_hash(argument)
+      if argument["_aj_globalid"]
+        # don't deserialize as the class might not exist in the host app running the engine
+        argument["_aj_globalid"]
+      elsif argument["_aj_serialized"] == "ActiveJob::Serializers::ModuleSerializer"
+        argument["value"]
+      else
+        ActiveJob::Arguments.deserialize([ argument ])
+      end
+    end
+
+    def as_renderable_array(argument)
+      argument.collect { |part| as_renderable_argument(part) }
     end
 end
