@@ -1,5 +1,5 @@
 class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::JobsScoped,  MissionControl::Jobs::FailedJobFiltering
+  include MissionControl::Jobs::JobsScoped, MissionControl::Jobs::FailedJobFiltering
 
   def index
     @job_classes = ApplicationJob.jobs.failed.job_classes
