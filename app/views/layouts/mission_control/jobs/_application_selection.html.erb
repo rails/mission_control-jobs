@@ -5,7 +5,7 @@
 
     <div class="navbar-end">
       <%= render "layouts/mission_control/jobs/application_selection/servers", application: @application %>
-      <%= render "layouts/mission_control/jobs/application_selection/applications" %>
+      <%= render "layouts/mission_control/jobs/application_selection/applications" if selectable_applications.any? %>
     </div>
   </div>
 </nav>
