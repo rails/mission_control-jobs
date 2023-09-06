@@ -12,10 +12,6 @@ module ResqueHelper
   end
 
   private
-    def original_resque_redis
-      redis_from_resque_data_store @old_data_store
-    end
-
     def current_resque_redis
       redis_from_resque_data_store Resque.redis
     end

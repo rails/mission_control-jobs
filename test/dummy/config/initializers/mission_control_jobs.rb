@@ -9,7 +9,8 @@ SERVERS_BY_APP = {
 }
 
 def redis_connection_for(app, server)
-  Redis::Namespace.new "#{app}:#{server}", redis: Resque.redis.instance_variable_get("@redis")
+  redis_namespace = Redis::Namespace.new "#{app}:#{server}", redis: Resque.redis.instance_variable_get("@redis")
+  Resque::DataStore.new redis_namespace
 end
 
 SERVERS_BY_APP.each do |app, servers|
