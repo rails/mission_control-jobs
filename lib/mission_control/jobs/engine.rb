@@ -32,7 +32,7 @@ module MissionControl
 
       config.before_initialize do
         ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
-        Resque.extend Resque::ThreadSafeRedis
+        # Resque.extend Resque::ThreadSafeRedis
       end
 
       config.after_initialize do
