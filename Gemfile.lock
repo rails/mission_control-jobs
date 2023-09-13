@@ -8,6 +8,13 @@ GIT
       rubocop-performance
       rubocop-rails
 
+GIT
+  remote: https://github.com/basecamp/solid_queue
+  revision: 0c4b1dad160e639d407a972a2d908dd02b6fcda1
+  specs:
+    solid_queue (0.1.0)
+      rails (>= 7.0.3.1)
+
 PATH
   remote: .
   specs:
@@ -279,6 +286,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rails
   selenium-webdriver
+  solid_queue!
   sprockets-rails
   sqlite3
 
