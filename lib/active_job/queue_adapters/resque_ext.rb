@@ -5,11 +5,7 @@ module ActiveJob::QueueAdapters::ResqueExt
   end
 
   def activating(&block)
-    original_redis = Resque.redis
-    Resque.redis = @redis
-    block.call
-  ensure
-    Resque.redis = original_redis
+    Resque.with_per_thread_redis_override(redis, &block)
   end
 
   def queue_names

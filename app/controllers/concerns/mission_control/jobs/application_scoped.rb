@@ -23,7 +23,6 @@ module MissionControl::Jobs::ApplicationScoped
     end
 
     def activating_job_server(&block)
-      @original_redis = Resque.redis
       @server = find_server or raise MissionControl::Jobs::Errors::ResourceNotFound, "Server not found"
       MissionControl::Jobs::Current.server = @server
       @server.activating(&block)

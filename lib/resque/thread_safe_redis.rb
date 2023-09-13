@@ -1,19 +1,34 @@
 # Set and access +Resque.redis+ in a thread-safe way.
 module Resque::ThreadSafeRedis
-  thread_mattr_accessor :thread_resque_instance
+  thread_mattr_accessor :thread_resque_override
 
-  delegate :redis, :data_store, :redis=, to: "Resque::ThreadSafeRedis.resque_instance"
-
-  def self.resque_instance
-    # Not using +default:+ to set the default because it only applies
-    # to the main thread.
-    self.thread_resque_instance ||= ResqueInstance.new
+  def self.resque_override
+    self.thread_resque_override ||= ResqueOverride.new
   end
 
-  # +Resque+ is a module that extends itself. We leverage this trait to create different
-  # redis instances and reuse the actual `#redis=` and `#redis` accessors logic with
-  # different data stores.
-  class ResqueInstance
+  def redis
+    Resque::ThreadSafeRedis.resque_override.data_store_override || super
+  end
+  alias :data_store :redis
+
+  def with_per_thread_redis_override(redis_instance, &block)
+    Resque::ThreadSafeRedis.resque_override.enable_with(redis_instance, &block)
+  end
+
+  class ResqueOverride
     include Resque
+
+    attr_accessor :data_store_override
+
+    def enable_with(server, &block)
+      previous_redis, previous_data_store_override = redis, data_store_override
+      self.redis = server
+      self.data_store_override = @data_store
+
+      block.call
+    ensure
+      self.redis = previous_redis
+      self.data_store_override = previous_data_store_override
+    end
   end
 end

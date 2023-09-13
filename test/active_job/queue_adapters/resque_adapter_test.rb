@@ -12,6 +12,7 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
   test "execute a block of code activating a different redis instance" do
     old_redis = create_resque_redis "old_redis"
     new_redis = create_resque_redis "new_redis"
+
     adapter = ActiveJob::QueueAdapters::ResqueAdapter.new(new_redis)
     Resque.redis = old_redis
 
