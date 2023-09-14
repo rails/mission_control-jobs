@@ -7,6 +7,7 @@ require "resque"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 require "mission_control/jobs"
+require "solid_queue"
 
 module Dummy
   class Application < Rails::Application

@@ -1,6 +1,8 @@
 require "resque"
 require "resque_pause_helper"
 
+require "solid_queue"
+
 Resque.redis = Redis::Namespace.new "#{Rails.env}", redis: Redis.new(host: "localhost", port: 6379, thread_safe: true)
 
 SERVERS_BY_APP = {
