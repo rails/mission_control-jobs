@@ -1,4 +1,8 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
+  def activating(&block)
+    block.call
+  end
+
   def queue_names
     SolidQueue::Queue.all.map(&:name)
   end
