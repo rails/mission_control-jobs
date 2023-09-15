@@ -32,6 +32,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     DummyJob.queue_as :other_queue
     3.times { DummyJob.perform_later }
 
+    assert_equal 8, ApplicationJob.queues.sum(&:size)
     assert_equal 5, ApplicationJob.jobs.where(queue: "default").count
     assert_equal 3, ApplicationJob.jobs.where(queue: "other_queue").count
     assert_equal 3, ApplicationJob.jobs.where(queue: :other_queue).count

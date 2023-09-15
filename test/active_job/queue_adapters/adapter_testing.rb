@@ -5,7 +5,7 @@ module ActiveJob::QueueAdapters::AdapterTesting
     include CountJobs, DiscardJobs, FindJobs, JobBatches, QueryJobs, Queues, RetryJobs
 
     setup do
-      ApplicationJob.queue_adapter = queue_adapter
+      ActiveJob::Base.queue_adapter = queue_adapter
     end
   end
 

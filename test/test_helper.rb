@@ -44,6 +44,7 @@ class ActiveSupport::TestCase
 
     def delete_adapters_data
       delete_resque_data
+      delete_solid_queue_data
     end
 
     alias delete_all_jobs delete_adapters_data
@@ -52,6 +53,11 @@ class ActiveSupport::TestCase
       redis = root_resque_redis
       all_keys = redis.keys("test*")
       redis.del all_keys if all_keys.any?
+    end
+
+    def delete_solid_queue_data
+      SolidQueue::Job.find_each(&:destroy)
+      SolidQueue::Process.find_each(&:destroy)
     end
 
     def root_resque_redis
