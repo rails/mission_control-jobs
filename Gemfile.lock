@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: https://github.com/basecamp/solid_queue
-  revision: 0c4b1dad160e639d407a972a2d908dd02b6fcda1
+  revision: 2b9057d70c890b62922ab5d056ccbde82a2945be
   specs:
     solid_queue (0.1.0)
       rails (>= 7.0.3.1)
