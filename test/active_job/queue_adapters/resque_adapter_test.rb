@@ -45,26 +45,43 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
     end.each(&:join)
   end
 
-  test "use different queue adapters via active job" do
+  test "use different resque adapters via active job" do
     redis_1 = create_resque_redis("redis_1")
     adapter_1 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_1)
     redis_2 = create_resque_redis("redis_2")
     adapter_2 = ActiveJob::QueueAdapters::ResqueAdapter.new(redis_2)
 
-    adapter_1.activating do
-      5.times { DummyJob.perform_later }
+    with_active_job_adapter(adapter_1) do
+      adapter_1.activating do
+        5.times { DummyJob.perform_later }
+      end
     end
 
-    adapter_2.activating do
-      10.times { DummyJob.perform_later }
+    with_active_job_adapter(adapter_2) do
+      adapter_2.activating do
+        10.times { DummyJob.perform_later }
+      end
     end
 
-    adapter_1.activating do
-      assert_equal 5, ApplicationJob.jobs.pending.count
+    with_active_job_adapter(adapter_1) do
+      adapter_1.activating do
+        assert_equal 5, ApplicationJob.jobs.pending.count
+      end
     end
 
-    adapter_2.activating do
-      assert_equal 10, ApplicationJob.jobs.pending.count
+    with_active_job_adapter(adapter_2) do
+      adapter_2.activating do
+        assert_equal 10, ApplicationJob.jobs.pending.count
+      end
     end
   end
+
+  private
+    def with_active_job_adapter(adapter, &block)
+      previous_adapter = ActiveJob::Base.current_queue_adapter
+      ActiveJob::Base.current_queue_adapter = adapter
+      yield
+    ensure
+      ActiveJob::Base.current_queue_adapter = previous_adapter
+    end
 end
