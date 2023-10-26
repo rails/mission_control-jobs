@@ -21,8 +21,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::Queues
   end
 
   test "pause and resume queues" do
-    skip unless ActiveJob::Base.queue_adapter.support_pausing_queues?
-
     create_queues "queue_1", "queue_2"
 
     queue = ApplicationJob.queues[:queue_1]

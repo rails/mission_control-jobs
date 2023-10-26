@@ -56,10 +56,6 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     true
   end
 
-  def support_pausing_queues?
-    false
-  end
-
   def retry_all_jobs(jobs_relation)
     find_solid_queue_jobs_within(jobs_relation).each(&:retry)
   end

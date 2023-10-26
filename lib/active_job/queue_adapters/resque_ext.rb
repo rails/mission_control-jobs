@@ -68,10 +68,6 @@ module ActiveJob::QueueAdapters::ResqueExt
     false
   end
 
-  def support_pausing_queues?
-    true
-  end
-
   def retry_all_jobs(jobs_relation)
     resque_jobs_for(jobs_relation).retry_all
   end
