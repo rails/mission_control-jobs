@@ -32,6 +32,8 @@ module MissionControl
 
       config.before_initialize do
         ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
+        ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
+
         Resque.prepend Resque::ThreadSafeRedis
       end
 

@@ -1,12 +1,12 @@
 module JobQueuesHelper
   extend ActiveSupport::Concern
 
-  included do
-    class_attribute :jobs_adapter
-  end
-
   def DynamicQueueJob(queue_name)
     Class.new(ApplicationJob) do
+      def self.name
+        "DynamicQueueJob"
+      end
+
       queue_as queue_name
 
       def perform

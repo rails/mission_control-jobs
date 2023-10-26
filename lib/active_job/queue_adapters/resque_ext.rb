@@ -186,7 +186,7 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def fetch_queue_resque_jobs
           unless jobs_relation.queue_name.present?
-            raise ActiveJob::Errors::QueryError, "This adapter only supports fetching failed jobs when no queue name is provided"
+            raise ActiveJob::Errors::QueryError, "This adapter requires a queue name unless fetching failed jobs"
           end
           Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value))
         end

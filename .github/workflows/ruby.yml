@@ -20,6 +20,8 @@ jobs:
   rubocop:
     name: Rubocop
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GITHUB__COM: x-access-token:${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -37,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      BUNDLE_GITHUB__COM: x-access-token:${{ secrets.GH_TOKEN }}
     strategy:
       matrix:
         ruby-version: ['3.0']

@@ -3,6 +3,7 @@ module ResqueHelper
 
   included do
     setup do
+      ActiveJob::Base.queue_adapter = :resque
       @old_data_store = Resque.redis
     end
 

@@ -142,6 +142,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { DummyReloadedJob.perform_later }
     2.times { DummyJob.perform_later }
     15.times { DummyReloadedJob.perform_later }
-    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.jobs.job_classes
+
+    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.job_classes
   end
 end

@@ -121,7 +121,7 @@ class ActiveJob::JobsRelation
   # This operation is only valid for sets of failed jobs. It will
   # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
   def retry_all
-    ensure_failed_queue
+    ensure_failed_status
     queue_adapter.retry_all_jobs(self)
     nil
   end
@@ -131,7 +131,7 @@ class ActiveJob::JobsRelation
   # This operation is only valid for sets of failed jobs. It will
   # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
   def retry_job(job)
-    ensure_failed_queue
+    ensure_failed_status
     queue_adapter.retry_job(job, self)
   end
 
@@ -201,7 +201,6 @@ class ActiveJob::JobsRelation
       self.offset_value = 0
       self.limit_value = ALL_JOBS_LIMIT
       self.status = :pending
-      self.queue_name = ActiveJob::Base.default_queue_name
     end
 
     def clone_with(**properties)
@@ -258,7 +257,7 @@ class ActiveJob::JobsRelation
       job.class_name == job_class_name
     end
 
-    def ensure_failed_queue
+    def ensure_failed_status
       raise ActiveJob::Errors::InvalidOperation, "This operation can only be performed on failed jobs, but these jobs are #{status}" unless failed?
     end
 
