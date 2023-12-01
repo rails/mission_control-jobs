@@ -2,7 +2,7 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
   before_action :set_queue
 
   def index
-    @queues = ActiveJob::Base.queues.sort_by(&:name)
+    @queues = ApplicationJob.queues.sort_by(&:name)
   end
 
   def show
@@ -11,6 +11,6 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
 
   private
     def set_queue
-      @queue = ActiveJob::Base.queues[params[:id]]
+      @queue = ApplicationJob.queues[params[:id]]
     end
 end

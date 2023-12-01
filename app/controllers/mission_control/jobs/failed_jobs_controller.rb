@@ -12,6 +12,6 @@ class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::Applica
 
   private
     def jobs_relation
-      ActiveJob.jobs.failed
+      ApplicationJob.jobs.failed
     end
 end
