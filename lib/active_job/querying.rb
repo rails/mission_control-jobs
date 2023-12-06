@@ -22,9 +22,7 @@ module ActiveJob::Querying
     private
       def fetch_queues
         queue_adapter.queues.collect do |queue|
-          if !queue_name_prefix || queue[:name].start_with?(queue_name_prefix)
-            ActiveJob::Queue.new(queue[:name], size: queue[:size], active: queue[:active], queue_adapter: queue_adapter)
-          end
+          ActiveJob::Queue.new(queue[:name], size: queue[:size], active: queue[:active], queue_adapter: queue_adapter)
         end.compact
       end
   end
