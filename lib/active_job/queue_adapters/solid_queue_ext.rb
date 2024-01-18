@@ -45,7 +45,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def jobs_count(jobs_relation)
-    find_solid_queue_jobs_within(jobs_relation).count
+    RelationAdapter.new(jobs_relation).count
   end
 
   def fetch_jobs(jobs_relation)
@@ -88,11 +88,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def find_solid_queue_job(job_id, jobs_relation)
-      find_solid_queue_jobs_within(jobs_relation).find_by(active_job_id: job_id)
+      RelationAdapter.new(jobs_relation).find_job(job_id)
     end
 
     def find_solid_queue_jobs_within(jobs_relation)
-      JobFilter.new(jobs_relation).jobs
+      RelationAdapter.new(jobs_relation).jobs
     end
 
     def deserialize_and_proxy_job(solid_queue_job)
@@ -112,46 +112,83 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
     end
 
-    class JobFilter
+    class RelationAdapter
       def initialize(jobs_relation)
         @jobs_relation = jobs_relation
       end
 
       def jobs
-        filter_by_status
-          .then { |jobs| filter_by_queue(jobs) }
-          .then { |jobs| filter_by_class(jobs) }
-          .then { |jobs| limit(jobs) }
-          .then { |jobs| offset(jobs) }
+        executions.map(&:job)
+      end
+
+      def count
+        executions.count
+      end
+
+      def find_job(active_job_id)
+        if job = SolidQueue::Job.find_by(active_job_id: active_job_id)
+          job if matches_relation_filters?(job)
+        end
       end
 
       private
         attr_reader :jobs_relation
 
-        delegate :queue_name, :status, :limit_value, :offset_value, :job_class_name, to: :jobs_relation
+        delegate :queue_name, :status, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
-        def filter_by_status
+        def executions
+          executions_by_status.includes(:job).order(:job_id)
+            .then { |executions| filter_by_queue(executions) }
+            .then { |executions| filter_by_class(executions) }
+            .then { |executions| limit(executions) }
+            .then { |executions| offset(executions) }
+        end
+
+        def matches_relation_filters?(job)
+          matches_status?(job) && matches_queue?(job)
+        end
+
+        def executions_by_status
           case status
-          when :pending then SolidQueue::Job.joins(:ready_execution)
-          when :failed  then SolidQueue::Job.joins(:failed_execution)
-          else               SolidQueue::Job.all
+          when :pending then SolidQueue::ReadyExecution
+          when :failed  then SolidQueue::FailedExecution
+          else
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
           end
         end
 
-        def filter_by_queue(jobs)
-          queue_name.present? ? jobs.where(queue_name: queue_name) : jobs
+        def filter_by_queue(executions)
+          return executions unless queue_name.present?
+
+          if jobs_relation.failed?
+            executions.where(job: { queue_name: queue_name })
+          else
+            executions.where(queue_name: queue_name)
+          end
         end
 
-        def filter_by_class(jobs)
-          job_class_name.present? ? jobs.where(class_name: job_class_name) : jobs
+        def filter_by_class(executions)
+          job_class_name.present? ? executions.where(job: { class_name: job_class_name }) : executions
         end
 
-        def limit(jobs)
-          limit_value.present? ? jobs.limit(limit_value) : jobs
+        def limit(executions)
+          limit_value.present? ? executions.limit(limit_value) : executions
         end
 
-        def offset(jobs)
-          offset_value.present? ? jobs.offset(offset_value) : jobs
+        def offset(executions)
+          offset_value.present? ? executions.offset(offset_value) : executions
+        end
+
+        def matches_status?(job)
+          case status
+          when :pending then job.ready?
+          when :failed  then job.failed?
+          else          true
+          end
+        end
+
+        def matches_queue?(job)
+          queue_name.present? ? job.queue_name == queue_name : true
         end
     end
 end

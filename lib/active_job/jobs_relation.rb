@@ -88,7 +88,7 @@ class ActiveJob::JobsRelation
   # When filtering jobs by class name, if the adapter doesn't support
   # it directly, this will imply loading all the jobs in memory.
   def count
-    if loaded? || filtering_needed?
+    if loaded? || filtering_by_class_name_needed?
       to_a.length
     else
       query_count
@@ -135,7 +135,7 @@ class ActiveJob::JobsRelation
     queue_adapter.retry_job(job, self)
   end
 
-  # Discard all the jobs in the queue.
+  # Discard all the jobs in the relation.
   def discard_all
     queue_adapter.discard_all_jobs(self)
     nil
@@ -232,7 +232,7 @@ class ActiveJob::JobsRelation
         page = offset(current_offset).limit(limit)
         jobs = queue_adapter.fetch_jobs(page)
         finished = jobs.empty?
-        jobs = filter(jobs) if filtering_needed?
+        jobs = filter_by_class_name(jobs) if filtering_by_class_name_needed?
         Array(jobs).each { |job| yield job }
         current_offset += limit
         pending_count -= jobs.length
@@ -243,17 +243,17 @@ class ActiveJob::JobsRelation
       !@loaded_jobs.nil?
     end
 
-    def filter(jobs)
-      jobs.filter { |job| satisfy_filter?(job) }
+    def filter_by_class_name(jobs)
+      jobs.filter { |job| satisfy_class_name_filter?(job) }
     end
 
     # If adapter does not support filtering by class name, it will perform
     # the filtering in memory.
-    def filtering_needed?
+    def filtering_by_class_name_needed?
       job_class_name.present? && !queue_adapter.support_class_name_filtering?
     end
 
-    def satisfy_filter?(job)
+    def satisfy_class_name_filter?(job)
       job.class_name == job_class_name
     end
 
