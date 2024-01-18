@@ -57,7 +57,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def retry_all_jobs(jobs_relation)
-    find_solid_queue_jobs_within(jobs_relation).each(&:retry)
+    RelationAdapter.new(jobs_relation).retry_all
   end
 
   def retry_job(job, jobs_relation)
@@ -65,7 +65,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def discard_all_jobs(jobs_relation)
-    find_solid_queue_jobs_within(jobs_relation).each(&:discard)
+    RelationAdapter.new(jobs_relation).discard_all
   end
 
   def discard_job(job, jobs_relation)
@@ -131,13 +131,21 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
       end
 
+      def discard_all
+        execution_class_by_status.discard_all_from_jobs(jobs)
+      end
+
+      def retry_all
+        SolidQueue::FailedExecution.retry_all(jobs)
+      end
+
       private
         attr_reader :jobs_relation
 
         delegate :queue_name, :status, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
         def executions
-          executions_by_status.includes(:job).order(:job_id)
+          execution_class_by_status.includes(:job).order(:job_id)
             .then { |executions| filter_by_queue(executions) }
             .then { |executions| filter_by_class(executions) }
             .then { |executions| limit(executions) }
@@ -148,7 +156,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           matches_status?(job) && matches_queue?(job)
         end
 
-        def executions_by_status
+        def execution_class_by_status
           case status
           when :pending then SolidQueue::ReadyExecution
           when :failed  then SolidQueue::FailedExecution
