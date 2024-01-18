@@ -21,7 +21,7 @@ PATH
   specs:
     mission_control-jobs (0.1.0)
       importmap-rails
-      rails (>= 7.0.3.1)
+      rails (~> 7.1)
       stimulus-rails
       turbo-rails
 
@@ -121,6 +121,9 @@ GEM
     concurrent-ruby (1.1.10)
     connection_pool (2.4.1)
     crass (1.0.6)
+    debug (1.9.1)
+      irb (~> 1.10)
+      reline (>= 0.3.8)
     digest (3.1.0)
     drb (2.2.0)
       ruby2_keywords
@@ -303,6 +306,7 @@ PLATFORMS
 
 DEPENDENCIES
   capybara
+  debug
   mission_control-jobs!
   mocha
   puma

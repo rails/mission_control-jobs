@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "rails", ">= 7.0.3.1"
+  spec.add_dependency "rails", "~> 7.1"
   spec.add_dependency 'importmap-rails'
   spec.add_dependency 'turbo-rails'
   spec.add_dependency 'stimulus-rails'
@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"
+  spec.add_development_dependency "debug"
   spec.add_development_dependency "redis", "~> 4.0.0"
   spec.add_development_dependency "redis-namespace"
   spec.add_development_dependency "rubocop", "~> 1.52.0"

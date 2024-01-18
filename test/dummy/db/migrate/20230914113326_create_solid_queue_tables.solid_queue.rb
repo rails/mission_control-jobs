@@ -1,5 +1,4 @@
-# This migration comes from solid_queue (originally 20230207182223)
-class CreateSolidQueueTables < ActiveRecord::Migration[7.0]
+class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
   def change
     create_table :solid_queue_jobs do |t|
       t.string :queue_name, null: false
