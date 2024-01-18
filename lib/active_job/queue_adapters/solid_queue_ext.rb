@@ -28,6 +28,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_queue_by_name(queue_name).size
   end
 
+  def clear_queue(queue_name)
+    find_queue_by_name(queue_name).clear
+  end
+
   def pause_queue(queue_name)
     find_queue_by_name(queue_name).pause
   end

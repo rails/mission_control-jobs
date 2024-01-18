@@ -16,6 +16,10 @@ class ActiveJob::Queue
 
   alias length size
 
+  def clear
+    queue_adapter.clear_queue(name)
+  end
+
   def empty?
     size == 0
   end
