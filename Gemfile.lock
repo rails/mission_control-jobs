@@ -10,8 +10,7 @@ GIT
 
 GIT
   remote: https://github.com/basecamp/solid_queue
-  revision: eec88150d88447e86555fc5af2f71997fb31f423
-  branch: discard-retry-bulk
+  revision: d57b8e280dd27b1ffda0e203e0fa2afce0b2bb12
   specs:
     solid_queue (0.2.0)
       rails (~> 7.1)
