@@ -4,7 +4,7 @@ module MissionControl::Jobs::Server::Serializable
   class_methods do
     # Loads a server from a locator string with the format +<application>:<server>+. For example:
     #
-    #   bc3:chicago
+    #   bc4:resque_chicago
     #
     # When the +<server>+ fragment is omitted it will return the first server for the application.
     def from_global_id(global_id)

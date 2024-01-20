@@ -1,3 +1,5 @@
+require "active_job/queue_adapter"
+
 class MissionControl::Jobs::Server
   include MissionControl::Jobs::IdentifiedByName, Serializable
 
@@ -15,5 +17,9 @@ class MissionControl::Jobs::Server
     queue_adapter.activating(&block)
   ensure
     ActiveJob::Base.current_queue_adapter = previous_adapter
+  end
+
+  def queue_adapter_name
+    ActiveJob.adapter_name(queue_adapter).underscore.to_sym
   end
 end

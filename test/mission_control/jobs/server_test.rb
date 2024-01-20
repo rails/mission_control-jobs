@@ -2,13 +2,13 @@ require "test_helper"
 
 class MissionControl::Jobs::ServerTest < ActiveSupport::TestCase
   setup do
-    @application = MissionControl::Jobs.applications[:bc3]
+    @application = MissionControl::Jobs.applications[:bc4]
   end
 
   test "activating a queue adapter" do
     current_adapter = ActiveJob::Base.queue_adapter
     new_adapter = ActiveJob::QueueAdapters::ResqueAdapter.new
-    server = MissionControl::Jobs::Server.new(name: "chicago", queue_adapter: new_adapter, application: @bc3)
+    server = MissionControl::Jobs::Server.new(name: "resque_chicago", queue_adapter: new_adapter, application: @application)
 
     assert_equal current_adapter, ActiveJob::Base.queue_adapter
 

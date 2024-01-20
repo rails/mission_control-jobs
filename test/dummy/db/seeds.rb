@@ -3,6 +3,11 @@ def clean_redis
   Resque.redis.del all_keys if all_keys.any?
 end
 
+def clean_database
+  SolidQueue::Job.all.each(&:destroy)
+  SolidQueue::Process.all.each(&:destroy)
+end
+
 class JobsLoader
   attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count
 
@@ -22,18 +27,23 @@ class JobsLoader
 
   private
     def load_failed_jobs
-      puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server} at #{current_redis.inspect}..."
+      puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server}..."
       failed_jobs_count.times { |index| enqueue_one_of FailingJob => index, FailingReloadedJob => index, FailingPostJob => [ Post.last, 1.year.ago ] }
       dispatch_jobs
     end
 
-    def current_redis
-      Resque.redis.instance_variable_get("@redis")
-    end
-
     def dispatch_jobs
-      worker = Resque::Worker.new("*")
-      worker.work(0.0)
+      case server.queue_adapter_name
+      when :resque
+        worker = Resque::Worker.new("*")
+        worker.work(0.0)
+      when :solid_queue
+        worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0)
+        worker.mode = :inline
+        worker.start
+      else
+        raise "Don't know how to dispatch jobs for #{server.queue_adapter_name} adapter"
+      end
     end
 
     def load_regular_jobs
@@ -63,6 +73,7 @@ end
 
 puts "Deleting existing jobs..."
 clean_redis
+clean_database
 
 BASE_COUNT = (ENV["COUNT"].presence || 100).to_i
 
