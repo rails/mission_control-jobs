@@ -7,6 +7,7 @@ class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 
   attr_reader :class_name
+  attr_writer :status
 
   def initialize(job_data)
     super
@@ -20,7 +21,17 @@ class ActiveJob::JobProxy < ActiveJob::Base
     end
   end
 
+  def status
+    return @status if @status.present?
+
+    failed? ? :failed : :pending
+  end
+
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
+  end
+
+  def to_partial_path
+    "jobs/job"
   end
 end

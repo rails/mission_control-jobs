@@ -17,6 +17,13 @@ module MissionControl::Jobs::NavigationHelper
     @page_title
   end
 
+  def navigation_section_for_job(job)
+    case job.status
+    when :failed then :failed_jobs
+    else :queues
+    end
+  end
+
   def selected_application?(application)
     MissionControl::Jobs::Current.application.name == application.name
   end

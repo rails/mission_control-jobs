@@ -10,6 +10,8 @@ MissionControl::Jobs::Engine.routes.draw do
       end
     end
 
+    resources :jobs, only: :show
+
     resources :failed_jobs do
       scope module: :failed_jobs do
         resource :retry, only: :create
