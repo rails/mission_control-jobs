@@ -11,13 +11,12 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
   end
 
   test "filter by pending status" do
-    assert @jobs.pending?
     assert @jobs.pending.pending?
     assert_not @jobs.failed.pending?
   end
 
   test "filter by failed status" do
-    assert_not @jobs.failed?
+    assert_not @jobs.pending.failed?
     assert @jobs.failed.failed?
   end
 
