@@ -1,16 +1,14 @@
 MissionControl::Jobs::Engine.routes.draw do
   resources :applications do
-    resources :queues do
+    resources :queues, only: [ :index, :show ] do
       scope module: :queues do
-        resource :status, controller: "status", only: [] do
-          put "pause", "resume", on: :member
-        end
+        resource :pause, only: [ :create, :destroy ]
 
         resources :jobs, only: :show
       end
     end
 
-    resources :failed_jobs do
+    resources :failed_jobs, only: [ :index, :show ] do
       scope module: :failed_jobs do
         resource :retry, only: :create
         resource :discard, only: :create
@@ -24,7 +22,7 @@ MissionControl::Jobs::Engine.routes.draw do
   end
 
   # Allow referencing resources urls without providing an application_id. It will default to the first one.
-  resources :queues, :failed_jobs
+  resources :queues, :failed_jobs, only: [ :index, :show ]
 
   root to: "queues#index"
 end

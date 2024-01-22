@@ -1,13 +1,13 @@
-class MissionControl::Jobs::Queues::StatusController < MissionControl::Jobs::ApplicationController
+class MissionControl::Jobs::Queues::PausesController < MissionControl::Jobs::ApplicationController
   include MissionControl::Jobs::QueueScoped
 
-  def pause
+  def create
     @queue.pause
 
     redirect_back fallback_location: application_queues_url(@application)
   end
 
-  def resume
+  def destroy
     @queue.resume
 
     redirect_back fallback_location: application_queues_url(@application)
