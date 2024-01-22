@@ -145,7 +145,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         delegate :queue_name, :status, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
         def executions
-          execution_class_by_status.includes(:job).order(:job_id)
+          execution_class_by_status.includes(job: :failed_execution).order(:job_id)
             .then { |executions| filter_by_queue(executions) }
             .then { |executions| filter_by_class(executions) }
             .then { |executions| limit(executions) }
