@@ -72,8 +72,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_solid_queue_job!(job.job_id, jobs_relation).discard
   end
 
-  def find_job(job_id, jobs_relation)
-    if job = find_solid_queue_job(job_id, jobs_relation)
+  def find_job(job_id, *)
+    if job = SolidQueue::Job.find_by(active_job_id: job_id)
       deserialize_and_proxy_job job
     end
   end
