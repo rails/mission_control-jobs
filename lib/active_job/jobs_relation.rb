@@ -22,7 +22,7 @@
 class ActiveJob::JobsRelation
   include Enumerable
 
-  STATUSES = %i[ pending failed ]
+  STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
 
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   attr_reader *PROPERTIES, :default_page_size

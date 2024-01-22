@@ -6,6 +6,8 @@ module ActiveJob::Executing
   included do
     attr_accessor :raw_data, :position
     attr_reader :serialized_arguments
+    attr_writer :status
+
     thread_cattr_accessor :current_queue_adapter
   end
 
@@ -23,12 +25,19 @@ module ActiveJob::Executing
     jobs_relation.discard_job(self)
   end
 
+  def status
+    return @status if @status.present?
+
+    failed? ? :failed : :pending
+  end
+
   private
     def jobs_relation
-      if failed?
-        ActiveJob.jobs.failed
+      case status
+      when :failed  then ActiveJob.jobs.failed
+      when :pending then ActiveJob.jobs.pending.where(queue: queue_name)
       else
-        ActiveJob.jobs.where(queue: queue_name)
+        ActiveJob.jobs
       end
     end
 end

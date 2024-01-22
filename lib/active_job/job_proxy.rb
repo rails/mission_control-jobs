@@ -7,7 +7,6 @@ class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 
   attr_reader :class_name
-  attr_writer :status
 
   def initialize(job_data)
     super
@@ -19,12 +18,6 @@ class ActiveJob::JobProxy < ActiveJob::Base
     super.tap do |json|
       json["job_class"] = @class_name
     end
-  end
-
-  def status
-    return @status if @status.present?
-
-    failed? ? :failed : :pending
   end
 
   def perform_now
