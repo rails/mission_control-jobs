@@ -157,7 +157,7 @@ class ActiveJob::JobsRelation
   #
   # Raises +ActiveJob::Errors::JobNotFoundError+ when not found.
   def find_by_id!(job_id)
-    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, self)
   end
 
   # Returns an array of jobs classes in the first +from_first+ jobs.

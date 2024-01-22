@@ -312,7 +312,7 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def handle_resque_job_error(job, error)
           if error.message =~/no such key/i
-            raise ActiveJob::Errors::JobNotFoundError.new(job)
+            raise ActiveJob::Errors::JobNotFoundError.new(job, jobs_relation)
           else
             raise error
           end

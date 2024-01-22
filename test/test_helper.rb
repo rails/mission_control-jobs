@@ -8,6 +8,8 @@ ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __d
 require "rails/test_help"
 require "mocha/minitest"
 
+require "debug"
+
 # Load fixtures from the engine
 if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActiveSupport::TestCase.fixture_paths = [ File.expand_path("fixtures", __dir__) ]
@@ -66,5 +68,16 @@ class ActiveSupport::TestCase
 
     def reset_configured_queues_for_job_classes
       ApplicationJob.descendants.including(ApplicationJob).each { |klass| klass.queue_as :default }
+    end
+end
+
+class ActionDispatch::IntegrationTest
+  setup do
+    @application = default_job_server.application
+  end
+
+  private
+    def queue_adapter_for_test
+      ActiveJob::QueueAdapters::SolidQueueAdapter.new
     end
 end

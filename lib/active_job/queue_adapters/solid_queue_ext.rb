@@ -84,7 +84,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def find_solid_queue_job!(job_id, jobs_relation)
-      find_solid_queue_job(job_id, jobs_relation) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+      find_solid_queue_job(job_id, jobs_relation) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, jobs_relation)
     end
 
     def find_solid_queue_job(job_id, jobs_relation)

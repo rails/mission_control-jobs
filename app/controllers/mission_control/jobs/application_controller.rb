@@ -1,11 +1,7 @@
 class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_controller_class.constantize
   layout "mission_control/jobs/application"
 
-  include MissionControl::Jobs::ApplicationScoped
-
-  rescue_from(ActiveJob::Errors::JobNotFoundError) do |error|
-    redirect_to root_path, alert: error.message
-  end
+  include MissionControl::Jobs::ApplicationScoped, MissionControl::Jobs::NotFoundRedirections
 
   private
     def default_url_options
