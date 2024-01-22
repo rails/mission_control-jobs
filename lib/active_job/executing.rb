@@ -1,5 +1,5 @@
-# TODO: These should be moved to +ActiveJob::Core+ and related concerns
-# when upstreamed.
+# TODO: These (or a version of them) should be moved to +ActiveJob::Core+
+# and related concerns when upstreamed.
 module ActiveJob::Executing
   extend ActiveSupport::Concern
 

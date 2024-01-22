@@ -1,4 +1,6 @@
 module ActiveJob::QueueAdapters::ResqueExt
+  include MissionControl::Jobs::Adapter
+
   def initialize(redis = Resque.redis)
     super()
     @redis = redis
@@ -12,13 +14,6 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.queues
   end
 
-  # Returns an array with the list of queues. Each queue is represented as a hash
-  # with these attributes:
-  #   {
-  #    name: "queue_name",
-  #    size: 1,
-  #    active: true
-  #   }
   def queues
     queues = queue_names
     active_statuses = []

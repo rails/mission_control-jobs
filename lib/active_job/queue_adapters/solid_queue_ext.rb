@@ -1,19 +1,10 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
-  def activating(&block)
-    block.call
-  end
+  include MissionControl::Jobs::Adapter
 
   def queue_names
     SolidQueue::Queue.all.map(&:name)
   end
 
-  # Returns an array with the list of queues. Each queue is represented as a hash
-  # with these attributes:
-  #   {
-  #    name: "queue_name",
-  #    size: 1,
-  #    active: true
-  #   }
   def queues
     SolidQueue::Queue.all.collect do |queue|
       {
