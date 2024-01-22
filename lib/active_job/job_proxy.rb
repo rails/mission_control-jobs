@@ -6,17 +6,17 @@
 class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 
-  attr_reader :class_name
+  attr_reader :job_class_name
 
   def initialize(job_data)
     super
-    @class_name = job_data["job_class"]
+    @job_class_name = job_data["job_class"]
     deserialize(job_data)
   end
 
   def serialize
     super.tap do |json|
-      json["job_class"] = @class_name
+      json["job_class"] = @job_class_name
     end
   end
 

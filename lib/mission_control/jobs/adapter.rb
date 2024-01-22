@@ -3,6 +3,24 @@ module MissionControl::Jobs::Adapter
     block.call
   end
 
+  def supported_statuses
+    # All adapters need to support these at a minimum
+    [ :pending, :failed ]
+  end
+
+  def supports_filter?(jobs_relation, filter)
+    supported_filters(jobs_relation).include?(filter)
+  end
+
+  # List of filters supported natively. Non-supported filters are done in memory.
+  def supported_filters(jobs_relation)
+    []
+  end
+
+  def support_queue_pausing?
+    true
+  end
+
   def queue_names
     raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `queue_names`")
   end
@@ -42,14 +60,6 @@ module MissionControl::Jobs::Adapter
     if support_queue_pausing?
       raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `queue_paused?`")
     end
-  end
-
-  def support_queue_pausing?
-    true
-  end
-
-  def support_class_name_filtering?
-    false
   end
 
   def jobs_count(jobs_relation)

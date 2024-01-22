@@ -1,6 +1,6 @@
 module MissionControl::Jobs::JobsHelper
   def job_title(job)
-    job.class_name
+    job.job_class_name
   end
 
   def job_arguments(job)

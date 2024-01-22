@@ -35,16 +35,16 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_queue_by_name(queue_name).paused?
   end
 
+  def supported_filters(*)
+    [ :queue_name, :job_class_name ]
+  end
+
   def jobs_count(jobs_relation)
     RelationAdapter.new(jobs_relation).count
   end
 
   def fetch_jobs(jobs_relation)
     find_solid_queue_jobs_within(jobs_relation).map { |job| deserialize_and_proxy_job(job) }
-  end
-
-  def support_class_name_filtering?
-    true
   end
 
   def retry_all_jobs(jobs_relation)

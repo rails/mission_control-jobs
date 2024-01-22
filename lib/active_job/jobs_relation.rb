@@ -23,6 +23,7 @@ class ActiveJob::JobsRelation
   include Enumerable
 
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
+  FILTERS = %i[ queue_name job_class_name ]
 
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
   attr_reader *PROPERTIES, :default_page_size
@@ -85,10 +86,10 @@ class ActiveJob::JobsRelation
 
   # Returns the number of jobs in the relation.
   #
-  # When filtering jobs by class name, if the adapter doesn't support
-  # it directly, this will imply loading all the jobs in memory.
+  # When filtering jobs, if the adapter doesn't support the filter(s)
+  # directly, this will load all the jobs in memory to filter them.
   def count
-    if loaded? || filtering_by_class_name_needed?
+    if loaded? || filtering_needed?
       to_a.length
     else
       query_count
@@ -162,12 +163,13 @@ class ActiveJob::JobsRelation
 
   # Returns an array of jobs classes in the first +from_first+ jobs.
   def job_classes(from_first: 500)
-    first(from_first).collect(&:class_name).uniq
+    first(from_first).collect(&:job_class_name).uniq
   end
 
   def reload
     @count = nil
     @loaded_jobs = nil
+    @filters = nil
 
     self
   end
@@ -191,6 +193,10 @@ class ActiveJob::JobsRelation
 
   def limit_value_provided?
     limit_value.present? && limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
+  end
+
+  def filtering_needed?
+    filters.any?
   end
 
   private
@@ -231,7 +237,7 @@ class ActiveJob::JobsRelation
         page = offset(current_offset).limit(limit)
         jobs = queue_adapter.fetch_jobs(page)
         finished = jobs.empty?
-        jobs = filter_by_class_name(jobs) if filtering_by_class_name_needed?
+        jobs = filter(jobs) if filtering_needed?
         Array(jobs).each { |job| yield job }
         current_offset += limit
         pending_count -= jobs.length
@@ -242,18 +248,17 @@ class ActiveJob::JobsRelation
       !@loaded_jobs.nil?
     end
 
-    def filter_by_class_name(jobs)
-      jobs.filter { |job| satisfy_class_name_filter?(job) }
+    # Filtering for not natively supported filters is performed in memory
+    def filter(jobs)
+      jobs.filter { |job| satisfy_filter?(job) }
     end
 
-    # If adapter does not support filtering by class name, it will perform
-    # the filtering in memory.
-    def filtering_by_class_name_needed?
-      job_class_name.present? && !queue_adapter.support_class_name_filtering?
+    def satisfy_filter?(job)
+      filters.all? { |property| public_send(property) == job.public_send(property) }
     end
 
-    def satisfy_class_name_filter?(job)
-      job.class_name == job_class_name
+    def filters
+      @filters ||= FILTERS.select { |property| public_send(property).present? && !queue_adapter.supports_filter?(self, property) }
     end
 
     def ensure_failed_status

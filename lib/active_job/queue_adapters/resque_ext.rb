@@ -51,16 +51,18 @@ module ActiveJob::QueueAdapters::ResqueExt
     ResquePauseHelper.paused?(queue_name)
   end
 
+  def supported_filters(jobs_relation)
+    if jobs_relation.pending? then [ :queue_name ]
+    else []
+    end
+  end
+
   def jobs_count(jobs_relation)
     resque_jobs_for(jobs_relation).count
   end
 
   def fetch_jobs(jobs_relation)
     resque_jobs_for(jobs_relation).all
-  end
-
-  def support_class_name_filtering?
-    false
   end
 
   def retry_all_jobs(jobs_relation)
@@ -156,7 +158,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         MAX_REDIS_TRANSACTION_SIZE = 100
 
         def targeting_all_jobs?
-          !paginated? && jobs_relation.job_class_name.blank?
+          !paginated? && !jobs_relation.filtering_needed?
         end
 
         def paginated?
