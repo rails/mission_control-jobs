@@ -95,7 +95,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     class ResqueJobs
       attr_reader :jobs_relation
 
-      delegate :default_page_size, to: :jobs_relation
+      delegate :default_page_size, :paginated?, :limit_value_provided?, to: :jobs_relation
 
       def initialize(jobs_relation, redis:)
         @jobs_relation = jobs_relation
@@ -159,14 +159,6 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def targeting_all_jobs?
           !paginated? && !jobs_relation.filtering_needed?
-        end
-
-        def paginated?
-          jobs_relation.offset_value > 0 || limit_value_provided?
-        end
-
-        def limit_value_provided?
-          jobs_relation.limit_value.present? && jobs_relation.limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
         end
 
         def fetch_resque_jobs
