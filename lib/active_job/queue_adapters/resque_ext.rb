@@ -15,8 +15,8 @@ module ActiveJob::QueueAdapters::ResqueExt
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:
   #   {
-  #    "name": "queue_name",
-  #    "size": 1,
+  #    name: "queue_name",
+  #    size: 1,
   #    active: true
   #   }
   def queues
@@ -211,13 +211,13 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def direct_jobs_count
-          case jobs_relation.status
+          case status
           when :pending
             pending_jobs_count
           when :failed
             failed_jobs_count
           else
-            raise ActiveJob::Errors::QueryError, "Status not supported: #{jobs_relation.status}"
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
           end
         end
 
@@ -233,6 +233,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def failed_jobs_count
           Resque.data_store.num_failed
+        end
+
+        def status
+          jobs_relation.status || :pending
         end
 
         def count_fetched_jobs

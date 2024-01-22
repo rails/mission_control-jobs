@@ -2,7 +2,7 @@ module MissionControl::Jobs::JobsScoped
   extend ActiveSupport::Concern
 
   included do
-    before_action :set_job, only: %i[ show ]
+    before_action :set_job, only: :show
   end
 
   private

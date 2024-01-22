@@ -6,6 +6,6 @@ class MissionControl::Jobs::Queues::JobsController < MissionControl::Jobs::Appli
 
   private
     def jobs_relation
-      @queue.jobs.pending
+      ApplicationJob.jobs.where(queue: @queue.name)
     end
 end

@@ -6,11 +6,9 @@ MissionControl::Jobs::Engine.routes.draw do
           put "pause", "resume", on: :member
         end
 
-        resources :jobs
+        resources :jobs, only: :show
       end
     end
-
-    resources :jobs, only: :show
 
     resources :failed_jobs do
       scope module: :failed_jobs do

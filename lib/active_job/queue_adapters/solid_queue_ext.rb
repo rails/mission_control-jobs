@@ -10,8 +10,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:
   #   {
-  #    "name": "queue_name",
-  #    "size": 1,
+  #    name: "queue_name",
+  #    size: 1,
   #    active: true
   #   }
   def queues

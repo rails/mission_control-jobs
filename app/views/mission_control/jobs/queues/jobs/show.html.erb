@@ -1,3 +1,3 @@
-<% navigation(title: "Pending jobs in #{@queue.name}", section: :queues) %>
+<% navigation(title: "Job #{@job.job_id}", section: navigation_section_for_job(@job)) %>
 
 <%= render "mission_control/jobs/jobs/job", job: @job %>
