@@ -1,16 +1,15 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
   include MissionControl::Jobs::Adapter
 
-  def queue_names
-    SolidQueue::Queue.all.map(&:name)
-  end
-
   def queues
-    SolidQueue::Queue.all.collect do |queue|
+    queues = SolidQueue::Queue.all
+    pauses = SolidQueue::Pause.where(queue_name: queues.map(&:name)).index_by(&:queue_name)
+
+    queues.collect do |queue|
       {
         name: queue.name,
         size: queue.size,
-        active: !queue.paused?
+        active: pauses[queue.name].nil?
       }
     end
   end

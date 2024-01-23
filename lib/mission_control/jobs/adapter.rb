@@ -21,10 +21,6 @@ module MissionControl::Jobs::Adapter
     true
   end
 
-  def queue_names
-    raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `queue_names`")
-  end
-
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:
   #   {

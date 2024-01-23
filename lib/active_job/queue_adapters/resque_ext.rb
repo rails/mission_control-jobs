@@ -10,10 +10,6 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.with_per_thread_redis_override(redis, &block)
   end
 
-  def queue_names
-    Resque.queues
-  end
-
   def queues
     queues = queue_names
     active_statuses = []
@@ -87,6 +83,10 @@ module ActiveJob::QueueAdapters::ResqueExt
 
   private
     attr_reader :redis
+
+    def queue_names
+      Resque.queues
+    end
 
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation, redis: redis)
