@@ -1,11 +1,11 @@
 <div class="buttons is-right level-right">
-  <% if @job_class_filter.present? %>
+  <% if @job_filters.any? %>
     <span class="mr-5">
       <%= jobs_count %> jobs selected
     </span>
   <% end %>
 
-  <% target = @job_class_filter.present? ? "selection" : "all" %>
+  <% target = @job_filters.any? ? "selection" : "all" %>
 
   <%= button_to "Discard #{target}", application_bulk_discards_path(@application, **jobs_filter_param),
     method: :post, disabled: jobs_count == 0, class: "button is-danger is-light",

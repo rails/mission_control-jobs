@@ -1,22 +1,35 @@
 <div class="filter level-left">
-  <div class="field has-addons">
+  <div class="field is-grouped">
     <div class="control">
       <%= form_for :filter, url: application_jobs_path(@application, :failed), method: :get,
         data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
+
         <div class="select is-rounded">
-          <%= form.text_field :job_class, value: @job_class_filter, class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
-          <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
+          <%= form.text_field :job_class, value: @job_filters[:job_class], class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
         </div>
+
+        <div class="select is-rounded">
+          <%= form.text_field :queue, value: @job_filters[:queue], class: "input", list: "queue-names", placeholder: "Filter by queue name..." %>
+        </div>
+
+        <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
 
         <datalist id="job-classes" style="display: none;">
           <% @job_classes.each do |job_class| %>
-            <option value="<%= job_class %>">
+            <option value="<%= job_class %>" />
           <% end %>
         </datalist>
-        </div>
-        <div class="control">
-          <%= link_to "Clear", application_jobs_path(@application, :failed, job_class: nil), class: "button" %>
-        </div>
+
+        <datalist id="queue-names" style="display: none;">
+          <% @queue_names.each do |queue_names| %>
+            <option value="<%= queue_names %>" />
+          <% end %>
+        </datalist>
       <% end %>
-      </div>
+    </div>
+
+    <div class="control">
+      <%= link_to "Clear", application_jobs_path(@application, :failed, job_class: nil, queue: nil), class: "button" %>
+    </div>
+  </div>
 </div>

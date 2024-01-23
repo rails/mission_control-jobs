@@ -1,19 +1,19 @@
-module MissionControl::Jobs::FailedJobFiltering
+module MissionControl::Jobs::JobFilters
   extend ActiveSupport::Concern
 
   MAX_NUMBER_OF_JOBS_FOR_BULK_OPERATIONS = 3000
 
   included do
-    before_action :set_job_class_filter
+    before_action :set_filters
   end
 
   private
-    def set_job_class_filter
-      @job_class_filter = params.dig(:filter, :job_class)
+    def set_filters
+      @job_filters = { job_class: params.dig(:filter, :job_class).presence, queue: params.dig(:filter, :queue).presence }.compact
     end
 
     def filtered_failed_jobs
-      ApplicationJob.jobs.failed.where(job_class: @job_class_filter)
+      ApplicationJob.jobs.failed.where(**@job_filters)
     end
 
     # We set a hard limit to prevent problems with the data store (for example, overloading Redis

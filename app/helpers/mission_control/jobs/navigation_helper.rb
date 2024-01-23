@@ -37,8 +37,8 @@ module MissionControl::Jobs::NavigationHelper
   end
 
   def jobs_filter_param
-    if @job_class_filter
-      { filter: { job_class: @job_class_filter } }
+    if @job_filters&.any?
+      { filter: @job_filters }
     else
       {}
     end
