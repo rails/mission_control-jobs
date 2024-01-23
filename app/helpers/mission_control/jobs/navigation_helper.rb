@@ -4,7 +4,7 @@ module MissionControl::Jobs::NavigationHelper
   def navigation_sections
     {
       queues: [ "Queues", application_queues_path(@application) ],
-      failed_jobs: [ "Failed jobs (#{failed_jobs_count})", application_failed_jobs_path(@application) ]
+      failed_jobs: [ "Failed jobs (#{failed_jobs_count})", application_jobs_path(@application, :failed) ]
     }
   end
 

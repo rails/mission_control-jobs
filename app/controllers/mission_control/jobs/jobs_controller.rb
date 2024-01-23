@@ -1,4 +1,4 @@
-class MissionControl::Jobs::FailedJobsController < MissionControl::Jobs::ApplicationController
+class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationController
   include MissionControl::Jobs::JobsScoped, MissionControl::Jobs::FailedJobFiltering
 
   def index

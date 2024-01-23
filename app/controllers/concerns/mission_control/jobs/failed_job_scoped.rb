@@ -7,6 +7,6 @@ module MissionControl::Jobs::FailedJobScoped
 
   private
     def set_job
-      @job = ActiveJob.jobs.failed.find_by_id!(params[:failed_job_id])
+      @job = ActiveJob.jobs.failed.find_by_id!(params[:job_id])
     end
 end

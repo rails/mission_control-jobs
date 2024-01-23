@@ -11,7 +11,7 @@ module MissionControl::Jobs::NotFoundRedirections
     def best_location_for_job_relation(job_relation)
       case
       when job_relation.failed?
-        application_failed_jobs_path(@application)
+        application_jobs_path(@application, :failed)
       when job_relation.queue_name.present?
         application_queue_path(@application, job_relation.queue_name)
       else

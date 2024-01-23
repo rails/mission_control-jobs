@@ -1,7 +1,7 @@
 <div class="filter level-left">
   <div class="field has-addons">
     <div class="control">
-      <%= form_for :filter, url: application_failed_jobs_path(@application), method: :get,
+      <%= form_for :filter, url: application_jobs_path(@application, :failed), method: :get,
         data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
         <div class="select is-rounded">
           <%= form.text_field :job_class, value: @job_class_filter, class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
@@ -15,7 +15,7 @@
         </datalist>
         </div>
         <div class="control">
-          <%= link_to "Clear", application_failed_jobs_path(@application, job_class: nil), class: "button" %>
+          <%= link_to "Clear", application_jobs_path(@application, :failed, job_class: nil), class: "button" %>
         </div>
       <% end %>
       </div>

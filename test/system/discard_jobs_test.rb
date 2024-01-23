@@ -6,7 +6,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
     5.times { |index| FailingReloadedJob.perform_later(5 + index) }
     perform_enqueued_jobs
 
-    visit failed_jobs_path
+    visit jobs_path(:failed)
   end
 
   test "discard all failed jobs" do
@@ -52,7 +52,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
   test "discard a job from its details screen" do
     assert_equal 10, job_row_elements.length
     failed_job = ApplicationJob.jobs.failed[2]
-    visit failed_job_path(failed_job.job_id)
+    visit job_path(failed_job.job_id)
 
     accept_confirm do
       click_on "Discard"

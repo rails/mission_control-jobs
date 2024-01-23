@@ -1,11 +1,11 @@
-class MissionControl::Jobs::FailedJobs::BulkDiscardsController < MissionControl::Jobs::ApplicationController
+class MissionControl::Jobs::BulkDiscardsController < MissionControl::Jobs::ApplicationController
   include MissionControl::Jobs::FailedJobFiltering
 
   def create
     jobs_to_discard_count = jobs_to_discard.count
     jobs_to_discard.discard_all
 
-    redirect_to application_failed_jobs_url(@application), notice: "Discarded #{jobs_to_discard_count} jobs"
+    redirect_to application_jobs_url(@application, :failed), notice: "Discarded #{jobs_to_discard_count} jobs"
   end
 
   private
