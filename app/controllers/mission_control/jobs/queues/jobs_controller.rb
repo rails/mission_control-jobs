@@ -1,5 +1,5 @@
 class MissionControl::Jobs::Queues::JobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::JobsScoped, MissionControl::Jobs::QueueScoped
+  include MissionControl::Jobs::JobScoped, MissionControl::Jobs::QueueScoped
 
   def show
   end

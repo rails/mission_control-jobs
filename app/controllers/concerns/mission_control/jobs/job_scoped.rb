@@ -1,4 +1,4 @@
-module MissionControl::Jobs::JobsScoped
+module MissionControl::Jobs::JobScoped
   extend ActiveSupport::Concern
 
   included do
