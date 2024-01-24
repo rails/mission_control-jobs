@@ -4,8 +4,8 @@
   <%= blank_status_notice "There are no #{jobs_status} jobs 😌" %>
 <% else %>
   <div class="level">
-    <%= render "mission_control/jobs/failed_jobs/filter", job_classes: @job_classes, queue_names: @queue_names %>
-    <%= render "mission_control/jobs/failed_jobs/toolbar", jobs_count: @jobs_count %>
+    <%= render "mission_control/jobs/jobs/filters", job_classes: @job_classes, queue_names: @queue_names %>
+    <%= render "mission_control/jobs/jobs/toolbar", jobs_count: @jobs_count %>
   </div>
 
   <table class="jobs failed table queues is-hoverable is-fullwidth">

@@ -1,0 +1,18 @@
+<div class="buttons is-right level-right">
+  <% if @job_filters.any? %>
+    <span class="mr-5">
+      <%= jobs_count %> jobs selected
+    </span>
+  <% end %>
+
+  <% if jobs_status.inquiry.failed? %>
+    <% target = @job_filters.any? ? "selection" : "all" %>
+
+    <%= button_to "Discard #{target}", application_bulk_discards_path(@application, **jobs_filter_param),
+      method: :post, disabled: jobs_count == 0, class: "button is-danger is-light",
+      form: { data: { turbo_confirm: "This will delete #{jobs_count} jobs and can't be undone. Are you sure?" } } %>
+    <%= button_to "Retry #{target}", application_bulk_retries_path(@application, **jobs_filter_param),
+      method: :post, disabled: jobs_count == 0,
+      class: "button is-warning is-light mr-0" %>
+  <% end %>
+</div>
