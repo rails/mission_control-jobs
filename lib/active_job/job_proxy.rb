@@ -23,8 +23,4 @@ class ActiveJob::JobProxy < ActiveJob::Base
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end
-
-  def to_partial_path
-    "jobs/job"
-  end
 end
