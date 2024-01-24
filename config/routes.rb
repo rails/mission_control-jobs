@@ -3,8 +3,6 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :queues, only: [ :index, :show ] do
       scope module: :queues do
         resource :pause, only: [ :create, :destroy ]
-
-        resources :jobs, only: :show
       end
     end
 
