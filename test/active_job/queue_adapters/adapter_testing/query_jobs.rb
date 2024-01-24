@@ -112,7 +112,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| WithPaginationDummyJob.perform_later(index) }
     4.times { |index| WithPaginationFailingJob.perform_later(index) }
 
-    jobs = ActiveJob::Base.jobs.pending.where(queue: :default, job_class: WithPaginationDummyJob).to_a
+    jobs = ActiveJob::Base.jobs.pending.where(queue_name: :default, job_class_name: WithPaginationDummyJob).to_a
     assert_equal 10, jobs.size
   end
 
@@ -122,8 +122,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     DummyJob.queue_as :queue_2
     5.times { DummyJob.perform_later }
 
-    assert_equal 3, ApplicationJob.jobs.pending.where(queue: "queue_1").to_a.length
-    assert_equal 5, ApplicationJob.jobs.pending.where(queue: "queue_2").to_a.length
+    assert_equal 3, ApplicationJob.jobs.pending.where(queue_name: "queue_1").to_a.length
+    assert_equal 5, ApplicationJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
 
   test "fetch job classes in the first jobs" do
@@ -132,6 +132,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     2.times { DummyJob.perform_later }
     15.times { DummyReloadedJob.perform_later }
 
-    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.pending.job_classes
+    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.pending.job_class_names
   end
 end

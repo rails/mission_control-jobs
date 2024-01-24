@@ -35,7 +35,7 @@ module ActiveJob::Executing
     def jobs_relation
       case status
       when :failed  then ActiveJob.jobs.failed
-      when :pending then ActiveJob.jobs.pending.where(queue: queue_name)
+      when :pending then ActiveJob.jobs.pending.where(queue_name: queue_name)
       else
         ActiveJob.jobs
       end

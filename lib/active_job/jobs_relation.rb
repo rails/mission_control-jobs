@@ -7,7 +7,7 @@
 # example:
 #
 #   queue = ActiveJob::Base.queues[:default]
-#   queue.jobs.limit(10).where(job_class: "DummyJob").last
+#   queue.jobs.limit(10).where(job_class_name: "DummyJob").last
 #
 # Relations are enumerable, so you can use +Enumerable+ methods on them.
 # Notice however that using these methods will imply loading all the relation
@@ -44,24 +44,15 @@ class ActiveJob::JobsRelation
   #
   # === Options
   #
-  # * <tt>:job_class</tt> - To only include the jobs of a given class.
+  # * <tt>:job_class_name</tt> - To only include the jobs of a given class.
   #   Depending on the configured queue adapter, this will perform the
   #   filtering in memory, which could introduce performance concerns
   #   for large sets of jobs.
-  # * <tt>:queue</tt> - To only include the jobs in the provided queue.
-  def where(job_class: nil, queue: nil)
+  # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
+  def where(job_class_name: nil, queue_name: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
-    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    arguments = { job_class_name: job_class_name, queue_name: queue_name }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
     clone_with **arguments
-  end
-
-  # This allows to unset a previous +job_class+ set in the relation.
-  def with_all_job_classes
-    if job_class_name.present?
-      clone_with job_class_name: nil
-    else
-      self
-    end
   end
 
   def with_status(status)
@@ -169,8 +160,8 @@ class ActiveJob::JobsRelation
     queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, self)
   end
 
-  # Returns an array of jobs classes in the first +from_first+ jobs.
-  def job_classes(from_first: 500)
+  # Returns an array of jobs class names in the first +from_first+ jobs.
+  def job_class_names(from_first: 500)
     first(from_first).collect(&:job_class_name).uniq
   end
 

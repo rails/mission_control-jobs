@@ -38,7 +38,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
   test "retry a selection of filtered jobs" do
     assert_equal 10, job_row_elements.length
 
-    fill_in "filter[job_class]", with: "FailingJob"
+    fill_in "filter[job_class_name]", with: "FailingJob"
     assert_text /5 jobs selected/i
 
     accept_confirm do

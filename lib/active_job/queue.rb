@@ -43,7 +43,7 @@ class ActiveJob::Queue
 
   # Return an +ActiveJob::JobsRelation+ with the pending jobs in the queue.
   def jobs
-    ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).pending.where(queue: name)
+    ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).pending.where(queue_name: name)
   end
 
   def reload

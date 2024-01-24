@@ -47,10 +47,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     10.times { FailingReloadedJob.perform_later }
     perform_enqueued_jobs
 
-    ActiveJob.jobs.failed.where(job_class: "FailingJob").discard_all
+    ActiveJob.jobs.failed.where(job_class_name: "FailingJob").discard_all
 
-    assert_empty ActiveJob.jobs.failed.where(job_class: "FailingJob")
-    assert_equal 10, ActiveJob.jobs.failed.where(job_class: "FailingReloadedJob").count
+    assert_empty ActiveJob.jobs.failed.where(job_class_name: "FailingJob")
+    assert_equal 10, ActiveJob.jobs.failed.where(job_class_name: "FailingReloadedJob").count
   end
 
   test "discard only failed of a given queue" do
@@ -61,10 +61,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     10.times { FailingReloadedJob.perform_later }
     perform_enqueued_jobs
 $debug = true
-    ActiveJob.jobs.failed.where(queue: :queue_1).discard_all
+    ActiveJob.jobs.failed.where(queue_name: :queue_1).discard_all
 
-    assert_empty ActiveJob.jobs.failed.where(job_class: "FailingJob")
-    assert_equal 10, ActiveJob.jobs.failed.where(job_class: "FailingReloadedJob").count
+    assert_empty ActiveJob.jobs.failed.where(job_class_name: "FailingJob")
+    assert_equal 10, ActiveJob.jobs.failed.where(job_class_name: "FailingReloadedJob").count
   end
 
   test "discard all pending withing a given page" do

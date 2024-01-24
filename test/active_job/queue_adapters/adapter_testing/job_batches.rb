@@ -34,7 +34,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::JobBatches
         perform_enqueued_jobs
 
         batches = []
-        ActiveJob.jobs.failed.where(job_class: "FailingJob").in_batches(of: batch_size, order: order) { |batch| batches << batch }
+        ActiveJob.jobs.failed.where(job_class_name: "FailingJob").in_batches(of: batch_size, order: order) { |batch| batches << batch }
 
         assert_equal expected_batches.length, batches.length
         batches.each { |batch| assert_instance_of ActiveJob::JobsRelation, batch }
