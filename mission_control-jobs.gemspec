@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "resque"
   spec.add_development_dependency "solid_queue"
-  spec.add_development_dependency "capybara"
   spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"
