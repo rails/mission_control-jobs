@@ -1,10 +1,10 @@
-<% navigation(title: "Failed jobs", section: :failed_jobs) %>
+<% navigation(title: "#{jobs_status.titleize} jobs", section: "#{jobs_status}_jobs".to_sym) %>
 
 <% if @jobs_page.empty? %>
-  <%= blank_status_notice "There are no failed jobs 😌" %>
+  <%= blank_status_notice "There are no #{jobs_status} jobs 😌" %>
 <% else %>
   <div class="level">
-    <%= render "mission_control/jobs/failed_jobs/filter" %>
+    <%= render "mission_control/jobs/failed_jobs/filter", job_classes: @job_classes, queue_names: @queue_names %>
     <%= render "mission_control/jobs/failed_jobs/toolbar", jobs_count: @jobs_count %>
   </div>
 

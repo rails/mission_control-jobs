@@ -2,9 +2,10 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
   include MissionControl::Jobs::JobScoped, MissionControl::Jobs::JobFilters
 
   def index
-    @job_classes = ApplicationJob.jobs.failed.job_classes
+    @job_classes = jobs_with_status.job_classes
     @queue_names = ApplicationJob.queues.map(&:name)
-    @jobs_page = MissionControl::Jobs::Page.new(filtered_failed_jobs, page: params[:page].to_i)
+
+    @jobs_page = MissionControl::Jobs::Page.new(filtered_jobs, page: params[:page].to_i)
     @jobs_count = @jobs_page.total_count
   end
 
@@ -13,6 +14,20 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
 
   private
     def jobs_relation
-      ApplicationJob.jobs.failed
+      ApplicationJob.jobs
+    end
+
+    def jobs_with_status
+      jobs_relation.with_status(jobs_status)
+    end
+
+    def filtered_jobs
+      jobs_with_status.where(**@job_filters)
+    end
+
+    helper_method :jobs_status
+
+    def jobs_status
+      params[:status].presence
     end
 end

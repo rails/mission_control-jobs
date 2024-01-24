@@ -162,7 +162,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def fetch_resque_jobs
-          if jobs_relation.failed?
+          if jobs_relation.failed? || jobs_relation.queue_name.blank?
             fetch_failed_resque_jobs
           else
             fetch_queue_resque_jobs
@@ -200,14 +200,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def direct_jobs_count
-          case status
-          when :pending
-            pending_jobs_count
-          when :failed
-            failed_jobs_count
-          else
-            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
-          end
+          jobs_relation.failed? ? failed_jobs_count : pending_jobs_count
         end
 
         def pending_jobs_count
@@ -222,10 +215,6 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def failed_jobs_count
           Resque.data_store.num_failed
-        end
-
-        def status
-          jobs_relation.status || :pending
         end
 
         def count_fetched_jobs
@@ -297,10 +286,6 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def jobs_by_id
           @jobs_by_id ||= all.index_by(&:job_id)
-        end
-
-        def all_ignoring_filters
-          @all_ignoring_filters ||= jobs_relation.with_all_job_classes.to_a
         end
 
         def handle_resque_job_error(job, error)

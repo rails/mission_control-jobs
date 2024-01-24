@@ -1,5 +1,5 @@
 class MissionControl::Jobs::BulkRetriesController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::JobFilters
+  include MissionControl::Jobs::FailedJobsBulkOperations
 
   def create
     jobs_to_retry_count = bulk_limited_filtered_failed_jobs.count

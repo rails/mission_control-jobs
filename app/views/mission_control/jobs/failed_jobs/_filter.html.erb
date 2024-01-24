@@ -15,13 +15,13 @@
         <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
 
         <datalist id="job-classes" style="display: none;">
-          <% @job_classes.each do |job_class| %>
+          <% job_classes.each do |job_class| %>
             <option value="<%= job_class %>" />
           <% end %>
         </datalist>
 
         <datalist id="queue-names" style="display: none;">
-          <% @queue_names.each do |queue_names| %>
+          <% queue_names.each do |queue_names| %>
             <option value="<%= queue_names %>" />
           <% end %>
         </datalist>

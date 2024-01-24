@@ -64,9 +64,17 @@ class ActiveJob::JobsRelation
     end
   end
 
+  def with_status(status)
+    if status.to_sym.in? STATUSES
+      clone_with status: status.to_sym
+    else
+      self
+    end
+  end
+
   STATUSES.each do |status|
     define_method status do
-      clone_with status: status
+      with_status(status)
     end
 
     define_method "#{status}?" do

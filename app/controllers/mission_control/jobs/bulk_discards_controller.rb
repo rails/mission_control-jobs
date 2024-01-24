@@ -1,5 +1,5 @@
 class MissionControl::Jobs::BulkDiscardsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::JobFilters
+  include MissionControl::Jobs::FailedJobsBulkOperations
 
   def create
     jobs_to_discard_count = jobs_to_discard.count
