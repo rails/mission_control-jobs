@@ -34,6 +34,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_queue_by_name(queue_name).paused?
   end
 
+  def supported_statuses
+    RelationAdapter::STATUS_MAP.keys
+  end
+
   def supported_filters(*)
     [ :queue_name, :job_class_name ]
   end
@@ -103,16 +107,25 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     class RelationAdapter
+      STATUS_MAP = {
+        pending: :ready,
+        failed: :failed,
+        in_progress: :claimed,
+        blocked: :blocked,
+        scheduled: :scheduled,
+        finished: :finished
+      }
+
       def initialize(jobs_relation)
         @jobs_relation = jobs_relation
       end
 
       def jobs
-        executions.map(&:job)
+        status.finished? ? finished_jobs : executions.order(:job_id).map(&:job)
       end
 
       def count
-        executions.count
+        status.finished? ? finished_jobs.count : executions.count
       end
 
       def find_job(active_job_id)
@@ -132,61 +145,76 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       private
         attr_reader :jobs_relation
 
-        delegate :queue_name, :status, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
+        delegate :queue_name, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
         def executions
-          execution_class_by_status.includes(job: :failed_execution).order(:job_id)
-            .then { |executions| filter_by_queue(executions) }
-            .then { |executions| filter_by_class(executions) }
+          execution_class_by_status.includes(:job)
+            .then { |executions| filter_executions_by_queue(executions) }
+            .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
 
+        def finished_jobs
+          SolidQueue::Job.finished
+            .then { |jobs| filter_jobs_by_queue(jobs) }
+            .then { |jobs| filter_jobs_by_class(jobs) }
+            .then { |jobs| limit(jobs) }
+            .then { |jobs| offset(jobs) }
+        end
+
         def matches_relation_filters?(job)
-          matches_status?(job) && matches_queue?(job)
+          matches_status?(job) && matches_queue_name?(job)
         end
 
         def execution_class_by_status
-          case status
-          when :pending then SolidQueue::ReadyExecution
-          when :failed  then SolidQueue::FailedExecution
+          if status.present? && !status.finished?
+            "SolidQueue::#{status.capitalize}Execution".safe_constantize
           else
             raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
           end
         end
 
-        def filter_by_queue(executions)
+        def filter_executions_by_queue(executions)
           return executions unless queue_name.present?
 
-          if jobs_relation.failed?
-            executions.where(job: { queue_name: queue_name })
-          else
+          if status.ready?
             executions.where(queue_name: queue_name)
+          else
+            executions.where(job: { queue_name: queue_name })
           end
         end
 
-        def filter_by_class(executions)
+        def filter_jobs_by_queue(jobs)
+          queue_name.present? ? jobs.where(queue_name: queue_name) : jobs
+        end
+
+        def filter_executions_by_class(executions)
           job_class_name.present? ? executions.where(job: { class_name: job_class_name }) : executions
         end
 
-        def limit(executions)
-          limit_value.present? ? executions.limit(limit_value) : executions
+        def filter_jobs_by_class(jobs)
+          job_class_name.present? ? jobs.where(class_name: job_class_name) : jobs
         end
 
-        def offset(executions)
-          offset_value.present? ? executions.offset(offset_value) : executions
+        def limit(executions_or_jobs)
+          limit_value.present? ? executions_or_jobs.limit(limit_value) : executions_or_jobs
+        end
+
+        def offset(executions_or_jobs)
+          offset_value.present? ? executions_or_jobs.offset(offset_value) : executions_or_jobs
         end
 
         def matches_status?(job)
-          case status
-          when :pending then job.ready?
-          when :failed  then job.failed?
-          else          true
-          end
+          status.blank? || job.public_send("#{status}?")
         end
 
-        def matches_queue?(job)
-          queue_name.present? ? job.queue_name == queue_name : true
+        def matches_queue_name?(job)
+          queue_name.blank? || job.queue_name == queue_name
+        end
+
+        def status
+          STATUS_MAP[jobs_relation.status].to_s.inquiry
         end
     end
 end

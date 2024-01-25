@@ -2,6 +2,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
   layout "mission_control/jobs/application"
 
   include MissionControl::Jobs::ApplicationScoped, MissionControl::Jobs::NotFoundRedirections
+  include MissionControl::Jobs::AdapterFeatures
 
   private
     def default_url_options
