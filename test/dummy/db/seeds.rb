@@ -9,17 +9,19 @@ def clean_database
 end
 
 class JobsLoader
-  attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count
+  attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count, :finished_jobs_count
 
   def initialize(application, server, failed_jobs_count: 100, regular_jobs_count: 50)
     @application = application
     @server = server
     @failed_jobs_count = randomize(failed_jobs_count)
     @regular_jobs_count = randomize(regular_jobs_count)
+    @finished_jobs_count = randomize(regular_jobs_count)
   end
 
   def load
     server.activating do
+      load_finished_jobs
       load_failed_jobs
       load_regular_jobs
     end
@@ -46,8 +48,16 @@ class JobsLoader
       end
     end
 
+    def load_finished_jobs
+      puts "Generating #{finished_jobs_count} finished jobs for #{application} - #{server}..."
+      regular_jobs_count.times do |index|
+        enqueue_one_of DummyJob => index, DummyReloadedJob => index
+      end
+      dispatch_jobs
+    end
+
     def load_regular_jobs
-      puts "Generating #{regular_jobs_count} regular jobs..."
+      puts "Generating #{regular_jobs_count} regular jobs for #{application} - #{server}..."
       regular_jobs_count.times do |index|
         enqueue_one_of DummyJob => index, DummyReloadedJob => index
       end

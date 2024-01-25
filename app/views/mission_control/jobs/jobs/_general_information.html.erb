@@ -34,5 +34,13 @@
       </td>
     </tr>
   <% end %>
+  <% if job.finished_at.present? %>
+    <tr>
+      <th>Finished at</th>
+      <td>
+        <%= time_ago_in_words_with_title(job.finished_at) %> ago
+      </td>
+    </tr>
+  <% end %>
   </tbody>
 </table>

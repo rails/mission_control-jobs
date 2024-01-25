@@ -2,10 +2,19 @@ module MissionControl::Jobs::NavigationHelper
   attr_reader :page_title, :current_section
 
   def navigation_sections
-    {
-      queues: [ "Queues", application_queues_path(@application) ],
-      failed_jobs: [ "Failed jobs (#{failed_jobs_count})", application_jobs_path(@application, :failed) ]
-    }
+    { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
+      supported_job_statuses.without(:pending).each do |status|
+        sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
+      end
+    end
+  end
+
+  def navigation_section_for_status(status)
+    if status.nil? || status == :pending
+      :queues
+    else
+      "#{status}_jobs".to_sym
+    end
   end
 
   def navigation(title: nil, section: nil)
@@ -15,13 +24,6 @@ module MissionControl::Jobs::NavigationHelper
 
   def page_title
     @page_title
-  end
-
-  def navigation_section_for_job(job)
-    case job.status
-    when :failed then :failed_jobs
-    else :queues
-    end
   end
 
   def selected_application?(application)
@@ -42,5 +44,9 @@ module MissionControl::Jobs::NavigationHelper
     else
       {}
     end
+  end
+
+  def jobs_count_with_status(status)
+    ApplicationJob.jobs.with_status(status).count
   end
 end

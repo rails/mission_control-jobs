@@ -7,6 +7,6 @@ module MissionControl::Jobs::AdapterFeatures
 
   private
     def supported_job_statuses
-      MissionControl::Jobs::Current.server.queue_adapter.supported_statuses
+      MissionControl::Jobs::Current.server.queue_adapter.supported_statuses & ActiveJob::JobsRelation::STATUSES
     end
 end

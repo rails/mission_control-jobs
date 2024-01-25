@@ -94,6 +94,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.last_execution_error = execution_error_from_job(solid_queue_job)
         job.raw_data = solid_queue_job.as_json
         job.failed_at = solid_queue_job.failed_execution&.created_at
+        job.finished_at = solid_queue_job.finished_at
       end
     end
 

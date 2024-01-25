@@ -4,7 +4,7 @@ module ActiveJob::Executing
   extend ActiveSupport::Concern
 
   included do
-    attr_accessor :raw_data, :position
+    attr_accessor :raw_data, :position, :finished_at
     attr_reader :serialized_arguments
     attr_writer :status
 
@@ -22,7 +22,7 @@ module ActiveJob::Executing
   end
 
   def discard
-    jobs_relation.discard_job(self)
+    jobs_relation_for_discarding.discard_job(self)
   end
 
   def status
@@ -32,7 +32,7 @@ module ActiveJob::Executing
   end
 
   private
-    def jobs_relation
+    def jobs_relation_for_discarding
       case status
       when :failed  then ActiveJob.jobs.failed
       when :pending then ActiveJob.jobs.pending.where(queue_name: queue_name)
