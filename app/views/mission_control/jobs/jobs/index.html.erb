@@ -1,6 +1,6 @@
 <% navigation(title: "#{jobs_status.titleize} jobs", section: "#{jobs_status}_jobs".to_sym) %>
 
-<% if @jobs_page.empty? %>
+<% if @jobs_page.empty? && !active_filters? %>
   <%= blank_status_notice "There are no #{jobs_status.dasherize} jobs #{blank_status_emoji(jobs_status)}" %>
 <% else %>
   <div class="level">
@@ -8,8 +8,13 @@
     <%= render "mission_control/jobs/jobs/toolbar", jobs_count: @jobs_count %>
   </div>
 
-  <%= render "mission_control/jobs/#{jobs_status}_jobs/jobs", jobs_page: @jobs_page %>
+  <% if @jobs_page.empty? %>
+    <%= blank_status_notice "No #{jobs_status.dasherize} jobs found with the given filters" %>
 
-  <%= render "mission_control/jobs/shared/pagination_toolbar", jobs_page: @jobs_page %>
+  <% else %>
+    <%= render "mission_control/jobs/#{jobs_status}_jobs/jobs", jobs_page: @jobs_page %>
+
+    <%= render "mission_control/jobs/shared/pagination_toolbar", jobs_page: @jobs_page %>
+  <% end %>
 <% end %>
 
