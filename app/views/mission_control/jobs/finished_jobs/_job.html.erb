@@ -1,0 +1,21 @@
+<tr class="job">
+  <td>
+    <%= link_to application_job_path(@application, job.job_id) do %>
+      <%= job_title(job) %>
+    <% end %>
+
+    <% if job.serialized_arguments.present? %>
+      <div class="is-family-monospace">
+        <%= job_arguments(job) %>
+      </div>
+    <% end %>
+  </td>
+
+  <td>
+    <div class="has-text-grey"><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></div>
+  </td>
+
+  <td>
+    <div class="has-text-grey"><%= time_ago_in_words_with_title(job.finished_at) %> ago</div>
+  </td>
+</tr>

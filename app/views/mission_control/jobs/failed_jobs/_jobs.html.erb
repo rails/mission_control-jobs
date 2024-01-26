@@ -1,0 +1,14 @@
+<table class="jobs failed table queues is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th style="width: 35%;">Job</th>
+    <th style="width: 40%;">Error</th>
+    <th></th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/failed_jobs/job", collection: jobs_page.jobs %>
+
+  </tbody>
+</table>

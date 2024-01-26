@@ -1,0 +1,14 @@
+<table class="jobs finished table queues is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th style="width: 40%;">Job</th>
+    <th style="width: 30%;">Queue</th>
+    <th style="width: 20%;">Finished at</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/finished_jobs/job", collection: jobs_page.jobs %>
+
+  </tbody>
+</table>
