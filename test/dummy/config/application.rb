@@ -3,11 +3,13 @@ require_relative "boot"
 require "rails/all"
 require "resque"
 
+require "solid_queue"
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 require "mission_control/jobs"
-require "solid_queue"
+
 
 module Dummy
   class Application < Rails::Application
@@ -23,5 +25,8 @@ module Dummy
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Mission Control supported adapters
+    config.mission_control.jobs.adapters = [ :resque, :solid_queue ]
   end
 end

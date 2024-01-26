@@ -3,7 +3,7 @@
 class MissionControl::Jobs::IdentifiedElements
   include Enumerable
 
-  delegate :[], to: :elements
+  delegate :[], :empty?, to: :elements
   delegate :each, :last, :length, to: :to_a
 
   def initialize

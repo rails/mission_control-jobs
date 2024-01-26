@@ -19,6 +19,10 @@ module MissionControl
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
         end
+
+        if config.active_job.queue_adapter.present? && MissionControl::Jobs.adapters.empty?
+          MissionControl::Jobs.adapters << config.active_job.queue_adapter
+        end
       end
 
       initializer "mission_control-jobs.active_job.extensions" do
@@ -31,18 +35,30 @@ module MissionControl
       end
 
       config.before_initialize do
-        ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
-        ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
+        if MissionControl::Jobs.adapters.include?(:resque)
+          ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
+          Resque.prepend Resque::ThreadSafeRedis
+        end
 
-        Resque.prepend Resque::ThreadSafeRedis
+        if MissionControl::Jobs.adapters.include?(:solid_queue)
+          ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
+        end
       end
 
-      config.after_initialize do
-        unless Rails.application.config.eager_load
+      config.after_initialize do |app|
+        unless app.config.eager_load
           # When loading classes lazily (development), we want to make sure
           # the base host +ApplicationController+ class is loaded when loading the
           # Engine's +ApplicationController+, or it will fail to load the class.
           MissionControl::Jobs.base_controller_class.constantize
+        end
+
+        if MissionControl::Jobs.applications.empty?
+          queue_adapters_by_name = MissionControl::Jobs.adapters.each_with_object({}) do |adapter, hsh|
+            hsh[adapter] = ActiveJob::QueueAdapters.lookup(adapter).new
+          end
+
+          MissionControl::Jobs.applications.add(app.class.module_parent.name, queue_adapters_by_name)
         end
       end
 
