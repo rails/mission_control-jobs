@@ -47,6 +47,6 @@ module MissionControl::Jobs::NavigationHelper
   end
 
   def jobs_count_with_status(status)
-    ApplicationJob.jobs.with_status(status).count
+    number_to_human ApplicationJob.jobs.with_status(status).count
   end
 end

@@ -2,9 +2,7 @@
   <div class="level">
     <div class="level-left">
       <%= job_title(job) %>
-      <% if job.failed? %>
-        <div class="tag is-danger ml-4">failed</div>
-      <% end %>
+      <div class="<%= modifier_for_status(job.status) %> tag ml-4"><%= job.status %></div>
     </div>
     <div class="level-right">
       <% if job.failed? %>

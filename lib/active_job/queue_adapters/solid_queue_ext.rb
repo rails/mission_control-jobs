@@ -90,7 +90,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def deserialize_and_proxy_solid_queue_job(solid_queue_job, job_status = nil)
-      job_status ||= solid_queue_job.status
+      job_status ||= status_from_solid_queue_job(solid_queue_job)
 
       ActiveJob::JobProxy.new(solid_queue_job.arguments).tap do |job|
         job.last_execution_error = execution_error_from_solid_queue_job(solid_queue_job) if job_status == :failed
@@ -102,12 +102,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def execution_error_from_solid_queue_job(solid_queue_job)
-      if solid_queue_job.failed?
-        ActiveJob::ExecutionError.new \
-          error_class: solid_queue_job.failed_execution.exception_class,
-          message: solid_queue_job.failed_execution.message,
-          backtrace: solid_queue_job.failed_execution.backtrace
-      end
+      ActiveJob::ExecutionError.new \
+        error_class: solid_queue_job.failed_execution.exception_class,
+        message: solid_queue_job.failed_execution.message,
+        backtrace: solid_queue_job.failed_execution.backtrace
+    end
+
+    def status_from_solid_queue_job(solid_queue_job)
+      RelationAdapter::STATUS_MAP.invert[solid_queue_job.status]
     end
 
     class RelationAdapter
@@ -125,11 +127,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def jobs
-        status.finished? ? finished_jobs : executions.order(:job_id).map(&:job)
+        solid_queue_status.finished? ? finished_jobs : executions.order(:job_id).map(&:job)
       end
 
       def count
-        status.finished? ? finished_jobs.count : executions.count
+        solid_queue_status.finished? ? finished_jobs.count : executions.count
       end
 
       def find_job(active_job_id)
@@ -172,17 +174,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def execution_class_by_status
-          if status.present? && !status.finished?
-            "SolidQueue::#{status.capitalize}Execution".safe_constantize
+          if solid_queue_status.present? && !solid_queue_status.finished?
+            "SolidQueue::#{solid_queue_status.capitalize}Execution".safe_constantize
           else
-            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{solid_queue_status}"
           end
         end
 
         def filter_executions_by_queue(executions)
           return executions unless queue_name.present?
 
-          if status.ready?
+          if solid_queue_status.ready?
             executions.where(queue_name: queue_name)
           else
             executions.where(job: { queue_name: queue_name })
@@ -210,14 +212,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def matches_status?(job)
-          status.blank? || job.public_send("#{status}?")
+          solid_queue_status.blank? || job.public_send("#{solid_queue_status}?")
         end
 
         def matches_queue_name?(job)
           queue_name.blank? || job.queue_name == queue_name
         end
 
-        def status
+        def solid_queue_status
           STATUS_MAP[jobs_relation.status].to_s.inquiry
         end
     end

@@ -9,4 +9,15 @@ module MissionControl::Jobs::UiHelper
     else ""
     end
   end
+
+  def modifier_for_status(status)
+    case status.to_s
+    when "failed"      then "is-danger"
+    when "blocked"     then "is-warning"
+    when "finished"    then "is-success"
+    when "scheduled"   then "is-info"
+    when "in_progress" then "is-primary"
+    else ""
+    end
+  end
 end
