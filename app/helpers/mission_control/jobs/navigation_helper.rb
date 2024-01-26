@@ -22,10 +22,6 @@ module MissionControl::Jobs::NavigationHelper
     @current_section = section
   end
 
-  def page_title
-    @page_title
-  end
-
   def selected_application?(application)
     MissionControl::Jobs::Current.application.name == application.name
   end

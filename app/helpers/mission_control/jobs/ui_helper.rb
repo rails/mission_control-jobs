@@ -17,7 +17,7 @@ module MissionControl::Jobs::UiHelper
     when "finished"    then "is-success"
     when "scheduled"   then "is-info"
     when "in_progress" then "is-primary"
-    else ""
+    else "is-primary is-light"
     end
   end
 end

@@ -1,7 +1,7 @@
 <div class="filter level-left">
   <div class="field is-grouped">
     <div class="control">
-      <%= form_for :filter, url: application_jobs_path(@application, :failed), method: :get,
+      <%= form_for :filter, url: application_jobs_path(MissionControl::Jobs::Current.application, jobs_status), method: :get,
         data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
 
         <div class="select is-rounded">
@@ -29,7 +29,7 @@
     </div>
 
     <div class="control">
-      <%= link_to "Clear", application_jobs_path(@application, :failed, job_class_name: nil, queue_name: nil), class: "button" %>
+      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil), class: "button" %>
     </div>
   </div>
 </div>
