@@ -5,11 +5,11 @@
     <th style="width: 30%;">Job</th>
     <th></th>
     <th>Queue</th>
-    <th>Finished at</th>
+    <th>Scheduled</th>
   </tr>
   </thead>
 
-  <%= render partial: "mission_control/jobs/finished_jobs/job", collection: jobs_page.jobs %>
+  <%= render partial: "mission_control/jobs/scheduled_jobs/job", collection: jobs_page.jobs %>
 
   </tbody>
 </table>

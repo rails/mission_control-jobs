@@ -1,0 +1,16 @@
+<table class="jobs blocked table queues is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th style="width: 30%;">Job</th>
+    <th></th>
+    <th>Queue</th>
+    <th>Blocked by</th>
+    <th>Block expires</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/blocked_jobs/job", collection: jobs_page.jobs %>
+
+  </tbody>
+</table>

@@ -93,11 +93,15 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       job_status ||= status_from_solid_queue_job(solid_queue_job)
 
       ActiveJob::JobProxy.new(solid_queue_job.arguments).tap do |job|
+        job.status = job_status
         job.last_execution_error = execution_error_from_solid_queue_job(solid_queue_job) if job_status == :failed
         job.raw_data = solid_queue_job.as_json
         job.failed_at = solid_queue_job.failed_execution.created_at if job_status == :failed
         job.finished_at = solid_queue_job.finished_at
-        job.status = job_status
+        job.blocked_by = solid_queue_job.concurrency_key
+        job.blocked_until = solid_queue_job.blocked_execution.expires_at if job_status == :blocked
+        job.process_id = solid_queue_job.claimed_execution.process_id if job_status == :in_progress
+        job.started_at = solid_queue_job.claimed_execution.created_at if job_status == :in_progress
       end
     end
 
@@ -154,7 +158,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         delegate :queue_name, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
         def executions
-          execution_class_by_status.includes(:job)
+          execution_class_by_status.includes(job: "#{solid_queue_status}_execution")
             .then { |executions| filter_executions_by_queue(executions) }
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| limit(executions) }

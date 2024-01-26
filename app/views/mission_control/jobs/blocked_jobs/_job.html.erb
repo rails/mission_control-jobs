@@ -20,6 +20,8 @@
   </td>
 
   <td>
-    <div class="has-text-grey"><%= time_ago_in_words_with_title(job.finished_at) %> ago</div>
+    <div class="is-family-monospace"><%= job.blocked_by %></div>
   </td>
+
+  <td><%= bidirectional_time_distance_in_words_with_title(job.blocked_until) %></td>
 </tr>

@@ -19,7 +19,5 @@
     <div class="has-text-grey"><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></div>
   </td>
 
-  <td>
-    <div class="has-text-grey"><%= time_ago_in_words_with_title(job.finished_at) %> ago</div>
-  </td>
+  <td><%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %></td>
 </tr>
