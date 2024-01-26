@@ -187,6 +187,7 @@ module ActiveJob::QueueAdapters::ResqueExt
             job.raw_data = resque_job_hash
             job.position = jobs_relation.offset_value + index
             job.failed_at = resque_job_hash["failed_at"]&.to_datetime
+            job.status = job.failed_at.present? ? :failed : :pending
           end
         end
 

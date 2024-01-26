@@ -47,7 +47,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def fetch_jobs(jobs_relation)
-    find_solid_queue_jobs_within(jobs_relation).map { |job| deserialize_and_proxy_job(job) }
+    find_solid_queue_jobs_within(jobs_relation).map { |job| deserialize_and_proxy_solid_queue_job(job, jobs_relation.status) }
   end
 
   def retry_all_jobs(jobs_relation)
@@ -68,7 +68,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
   def find_job(job_id, *)
     if job = SolidQueue::Job.find_by(active_job_id: job_id)
-      deserialize_and_proxy_job job
+      deserialize_and_proxy_solid_queue_job job
     end
   end
 
@@ -89,16 +89,19 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       RelationAdapter.new(jobs_relation).jobs
     end
 
-    def deserialize_and_proxy_job(solid_queue_job)
+    def deserialize_and_proxy_solid_queue_job(solid_queue_job, job_status = nil)
+      job_status ||= solid_queue_job.status
+
       ActiveJob::JobProxy.new(solid_queue_job.arguments).tap do |job|
-        job.last_execution_error = execution_error_from_job(solid_queue_job)
+        job.last_execution_error = execution_error_from_solid_queue_job(solid_queue_job) if job_status == :failed
         job.raw_data = solid_queue_job.as_json
-        job.failed_at = solid_queue_job.failed_execution&.created_at
+        job.failed_at = solid_queue_job.failed_execution.created_at if job_status == :failed
         job.finished_at = solid_queue_job.finished_at
+        job.status = job_status
       end
     end
 
-    def execution_error_from_job(solid_queue_job)
+    def execution_error_from_solid_queue_job(solid_queue_job)
       if solid_queue_job.failed?
         ActiveJob::ExecutionError.new \
           error_class: solid_queue_job.failed_execution.exception_class,
