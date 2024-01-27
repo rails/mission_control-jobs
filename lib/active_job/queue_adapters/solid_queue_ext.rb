@@ -135,7 +135,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def count
-        solid_queue_status.finished? ? finished_jobs.count : executions.count
+        limit_value_provided? ? direct_count : internally_limited_count
       end
 
       def find_job(active_job_id)
@@ -155,7 +155,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       private
         attr_reader :jobs_relation
 
-        delegate :queue_name, :limit_value, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
+        delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
 
         def executions
           execution_class_by_status.includes(job: "#{solid_queue_status}_execution")
@@ -175,6 +175,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def matches_relation_filters?(job)
           matches_status?(job) && matches_queue_name?(job)
+        end
+
+        def direct_count
+          solid_queue_status.finished? ? finished_jobs.count : executions.count
+        end
+
+        INTERNAL_COUNT_LIMIT = 500_000 # Hard limit to keep unlimited count queries fast enough
+
+        def internally_limited_count
+          limited_count = solid_queue_status.finished? ? finished_jobs.limit(INTERNAL_COUNT_LIMIT + 1).count : executions.limit(INTERNAL_COUNT_LIMIT + 1).count
+          (limited_count == INTERNAL_COUNT_LIMIT + 1) ? Float::INFINITY : limited_count
         end
 
         def execution_class_by_status

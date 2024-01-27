@@ -4,7 +4,7 @@ module MissionControl::Jobs::NavigationHelper
   def navigation_sections
     { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
       supported_job_statuses.without(:pending).each do |status|
-        sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
+         sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
       end
     end
   end
@@ -43,6 +43,7 @@ module MissionControl::Jobs::NavigationHelper
   end
 
   def jobs_count_with_status(status)
-    number_to_human ApplicationJob.jobs.with_status(status).count
+    count = ApplicationJob.jobs.with_status(status).count
+    count.infinite? ? "..." : number_to_human(count)
   end
 end
