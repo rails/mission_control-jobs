@@ -1,0 +1,2 @@
+<td><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></td>
+<td><%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %></td>

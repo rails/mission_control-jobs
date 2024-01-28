@@ -1,0 +1,15 @@
+<table class="jobs <%= jobs_status %> table queues is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th style="width: 35%;">Job</th>
+    <% attribute_names_for_job_status(jobs_status).each do |attribute| %>
+      <th><%= attribute %></th>
+    <% end %>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/jobs/job", collection: jobs_page.jobs %>
+
+  </tbody>
+</table>

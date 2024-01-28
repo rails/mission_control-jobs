@@ -40,7 +40,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[job_class_name]", with: "FailingReloadedJob"
-    assert_text /3 jobs selected/i
+    assert_text /3 jobs found/i
 
     accept_confirm do
       click_on "Discard selection"
@@ -54,7 +54,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[queue_name]", with: "queue_2"
-    assert_text /5 jobs selected/i
+    assert_text /5 jobs found/i
 
     accept_confirm do
       click_on "Discard selection"

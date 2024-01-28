@@ -15,6 +15,17 @@ module MissionControl::Jobs::JobsHelper
     job.last_execution_error.backtrace.join("\n")
   end
 
+  def attribute_names_for_job_status(status)
+    case status.to_s
+    when "failed"      then [ "Error", "" ]
+    when "blocked"     then [ "Queue", "Blocked by", "Block expires" ]
+    when "finished"    then [ "Queue", "Finished" ]
+    when "scheduled"   then [ "Queue", "Scheduled" ]
+    when "in_progress" then [ "Queue", "Process", "Running for" ]
+    else               []
+    end
+  end
+
   private
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|

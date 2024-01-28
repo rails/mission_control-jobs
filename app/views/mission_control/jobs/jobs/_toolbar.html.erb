@@ -5,7 +5,7 @@
     </span>
   <% end %>
 
-  <% if jobs_status.inquiry.failed? %>
+  <% if jobs_status.failed? %>
     <% target = active_filters? ? "selection" : "all" %>
 
     <%= button_to "Discard #{target}", application_bulk_discards_path(@application, **jobs_filter_param),

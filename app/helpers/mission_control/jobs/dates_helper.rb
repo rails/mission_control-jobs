@@ -3,11 +3,15 @@ module MissionControl::Jobs::DatesHelper
     tag.span time_ago_in_words(time), title: time.to_fs(:long)
   end
 
+  def time_distance_in_words_with_title(time)
+    tag.span distance_of_time_in_words_to_now(time, include_seconds: true), title: "Since #{time.to_fs(:long)}"
+  end
+
   def bidirectional_time_distance_in_words_with_title(time)
     time_distance = if time.past?
-      "#{distance_of_time_in_words(Time.now, time)} ago"
+      "#{distance_of_time_in_words_to_now(time, include_seconds: true)} ago"
     else
-      "in #{distance_of_time_in_words(Time.now, time)}"
+      "in #{distance_of_time_in_words_to_now(time, include_seconds: true)}"
     end
 
     tag.span time_distance, title: time.to_fs(:long)

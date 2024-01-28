@@ -32,6 +32,6 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
     helper_method :jobs_status
 
     def jobs_status
-      params[:status].presence
+      params[:status].presence&.inquiry
     end
 end
