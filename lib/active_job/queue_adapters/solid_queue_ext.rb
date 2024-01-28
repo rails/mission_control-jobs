@@ -96,20 +96,22 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.status = job_status
         job.last_execution_error = execution_error_from_solid_queue_job(solid_queue_job) if job_status == :failed
         job.raw_data = solid_queue_job.as_json
-        job.failed_at = solid_queue_job.failed_execution.created_at if job_status == :failed
+        job.failed_at = solid_queue_job&.failed_execution&.created_at if job_status == :failed
         job.finished_at = solid_queue_job.finished_at
         job.blocked_by = solid_queue_job.concurrency_key
-        job.blocked_until = solid_queue_job.blocked_execution.expires_at if job_status == :blocked
-        job.process_id = solid_queue_job.claimed_execution.process_id if job_status == :in_progress
-        job.started_at = solid_queue_job.claimed_execution.created_at if job_status == :in_progress
+        job.blocked_until = solid_queue_job&.blocked_execution&.expires_at if job_status == :blocked
+        job.process_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
+        job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
       end
     end
 
     def execution_error_from_solid_queue_job(solid_queue_job)
-      ActiveJob::ExecutionError.new \
-        error_class: solid_queue_job.failed_execution.exception_class,
-        message: solid_queue_job.failed_execution.message,
-        backtrace: solid_queue_job.failed_execution.backtrace
+      if solid_queue_job.failed?
+        ActiveJob::ExecutionError.new \
+          error_class: solid_queue_job.failed_execution.exception_class,
+          message: solid_queue_job.failed_execution.message,
+          backtrace: solid_queue_job.failed_execution.backtrace
+      end
     end
 
     def status_from_solid_queue_job(solid_queue_job)
