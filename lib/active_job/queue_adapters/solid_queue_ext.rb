@@ -160,7 +160,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def jobs
-        solid_queue_status.finished? ? finished_jobs : executions.order(:job_id).map(&:job)
+        solid_queue_status.finished? ? finished_jobs.order(finished_at: :desc) : executions.order(:job_id).map(&:job)
       end
 
       def count
