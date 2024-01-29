@@ -129,6 +129,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.blocked_until = solid_queue_job&.blocked_execution&.expires_at if job_status == :blocked
         job.worker_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
         job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
+        job.scheduled_at = solid_queue_job.scheduled_at
       end
     end
 
@@ -160,7 +161,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def jobs
-        solid_queue_status.finished? ? finished_jobs.order(finished_at: :desc) : executions.order(:job_id).map(&:job)
+        solid_queue_status.finished? ? order_finished_jobs(finished_jobs) : order_executions(executions).map(&:job)
       end
 
       def count
@@ -201,6 +202,18 @@ module ActiveJob::QueueAdapters::SolidQueueExt
             .then { |jobs| filter_jobs_by_class(jobs) }
             .then { |jobs| limit(jobs) }
             .then { |jobs| offset(jobs) }
+        end
+
+        def order_finished_jobs(jobs)
+          jobs.order(finished_at: :desc)
+        end
+
+        def order_executions(executions)
+          # Follow polling order for scheduled executions, the rest by job_id
+          if solid_queue_status.scheduled? then executions.ordered
+          else
+            executions.order(:job_id)
+          end
         end
 
         def matches_relation_filters?(job)
