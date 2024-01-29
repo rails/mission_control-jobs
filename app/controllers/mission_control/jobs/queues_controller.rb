@@ -1,5 +1,5 @@
 class MissionControl::Jobs::QueuesController < MissionControl::Jobs::ApplicationController
-  before_action :set_queue
+  before_action :set_queue, only: :show
 
   def index
     @queues = filtered_queues.sort_by(&:name)

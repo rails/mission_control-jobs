@@ -3,7 +3,7 @@ module JobsHelper
 
   def assert_job_proxy(expected_class, job)
     assert_instance_of ActiveJob::JobProxy, job
-    assert_equal expected_class.to_s, job.class_name
+    assert_equal expected_class.to_s, job.job_class_name
   end
 
   def within_job_server(app_id, server: nil, &block)

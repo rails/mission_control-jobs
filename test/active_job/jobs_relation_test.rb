@@ -7,17 +7,16 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
 
   test "pass job class names" do
     assert_nil @jobs.job_class_name
-    assert "SomeJob", @jobs.where(job_class: "SomeJob").job_class_name
+    assert "SomeJob", @jobs.where(job_class_name: "SomeJob").job_class_name
   end
 
   test "filter by pending status" do
-    assert @jobs.pending?
     assert @jobs.pending.pending?
     assert_not @jobs.failed.pending?
   end
 
   test "filter by failed status" do
-    assert_not @jobs.failed?
+    assert_not @jobs.pending.failed?
     assert @jobs.failed.failed?
   end
 
@@ -30,23 +29,20 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
   end
 
   test "set job class and queue" do
-    jobs = @jobs.where(job_class: "MyJob")
+    jobs = @jobs.where(job_class_name: "MyJob")
     assert_equal "MyJob", jobs.job_class_name
 
     # Supports concatenation without overriding exising properties
-    jobs = jobs.where(queue: "my_queue")
+    jobs = jobs.where(queue_name: "my_queue")
     assert_equal "my_queue", jobs.queue_name
     assert_equal "MyJob", jobs.job_class_name
   end
 
-  test "allow removing the job class previously set" do
-    jobs = @jobs.where(job_class: "MyJob").with_all_job_classes
-    assert_nil jobs.job_class_name
-  end
-
   test "caches the fetched set of jobs" do
     ActiveJob::Base.queue_adapter.expects(:fetch_jobs).twice.returns([ :job_1, :job_2 ], [])
-    jobs = @jobs.where(queue: "my_queue")
+    ActiveJob::Base.queue_adapter.expects(:supports_filter?).at_least_once.returns(true)
+
+    jobs = @jobs.where(queue_name: "my_queue")
 
     5.times do
       assert_equal [ :job_1, :job_2 ], jobs.to_a
@@ -55,8 +51,9 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
 
   test "caches the count of jobs" do
     ActiveJob::Base.queue_adapter.expects(:jobs_count).once.returns(2)
+    ActiveJob::Base.queue_adapter.expects(:supports_filter?).at_least_once.returns(true)
 
-    jobs = @jobs.where(queue: "my_queue")
+    jobs = @jobs.where(queue_name: "my_queue")
 
     3.times do
       assert_equal 2, jobs.count

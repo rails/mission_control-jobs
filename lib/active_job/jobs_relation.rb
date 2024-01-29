@@ -7,7 +7,7 @@
 # example:
 #
 #   queue = ActiveJob::Base.queues[:default]
-#   queue.jobs.limit(10).where(job_class: "DummyJob").last
+#   queue.jobs.limit(10).where(job_class_name: "DummyJob").last
 #
 # Relations are enumerable, so you can use +Enumerable+ methods on them.
 # Notice however that using these methods will imply loading all the relation
@@ -22,9 +22,10 @@
 class ActiveJob::JobsRelation
   include Enumerable
 
-  STATUSES = %i[ pending failed ]
+  STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
+  FILTERS = %i[ queue_name job_class_name ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id ]
   attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
@@ -43,21 +44,21 @@ class ActiveJob::JobsRelation
   #
   # === Options
   #
-  # * <tt>:job_class</tt> - To only include the jobs of a given class.
+  # * <tt>:job_class_name</tt> - To only include the jobs of a given class.
   #   Depending on the configured queue adapter, this will perform the
   #   filtering in memory, which could introduce performance concerns
   #   for large sets of jobs.
-  # * <tt>:queue</tt> - To only include the jobs in the provided queue.
-  def where(job_class: nil, queue: nil)
+  # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
+  # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
-    arguments = { job_class_name: job_class, queue_name: queue }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    arguments = { job_class_name: job_class_name, queue_name: queue_name, worker_id: worker_id }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
     clone_with **arguments
   end
 
-  # This allows to unset a previous +job_class+ set in the relation.
-  def with_all_job_classes
-    if job_class_name.present?
-      clone_with job_class_name: nil
+  def with_status(status)
+    if status.to_sym.in? STATUSES
+      clone_with status: status.to_sym
     else
       self
     end
@@ -65,7 +66,7 @@ class ActiveJob::JobsRelation
 
   STATUSES.each do |status|
     define_method status do
-      clone_with status: status
+      with_status(status)
     end
 
     define_method "#{status}?" do
@@ -85,8 +86,8 @@ class ActiveJob::JobsRelation
 
   # Returns the number of jobs in the relation.
   #
-  # When filtering jobs by class name, if the adapter doesn't support
-  # it directly, this will imply loading all the jobs in memory.
+  # When filtering jobs, if the adapter doesn't support the filter(s)
+  # directly, this will load all the jobs in memory to filter them.
   def count
     if loaded? || filtering_needed?
       to_a.length
@@ -135,7 +136,7 @@ class ActiveJob::JobsRelation
     queue_adapter.retry_job(job, self)
   end
 
-  # Discard all the jobs in the queue.
+  # Discard all the jobs in the relation.
   def discard_all
     queue_adapter.discard_all_jobs(self)
     nil
@@ -157,17 +158,18 @@ class ActiveJob::JobsRelation
   #
   # Raises +ActiveJob::Errors::JobNotFoundError+ when not found.
   def find_by_id!(job_id)
-    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id)
+    queue_adapter.find_job(job_id, self) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, self)
   end
 
-  # Returns an array of jobs classes in the first +from_first+ jobs.
-  def job_classes(from_first: 500)
-    first(from_first).collect(&:class_name).uniq
+  # Returns an array of jobs class names in the first +from_first+ jobs.
+  def job_class_names(from_first: 500)
+    first(from_first).collect(&:job_class_name).uniq
   end
 
   def reload
     @count = nil
     @loaded_jobs = nil
+    @filters = nil
 
     self
   end
@@ -193,6 +195,10 @@ class ActiveJob::JobsRelation
     limit_value.present? && limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
   end
 
+  def filtering_needed?
+    filters.any?
+  end
+
   private
     attr_reader :queue_adapter, :loaded_jobs
     attr_writer *PROPERTIES
@@ -200,7 +206,6 @@ class ActiveJob::JobsRelation
     def set_defaults
       self.offset_value = 0
       self.limit_value = ALL_JOBS_LIMIT
-      self.status = :pending
     end
 
     def clone_with(**properties)
@@ -243,18 +248,17 @@ class ActiveJob::JobsRelation
       !@loaded_jobs.nil?
     end
 
+    # Filtering for not natively supported filters is performed in memory
     def filter(jobs)
       jobs.filter { |job| satisfy_filter?(job) }
     end
 
-    # If adapter does not support filtering by class name, it will perform
-    # the filtering in memory.
-    def filtering_needed?
-      job_class_name.present? && !queue_adapter.support_class_name_filtering?
+    def satisfy_filter?(job)
+      filters.all? { |property| public_send(property) == job.public_send(property) }
     end
 
-    def satisfy_filter?(job)
-      job.class_name == job_class_name
+    def filters
+      @filters ||= FILTERS.select { |property| public_send(property).present? && !queue_adapter.supports_filter?(self, property) }
     end
 
     def ensure_failed_status

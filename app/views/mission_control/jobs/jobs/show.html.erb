@@ -1,0 +1,6 @@
+<% navigation(title: "Job #{@job.job_id}", section: navigation_section_for_status(@job.status)) %>
+
+<%= render "mission_control/jobs/jobs/title", job: @job %>
+<%= render "mission_control/jobs/jobs/general_information", job: @job %>
+<%= render "mission_control/jobs/jobs/error_information", job: @job %>
+<%= render "mission_control/jobs/jobs/raw_data", job: @job %>

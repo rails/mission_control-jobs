@@ -9,6 +9,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::FindJobs
 
     assert_job_proxy DummyJob, found_job
     assert_equal [ 1234 ], found_job.serialized_arguments
+
+    found_job = ActiveJob.jobs.where(queue_name: :queue_1).find_by_id(job.job_id)
+    assert_job_proxy DummyJob, found_job
+    assert_equal [ 1234 ], found_job.serialized_arguments
   end
 
   test "find returns nil when not found" do

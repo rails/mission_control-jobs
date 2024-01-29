@@ -1,0 +1,21 @@
+<tr class="worker">
+  <td>
+    <%= link_to "worker #{worker.id}", application_worker_path(@application, worker.id) %>
+    <br />
+    <%= worker.name %>
+  </td>
+  <td><%= worker.hostname %></td>
+  <td>
+    <% worker.jobs.each do |job| %>
+      <div>
+        <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
+
+        <% if job.serialized_arguments.present? %>
+          <div class="is-family-monospace is-size-7"><%= job_arguments(job) %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </td>
+
+  <td><div class="has-text-grey"><%= time_ago_in_words_with_title(worker.last_heartbeat_at) %> ago</div></td>
+</tr>

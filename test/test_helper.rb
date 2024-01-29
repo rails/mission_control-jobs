@@ -8,11 +8,13 @@ ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __d
 require "rails/test_help"
 require "mocha/minitest"
 
+require "debug"
+
 # Load fixtures from the engine
 if ActiveSupport::TestCase.respond_to?(:fixture_path=)
-  ActiveSupport::TestCase.fixture_path = File.expand_path("fixtures", __dir__)
-  ActionDispatch::IntegrationTest.fixture_path = ActiveSupport::TestCase.fixture_path
-  ActiveSupport::TestCase.file_fixture_path = ActiveSupport::TestCase.fixture_path + "/files"
+  ActiveSupport::TestCase.fixture_paths = [ File.expand_path("fixtures", __dir__) ]
+  ActionDispatch::IntegrationTest.fixture_paths = ActiveSupport::TestCase.fixture_paths
+  ActiveSupport::TestCase.file_fixture_path = ActiveSupport::TestCase.fixture_paths.first + "/files"
   ActiveSupport::TestCase.fixtures :all
 end
 
@@ -66,5 +68,29 @@ class ActiveSupport::TestCase
 
     def reset_configured_queues_for_job_classes
       ApplicationJob.descendants.including(ApplicationJob).each { |klass| klass.queue_as :default }
+    end
+end
+
+class ActionDispatch::IntegrationTest
+  # Integration tests just use Solid Queue for now
+  setup do
+    MissionControl::Jobs.applications.add("integration-tests", { solid_queue: queue_adapter_for_test})
+
+    @application = MissionControl::Jobs.applications["integration-tests"]
+    @server = @application.servers[:solid_queue]
+    @worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0)
+  end
+
+  teardown do
+    @worker.stop
+  end
+
+  private
+    def queue_adapter_for_test
+      ActiveJob::QueueAdapters::SolidQueueAdapter.new
+    end
+
+    def perform_enqueued_jobs_async
+      @worker.start
     end
 end

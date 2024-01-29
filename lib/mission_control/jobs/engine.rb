@@ -63,6 +63,8 @@ module MissionControl
       end
 
       console do
+        require "irb/context"
+
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
         Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
 

@@ -5,7 +5,7 @@ class ListFailedJobsTest < ApplicationSystemTestCase
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    visit failed_jobs_path
+    visit jobs_path(:failed)
   end
 
   test "view the failed jobs" do

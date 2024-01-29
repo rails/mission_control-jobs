@@ -22,10 +22,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     5.times { DummyJob.perform_later }
     10.times { DummyReloadedJob.perform_later }
 
-    queue = ApplicationJob.queues[:default]
-
-    assert_equal 5, queue.jobs.where(job_class: "DummyJob").count
-    assert_equal 10, queue.jobs.where(job_class: "DummyReloadedJob").count
+    assert_equal 5, ApplicationJob.jobs.pending.where(queue_name: "default", job_class_name: "DummyJob").count
+    assert_equal 10, ApplicationJob.jobs.pending.where(queue_name: "default", job_class_name: "DummyReloadedJob").count
   end
 
   test "count the pending jobs in a given queue" do
@@ -35,9 +33,13 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     3.times { DummyJob.perform_later }
 
     assert_equal 8, ApplicationJob.queues.sum(&:size)
-    assert_equal 5, ApplicationJob.jobs.where(queue: "default").count
-    assert_equal 3, ApplicationJob.jobs.where(queue: "other_queue").count
-    assert_equal 3, ApplicationJob.jobs.where(queue: :other_queue).count
+    assert_equal 5, ApplicationJob.jobs.pending.where(queue_name: "default").count
+    assert_equal 3, ApplicationJob.jobs.pending.where(queue_name: "other_queue").count
+    assert_equal 3, ApplicationJob.jobs.pending.where(queue_name: :other_queue).count
+
+    assert_equal 5, ApplicationJob.queues[:default].size
+    assert_equal 3, ApplicationJob.queues[:other_queue].size
+    assert_equal 3, ApplicationJob.queues["other_queue"].size
   end
 
   test "check if there are failed jobs" do
@@ -64,8 +66,21 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
 
     perform_enqueued_jobs
 
-    assert 5, ApplicationJob.jobs.failed.where(job_class: "FailingJob").count
-    assert 10, ApplicationJob.jobs.failed.where(job_class: "FailingReloadedJob").count
+    assert 5, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").count
+    assert 10, ApplicationJob.jobs.failed.where(job_class_name: "FailingReloadedJob").count
+  end
+
+  test "count failed jobs of a given queue" do
+    FailingJob.queue_as :queue_1
+    FailingReloadedJob.queue_as :queue_2
+
+    5.times { FailingJob.perform_later }
+    10.times { FailingReloadedJob.perform_later }
+
+    perform_enqueued_jobs
+
+    assert 5, ApplicationJob.jobs.failed.where(queue_name: :queue_1).count
+    assert 10, ApplicationJob.jobs.failed.where(queue_name: :queue_2).count
   end
 
   test "count failing jobs with offset and limit" do
@@ -87,9 +102,9 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     10.times { FailingReloadedJob.perform_later }
     perform_enqueued_jobs
 
-    assert_equal 7, ApplicationJob.jobs.failed.where(job_class: "FailingJob").offset(3).count
-    assert_equal 2, ApplicationJob.jobs.failed.where(job_class: "FailingJob").limit(2).count
-    assert_equal 2, ApplicationJob.jobs.failed.where(job_class: "FailingJob").offset(3).limit(2).count
-    assert_equal 3, ApplicationJob.jobs.failed.where(job_class: "FailingJob").offset(7).limit(10).count
+    assert_equal 7, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").offset(3).count
+    assert_equal 2, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").limit(2).count
+    assert_equal 2, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").offset(3).limit(2).count
+    assert_equal 3, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").offset(7).limit(10).count
   end
 end

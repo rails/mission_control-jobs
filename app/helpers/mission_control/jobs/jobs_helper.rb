@@ -1,14 +1,10 @@
 module MissionControl::Jobs::JobsHelper
   def job_title(job)
-    job.class_name
+    job.job_class_name
   end
 
   def job_arguments(job)
     renderable_job_arguments_for(job).join(", ")
-  end
-
-  def failed_jobs_count
-    ActiveJob.jobs.failed.count
   end
 
   def failed_job_error(job)
@@ -17,6 +13,17 @@ module MissionControl::Jobs::JobsHelper
 
   def failed_job_backtrace(job)
     job.last_execution_error.backtrace.join("\n")
+  end
+
+  def attribute_names_for_job_status(status)
+    case status.to_s
+    when "failed"      then [ "Error", "" ]
+    when "blocked"     then [ "Queue", "Blocked by", "Block expiry" ]
+    when "finished"    then [ "Queue", "Finished" ]
+    when "scheduled"   then [ "Queue", "Scheduled" ]
+    when "in_progress" then [ "Queue", "Run by", "Running for" ]
+    else               []
+    end
   end
 
   private

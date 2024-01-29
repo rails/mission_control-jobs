@@ -11,3 +11,4 @@ gem "sprockets-rails"
 gem "solid_queue", bc: "solid_queue", require: false
 gem "rubocop-37signals", bc: "house-style", require: false
 gem "puma"
+gem "capybara", github: "teamcapybara/capybara"

@@ -34,5 +34,21 @@
       </td>
     </tr>
   <% end %>
+  <% if job.finished_at.present? %>
+    <tr>
+      <th>Finished at</th>
+      <td>
+        <%= time_ago_in_words_with_title(job.finished_at) %> ago
+      </td>
+    </tr>
+  <% end %>
+  <% if job.worker_id.present? %>
+    <tr>
+      <th>Processed by</th>
+      <td>
+        <%= link_to "worker #{job.worker_id}", application_worker_path(@application, job.worker_id) %>
+      </td>
+    </tr>
+  <% end %>
   </tbody>
 </table>

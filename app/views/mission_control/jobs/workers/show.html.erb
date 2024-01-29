@@ -1,0 +1,7 @@
+<% navigation(title: "Worker #{@worker.id}", section: :workers) %>
+
+<%= render "mission_control/jobs/workers/title", worker: @worker %>
+<%= render "mission_control/jobs/workers/configuration", worker: @worker %>
+<%= render "mission_control/jobs/workers/jobs", worker: @worker %>
+<%= render "mission_control/jobs/workers/raw_data", worker: @worker %>
+

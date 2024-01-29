@@ -85,9 +85,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
   end
 
   test "fetch failed jobs when pagination kicks in" do
-    WithPaginationFailingJob = Class.new(FailingJob)
-    WithPaginationFailingJob.default_page_size = 2
-
     10.times { |index| WithPaginationFailingJob.perform_later(index) }
     perform_enqueued_jobs
 
@@ -101,13 +98,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
   end
 
   test "fetch jobs when pagination kicks in with offset and limit" do
-    WithPaginationAndOffsetFailingJob = Class.new(FailingJob)
-    WithPaginationAndOffsetFailingJob.default_page_size = 2
-
-    10.times { |index| WithPaginationAndOffsetFailingJob.perform_later(index) }
+    10.times { |index| WithPaginationFailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = WithPaginationAndOffsetFailingJob.jobs.failed.offset(2).limit(3).to_a
+    jobs = WithPaginationFailingJob.jobs.failed.offset(2).limit(3).to_a
     assert_equal 3, jobs.size
 
     assert_equal [ 2 ], jobs[0].serialized_arguments
@@ -115,15 +109,10 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
   end
 
   test "fetch pending jobs when pagination kicks in and the first pages are empty due to filtering" do
-    WithPaginationDummyJob1 = Class.new(DummyJob)
-    WithPaginationDummyJob1.default_page_size = 2
-    WithPaginationDummyJob2 = Class.new(DummyJob)
-    WithPaginationDummyJob2.default_page_size = 2
+    10.times { |index| WithPaginationDummyJob.perform_later(index) }
+    4.times { |index| WithPaginationFailingJob.perform_later(index) }
 
-    4.times { |index| WithPaginationDummyJob1.perform_later(index) }
-    10.times { |index| WithPaginationDummyJob2.perform_later(index) }
-
-    jobs = ActiveJob::Base.jobs.where(queue: :default, job_class: WithPaginationDummyJob2).to_a
+    jobs = ActiveJob::Base.jobs.pending.where(queue_name: :default, job_class_name: WithPaginationDummyJob).to_a
     assert_equal 10, jobs.size
   end
 
@@ -133,8 +122,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     DummyJob.queue_as :queue_2
     5.times { DummyJob.perform_later }
 
-    assert_equal 3, ApplicationJob.jobs.where(queue: "queue_1").to_a.length
-    assert_equal 5, ApplicationJob.jobs.where(queue: "queue_2").to_a.length
+    assert_equal 3, ApplicationJob.jobs.pending.where(queue_name: "queue_1").to_a.length
+    assert_equal 5, ApplicationJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
 
   test "fetch job classes in the first jobs" do
@@ -143,6 +132,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     2.times { DummyJob.perform_later }
     15.times { DummyReloadedJob.perform_later }
 
-    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.job_classes
+    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.pending.job_class_names
   end
 end

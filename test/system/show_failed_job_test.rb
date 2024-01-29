@@ -4,7 +4,7 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
   setup do
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
-    visit failed_jobs_path
+    visit jobs_path(:failed)
   end
 
   test "click on a failed job to see its details" do
@@ -26,7 +26,7 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
 
   test "show empty notice when no jobs" do
     ActiveJob.jobs.failed.discard_all
-    visit failed_jobs_path
+    visit jobs_path(:failed)
     assert_text /there are no failed jobs/i
   end
 end

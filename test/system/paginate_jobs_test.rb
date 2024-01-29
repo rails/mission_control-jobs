@@ -5,7 +5,7 @@ class PaginateJobsTest < ApplicationSystemTestCase
     20.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    visit failed_jobs_path
+    visit jobs_path(:failed)
   end
 
   test "paginate failed jobs" do

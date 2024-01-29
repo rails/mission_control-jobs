@@ -1,0 +1,20 @@
+<% if @worker.jobs.empty? %>
+  <%= blank_status_notice "This worker is idle" %>
+<% else %>
+  <h2 class="subtitle">Running <%= worker.jobs.size %> jobs</h2>
+
+  <table class="jobs table workers is-hoverable is-fullwidth">
+    <tbody>
+    <thead>
+    <tr>
+      <th style="width: 30%;">Job</th>
+      <th></th>
+      <th style="width: 15%;">Running for</th>
+    </tr>
+    </thead>
+
+    <%= render partial: "mission_control/jobs/workers/job", collection: @worker.jobs %>
+
+    </tbody>
+  </table>
+<% end %>

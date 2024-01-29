@@ -18,7 +18,7 @@ class MissionControl::Jobs::Page
   end
 
   def last?
-    index == pages_count || empty?
+    index == pages_count || empty? || jobs.empty?
   end
 
   def empty?
@@ -30,11 +30,11 @@ class MissionControl::Jobs::Page
   end
 
   def next_index
-    [ index + 1, pages_count ].min
+    pages_count ? [ index + 1, pages_count ].min : index + 1
   end
 
   def pages_count
-    (total_count.to_f / 10).ceil
+    (total_count.to_f / 10).ceil unless total_count.infinite?
   end
 
   def total_count

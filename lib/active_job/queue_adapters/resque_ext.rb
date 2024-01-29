@@ -1,4 +1,6 @@
 module ActiveJob::QueueAdapters::ResqueExt
+  include MissionControl::Jobs::Adapter
+
   def initialize(redis = Resque.redis)
     super()
     @redis = redis
@@ -8,17 +10,6 @@ module ActiveJob::QueueAdapters::ResqueExt
     Resque.with_per_thread_redis_override(redis, &block)
   end
 
-  def queue_names
-    Resque.queues
-  end
-
-  # Returns an array with the list of queues. Each queue is represented as a hash
-  # with these attributes:
-  #   {
-  #    "name": "queue_name",
-  #    "size": 1,
-  #    active: true
-  #   }
   def queues
     queues = queue_names
     active_statuses = []
@@ -56,16 +47,18 @@ module ActiveJob::QueueAdapters::ResqueExt
     ResquePauseHelper.paused?(queue_name)
   end
 
+  def supported_filters(jobs_relation)
+    if jobs_relation.pending? then [ :queue_name ]
+    else []
+    end
+  end
+
   def jobs_count(jobs_relation)
     resque_jobs_for(jobs_relation).count
   end
 
   def fetch_jobs(jobs_relation)
     resque_jobs_for(jobs_relation).all
-  end
-
-  def support_class_name_filtering?
-    false
   end
 
   def retry_all_jobs(jobs_relation)
@@ -91,6 +84,10 @@ module ActiveJob::QueueAdapters::ResqueExt
   private
     attr_reader :redis
 
+    def queue_names
+      Resque.queues
+    end
+
     def resque_jobs_for(jobs_relation)
       ResqueJobs.new(jobs_relation, redis: redis)
     end
@@ -98,7 +95,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     class ResqueJobs
       attr_reader :jobs_relation
 
-      delegate :default_page_size, to: :jobs_relation
+      delegate :default_page_size, :paginated?, :limit_value_provided?, to: :jobs_relation
 
       def initialize(jobs_relation, redis:)
         @jobs_relation = jobs_relation
@@ -161,19 +158,11 @@ module ActiveJob::QueueAdapters::ResqueExt
         MAX_REDIS_TRANSACTION_SIZE = 100
 
         def targeting_all_jobs?
-          !paginated? && jobs_relation.job_class_name.blank?
-        end
-
-        def paginated?
-          jobs_relation.offset_value > 0 || limit_value_provided?
-        end
-
-        def limit_value_provided?
-          jobs_relation.limit_value.present? && jobs_relation.limit_value != ActiveJob::JobsRelation::ALL_JOBS_LIMIT
+          !paginated? && !jobs_relation.filtering_needed?
         end
 
         def fetch_resque_jobs
-          if jobs_relation.failed?
+          if jobs_relation.failed? || jobs_relation.queue_name.blank?
             fetch_failed_resque_jobs
           else
             fetch_queue_resque_jobs
@@ -198,6 +187,7 @@ module ActiveJob::QueueAdapters::ResqueExt
             job.raw_data = resque_job_hash
             job.position = jobs_relation.offset_value + index
             job.failed_at = resque_job_hash["failed_at"]&.to_datetime
+            job.status = job.failed_at.present? ? :failed : :pending
           end
         end
 
@@ -211,14 +201,7 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def direct_jobs_count
-          case jobs_relation.status
-          when :pending
-            pending_jobs_count
-          when :failed
-            failed_jobs_count
-          else
-            raise ActiveJob::Errors::QueryError, "Status not supported: #{status}"
-          end
+          jobs_relation.failed? ? failed_jobs_count : pending_jobs_count
         end
 
         def pending_jobs_count
@@ -306,13 +289,9 @@ module ActiveJob::QueueAdapters::ResqueExt
           @jobs_by_id ||= all.index_by(&:job_id)
         end
 
-        def all_ignoring_filters
-          @all_ignoring_filters ||= jobs_relation.with_all_job_classes.to_a
-        end
-
         def handle_resque_job_error(job, error)
           if error.message =~/no such key/i
-            raise ActiveJob::Errors::JobNotFoundError.new(job)
+            raise ActiveJob::Errors::JobNotFoundError.new(job, jobs_relation)
           else
             raise error
           end

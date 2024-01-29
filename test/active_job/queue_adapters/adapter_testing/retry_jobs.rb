@@ -24,10 +24,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
   end
 
   test "retry all failed jobs when pagination kicks in" do
-    WithInternalPaginationFailingJob = Class.new(FailingJob)
-    WithInternalPaginationFailingJob.default_page_size = 2
-
-    10.times { |index| WithInternalPaginationFailingJob.perform_later(index) }
+    10.times { |index| WithPaginationFailingJob.perform_later(index) }
     perform_enqueued_jobs
 
     failed_jobs = ActiveJob.jobs.failed
@@ -60,7 +57,29 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
 
     assert_equal 15, ActiveJob.jobs.failed.count
 
-    failed_jobs = ActiveJob.jobs.failed.where(job_class: "FailingReloadedJob")
+    failed_jobs = ActiveJob.jobs.failed.where(job_class_name: "FailingReloadedJob")
+    failed_jobs.retry_all
+
+    assert_equal 10, ActiveJob.jobs.failed.count
+
+    assert_not ActiveJob.jobs.failed.any? { |job| job.is_a?(FailingReloadedJob) }
+
+    perform_enqueued_jobs
+    assert_equal 1 * 10, FailingJob.invocations.count
+    assert_equal 2 * 5, FailingReloadedJob.invocations.count
+  end
+
+  test "retry all failed of a given queue" do
+    FailingJob.queue_as :queue_1
+    FailingReloadedJob.queue_as :queue_2
+
+    10.times { |index| FailingJob.perform_later(index) }
+    5.times { |index| FailingReloadedJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    assert_equal 15, ActiveJob.jobs.failed.count
+
+    failed_jobs = ActiveJob.jobs.failed.where(queue_name: :queue_2)
     failed_jobs.retry_all
 
     assert_equal 10, ActiveJob.jobs.failed.count

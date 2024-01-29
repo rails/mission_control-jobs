@@ -1,0 +1,9 @@
+<td><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></td>
+<td>
+  <% if job.worker_id %>
+    <%= link_to "worker #{job.worker_id}", application_worker_path(@application, job.worker_id) %>
+  <% else %>
+    —
+  <% end %>
+</td>
+<td><div class="has-text-grey"><%= job.started_at ? time_distance_in_words_with_title(job.started_at) : "(Finished)" %></div></td>
