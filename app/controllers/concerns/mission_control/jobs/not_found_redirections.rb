@@ -5,6 +5,10 @@ module MissionControl::Jobs::NotFoundRedirections
     rescue_from(ActiveJob::Errors::JobNotFoundError) do |error|
       redirect_to best_location_for_job_relation(error.job_relation), alert: error.message
     end
+
+    rescue_from(MissionControl::Jobs::Errors::ResourceNotFound) do |error|
+      redirect_to root_url, alert: error.message
+    end
   end
 
   private

@@ -42,6 +42,22 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     [ :queue_name, :job_class_name ]
   end
 
+  def exposes_workers?
+    true
+  end
+
+  def workers
+    SolidQueue::Process.where(kind: "Worker").collect do |process|
+      worker_attributes_from_solid_queue_process(process)
+    end
+  end
+
+  def find_worker(worker_id)
+    if process = SolidQueue::Process.find_by(id: worker_id)
+      worker_attributes_from_solid_queue_process(process)
+    end
+  end
+
   def jobs_count(jobs_relation)
     RelationAdapter.new(jobs_relation).count
   end
@@ -77,6 +93,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       SolidQueue::Queue.find_by_name(queue_name)
     end
 
+    def worker_attributes_from_solid_queue_process(process)
+      {
+        id: process.id,
+        name: "PID: #{process.pid}",
+        hostname: process.hostname,
+        last_heartbeat_at: process.last_heartbeat_at,
+        configuration: process.metadata,
+        raw_data: process.as_json
+      }
+    end
+
     def find_solid_queue_job!(job_id, jobs_relation)
       find_solid_queue_job(job_id, jobs_relation) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, jobs_relation)
     end
@@ -100,9 +127,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.finished_at = solid_queue_job.finished_at
         job.blocked_by = solid_queue_job.concurrency_key
         job.blocked_until = solid_queue_job&.blocked_execution&.expires_at if job_status == :blocked
-        job.process_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
+        job.worker_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
         job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
       end
+    end
+
+    def status_from_solid_queue_job(solid_queue_job)
+      RelationAdapter::STATUS_MAP.invert[solid_queue_job.status]
     end
 
     def execution_error_from_solid_queue_job(solid_queue_job)
@@ -112,10 +143,6 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           message: solid_queue_job.failed_execution.message,
           backtrace: solid_queue_job.failed_execution.backtrace
       end
-    end
-
-    def status_from_solid_queue_job(solid_queue_job)
-      RelationAdapter::STATUS_MAP.invert[solid_queue_job.status]
     end
 
     class RelationAdapter
@@ -157,12 +184,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       private
         attr_reader :jobs_relation
 
-        delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name, :default_page_size, to: :jobs_relation
+        delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name, :default_page_size, :worker_id, to: :jobs_relation
 
         def executions
           execution_class_by_status.includes(job: "#{solid_queue_status}_execution")
             .then { |executions| filter_executions_by_queue(executions) }
             .then { |executions| filter_executions_by_class(executions) }
+            .then { |executions| filter_executions_by_process_id(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -194,7 +222,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           if solid_queue_status.present? && !solid_queue_status.finished?
             "SolidQueue::#{solid_queue_status.capitalize}Execution".safe_constantize
           else
-            raise ActiveJob::Errors::QueryError, "Status not supported: #{solid_queue_status}"
+            raise ActiveJob::Errors::QueryError, "Status not supported: #{jobs_relation.status}"
           end
         end
 
@@ -214,6 +242,16 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_executions_by_class(executions)
           job_class_name.present? ? executions.where(job: { class_name: job_class_name }) : executions
+        end
+
+        def filter_executions_by_process_id(executions)
+          return executions unless worker_id.present?
+
+          if solid_queue_status.claimed?
+            executions.where(process_id: worker_id)
+          else
+            raise ActiveJob::Errors::QueryError, "Filtering by worker ID is not supported for status #{jobs_relation.status}"
+          end
         end
 
         def filter_jobs_by_class(jobs)

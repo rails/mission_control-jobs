@@ -17,16 +17,36 @@ module MissionControl::Jobs::Adapter
     []
   end
 
-  def support_queue_pausing?
+  def supports_queue_pausing?
     true
+  end
+
+  def exposes_workers?
+    false
+  end
+
+  # Returns an array with the list of workers. Each worker is represented as a hash
+  # with these attributes:
+  #   {
+  #     id: 123,
+  #     name: "adapter-name",
+  #     hostname: "hey-default-101",
+  #     last_heartbeat_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
+  #     configuration: { ... }
+  #     raw_data: { ... }
+  #   }
+  def workers
+    if exposes_workers?
+      raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `workers`")
+    end
   end
 
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:
   #   {
-  #    name: "queue_name",
-  #    size: 1,
-  #    active: true
+  #     name: "queue_name",
+  #     size: 1,
+  #     active: true
   #   }
   def queues
     raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `queue_names`")
@@ -41,19 +61,19 @@ module MissionControl::Jobs::Adapter
   end
 
   def pause_queue(queue_name)
-    if support_queue_pausing?
+    if supports_queue_pausing?
       raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `pause_queue`")
     end
   end
 
   def resume_queue(queue_name)
-    if support_queue_pausing?
+    if supports_queue_pausing?
       raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `resume_queue`")
     end
   end
 
   def queue_paused?(queue_name)
-    if support_queue_pausing?
+    if supports_queue_pausing?
       raise MissionControl::Jobs::Errors::IncompatibleAdapter("Adapter must implement `queue_paused?`")
     end
   end

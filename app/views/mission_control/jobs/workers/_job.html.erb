@@ -1,0 +1,19 @@
+<tr class="job">
+  <td>
+    <%= link_to application_job_path(@application, job.job_id, filter: { queue_name: job.queue }) do %>
+      <%= job_title(job) %>
+    <% end %>
+    <div class="has-text-grey">Enqueued <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+  </td>
+  <td>
+    <% if job.serialized_arguments.present? %>
+      <span class="is-family-monospace">
+        <%= job_arguments(job) %>
+      </span>
+    <% end %>
+  </td>
+
+  <td>
+    <div class="has-text-grey"><%= job.started_at ? time_distance_in_words_with_title(job.started_at) : "(Finished)" %></div>
+  </td>
+</tr>

@@ -4,7 +4,7 @@ module ActiveJob::Executing
   extend ActiveSupport::Concern
 
   included do
-    attr_accessor :raw_data, :position, :finished_at, :blocked_by, :blocked_until, :process_id, :started_at
+    attr_accessor :raw_data, :position, :finished_at, :blocked_by, :blocked_until, :worker_id, :started_at
     attr_reader :serialized_arguments
     attr_writer :status
 

@@ -17,12 +17,17 @@ MissionControl::Jobs::Engine.routes.draw do
     end
 
     resources :jobs, only: :index, path: ":status/jobs"
+
+    resources :workers, only: [ :index, :show ]
   end
 
   # Allow referencing urls without providing an application_id. It will default to the first one.
   resources :queues, only: [ :index, :show ]
+
   resources :jobs, only: :show
   resources :jobs, only: :index, path: ":status/jobs"
+
+  resources :workers, only: [ :index, :show ]
 
   root to: "queues#index"
 end

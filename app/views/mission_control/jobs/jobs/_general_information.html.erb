@@ -42,5 +42,13 @@
       </td>
     </tr>
   <% end %>
+  <% if job.worker_id.present? %>
+    <tr>
+      <th>Processed by</th>
+      <td>
+        <%= link_to "worker #{job.worker_id}", application_worker_path(@application, job.worker_id) %>
+      </td>
+    </tr>
+  <% end %>
   </tbody>
 </table>

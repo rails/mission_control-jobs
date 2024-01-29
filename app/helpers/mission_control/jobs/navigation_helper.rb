@@ -6,6 +6,8 @@ module MissionControl::Jobs::NavigationHelper
       supported_job_statuses.without(:pending).each do |status|
          sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
       end
+
+      sections[:workers] = [ "Workers", application_workers_path(@application) ] if workers_exposed?
     end
   end
 
