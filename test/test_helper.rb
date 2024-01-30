@@ -74,7 +74,7 @@ end
 class ActionDispatch::IntegrationTest
   # Integration tests just use Solid Queue for now
   setup do
-    MissionControl::Jobs.applications.add("integration-tests", { solid_queue: queue_adapter_for_test})
+    MissionControl::Jobs.applications.add("integration-tests", { solid_queue: queue_adapter_for_test })
 
     @application = MissionControl::Jobs.applications["integration-tests"]
     @server = @application.servers[:solid_queue]
