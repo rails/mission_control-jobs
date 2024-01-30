@@ -1,6 +1,6 @@
 # Mission Control — Jobs
 
-This gem provides a Rails-based frontend to Active Job adapters. It currently supports [Resque](https://github.com/resque/resque/) and [Solid Queue](https://github.com/basecamp/solid_queue). Its features depend on those offered by the adapter itself, but at a minimum, it allows you to inspect job queues, jobs currently waiting in those queues, and inspecting and retrying or discarding failed jobs.
+This gem provides a Rails-based frontend to Active Job adapters. It currently supports [Resque](https://github.com/resque/resque/) and [Solid Queue](https://github.com/basecamp/solid_queue). Its features depend on those offered by the adapter itself. At a minimum, it allows you to inspect job queues and jobs currently waiting in those queues and inspect and retry or discard failed jobs.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -55,12 +55,12 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `delay_between_bulk_operation_batches`: how long to wait between batches when performing bulk operations, such as _discard all_ or _retry all_ jobs—defaults to `0`
 - `adapters`: a list of adapters that you want Mission Control to use and extend. By default this will be the adapter you have set for `active_job.queue_adapter`.
 
-This library extends Active Job with a querying interface, and the following setting:
+This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
 
 ## Advanced configuration
 
-When we built Mission Control Jobs, we did it with the idea of managing multiple apps' job backends from a single, centralized app that we used for monitoring, alerts and other tools that related to all our apps. Some of our apps run in more than one datacenter and we run different Resque instances with different Redis configurations in each. Because of this, we added support for multiple apps and multiple adapters per app. Even when running Mission Control Job within the app it manages and a single DC, as we migrated from Resque to Solid Queue, we needed to manage both adapters from Mission Control.
+When we built Mission Control Jobs, we did it with the idea of managing multiple apps' job backends from a single, centralized app that we used for monitoring, alerts and other tools that related to all our apps. Some of our apps run in more than one datacenter, and we run different Resque instances with different Redis configurations in each. Because of this, we added support for multiple apps and multiple adapters per app. Even when running Mission Control Job within the app it manages, and a single DC, as we migrated from Resque to Solid Queue, we needed to manage both adapters from Mission Control.
 
 Without adding any additional configuration to [the one described before](#basic-configuration), Mission Control will be configured with one single app and a single server for your configured `active_job.queue_adapter`.
 
@@ -105,9 +105,9 @@ SERVERS_BY_APP.each do |app, servers|
 end
 ```
 
-This is an example for two different apps, BC4 and HEY, each one with two servers. BC4 has two Resque servers with two different configurations and HEY has one Resque server and one Solid Queue server.
+This is an example for two different apps, BC4 and HEY, each one with two servers. BC4 has two Resque servers with two different configurations, and HEY has one Resque server and one Solid Queue server.
 
-Currently only one Solid Queue configuration is supported, but support for several Solid Queue backends (with different databases) [is planned](https://github.com/basecamp/mission_control-jobs/issues/35).
+Currently, only one Solid Queue configuration is supported, but support for several Solid Queue backends (with different databases) [is planned](https://github.com/basecamp/mission_control-jobs/issues/35).
 
 This is how we set Resque and Solid Queue together when we migrated from one to the other:
 
@@ -141,9 +141,9 @@ As mentioned, the features available in Mission Control depend on the adapter yo
 
 ## Console helpers, scripting and dealing with big sets of jobs
 
-Besides the UI, Mission Control provides a light console helper to switch between applications and adapters. Some potentially destructive actions aren't exposed via the UI (for example, discarding jobs that aren't failed, although this might change in the future) but you can always perform these from the console if you know very well what you're doing.
+Besides the UI, Mission Control provides a light console helper to switch between applications and adapters. Some potentially destructive actions aren't exposed via the UI (for example, discarding jobs that aren't failed, although this might change in the future), but you can always perform these from the console if you know very well what you're doing.
 
-It's also possible that you need to deal with very big sets of jobs that are unmanageable via the UI, or that you wish to write a script to deal with an incident, some cleanup or some data migration. The console helpers and the querying API with which we've extended Active Job come handy here.
+It's also possible that you need to deal with very big sets of jobs that are unmanageable via the UI or that you wish to write a script to deal with an incident, some cleanup or some data migration. The console helpers and the querying API with which we've extended Active Job come in handy here.
 
 First, when connecting to the Rails console, you'll see this new message:
 
@@ -193,7 +193,7 @@ ActiveJob.jobs.failed.where(job_class: "SomeJob")
 # All pending jobs of a given class with limit and offset
 ActiveJob.jobs.pending.where(job_class: "SomeJob").limit(10).offset(5)
 
-# For adpaters that support these statuses:
+# For adapters that support these statuses:
 # All scheduled/in-progress/finished jobs of a given class
 ActiveJob.jobs.scheudled.where(job_class: "SomeJob")
 ActiveJob.jobs.in_progress.where(job_class: "SomeJob")
@@ -229,7 +229,7 @@ MissionControl::Jobs.delay_between_bulk_operation_batches = 5.seconds
 
 ## Contributing
 
-Thanks for your interest in contributing! To get the app running locally just run:
+Thanks for your interest in contributing! To get the app running locally, just run:
 ```
 bin/setup
 ```
