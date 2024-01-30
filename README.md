@@ -53,6 +53,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 
 - `logger`:  the logger you want Mission Control Jobs to use. Defaults to `ActiveSupport::Logger.new(nil)` (no logging). Notice that this is different from Active Job's logger or Active Job's backend's configured logger.
 - `delay_between_bulk_operation_batches`: how long to wait between batches when performing bulk operations, such as _discard all_ or _retry all_ jobs—defaults to `0`
+- `adapters`: a list of adapters that you want Mission Control to use and extend. By default this will be the adapter you have set for `active_job.queue_adapter`.
 
 This library extends Active Job with a querying interface, and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
@@ -63,7 +64,13 @@ When we built Mission Control Jobs, we did it with the idea of managing multiple
 
 Without adding any additional configuration to [the one described before](#basic-configuration), Mission Control will be configured with one single app and a single server for your configured `active_job.queue_adapter`.
 
-To change this, you can use an initializer and add the apps and their servers like this (taken from our dummy app for testing purposes):
+If you want to support multiple adapters, you need to add them to Mission Control configuration via the `adapters` setting mentioned above. For example:
+
+```ruby
+config.mission_control.jobs.adapters = [ :resque, :solid_queue ]
+```
+
+Then, to configure the different apps and/or different servers, you can do so in an initializer like this (taken from our dummy app for testing purposes):
 
 ```ruby
 require "resque"
