@@ -83,7 +83,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def find_job(job_id, *)
-    if job = SolidQueue::Job.find_by(active_job_id: job_id)
+    if job = SolidQueue::Job.where(active_job_id: job_id).order(:id).last
       deserialize_and_proxy_solid_queue_job job
     end
   end

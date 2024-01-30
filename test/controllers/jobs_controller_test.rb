@@ -3,25 +3,51 @@ require "test_helper"
 class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   setup do
     DummyJob.queue_as :queue_1
-    @job = DummyJob.perform_later(42)
   end
 
   test "get job details" do
-    get mission_control_jobs.application_job_url(@application, @job.job_id)
+    job = DummyJob.perform_later(42)
+
+    get mission_control_jobs.application_job_url(@application, job.job_id)
     assert_response :ok
 
-    assert_includes response.body, @job.job_id
-    assert_includes response.body, "queue_1"
+    assert_select "h1", /DummyJob\s+pending/
+    assert_includes response.body, job.job_id
+    assert_select "div.tag a", "queue_1"
 
-    get mission_control_jobs.application_job_url(@application, @job.job_id, filter: { queue_name: "queue_1" })
+    get mission_control_jobs.application_job_url(@application, job.job_id, filter: { queue_name: "queue_1" })
     assert_response :ok
 
-    assert_includes response.body, @job.job_id
-    assert_includes response.body, "queue_1"
+    assert_select "h1", /DummyJob\s+pending/
+    assert_includes response.body, job.job_id
+    assert_select "div.tag a", "queue_1"
+  end
+
+  test "get jobs and job details when there are multiple instances of the same job due to automatic retries" do
+    job = AutoRetryingJob.perform_later
+    perform_enqueued_jobs_async
+
+    # Wait until the job has been executed and retried
+    sleep(1)
+
+    get mission_control_jobs.application_jobs_url(@application, :finished)
+    assert_response :ok
+
+    assert_select "tr.job", 2
+    assert_select "tr.job", /AutoRetryingJob\s+Enqueued less than a minute ago\s+default/
+
+    get mission_control_jobs.application_job_url(@application, job.job_id)
+    assert_response :ok
+
+    assert_select "h1", /AutoRetryingJob\s+failed\s+/
+    assert_includes response.body, job.job_id
+    assert_select "div.is-danger", "failed"
   end
 
   test "redirect to queue when job doesn't exist" do
-    get mission_control_jobs.application_job_url(@application, @job.job_id + "0", filter: { queue_name: "queue_1" })
+    job = DummyJob.perform_later(42)
+
+    get mission_control_jobs.application_job_url(@application, job.job_id + "0", filter: { queue_name: "queue_1" })
     assert_redirected_to mission_control_jobs.application_queue_path(@application, :queue_1)
   end
 
@@ -32,9 +58,10 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     travel_to 2.minutes.from_now
 
     get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
 
     assert_select "tr.job", 2
     assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+in 1 minute/
-    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+less than a minute ago/
+    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+1 minute ago/
   end
 end
