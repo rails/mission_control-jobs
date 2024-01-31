@@ -11,7 +11,7 @@ module MissionControl::Jobs::Console::Helpers
     puts "You are currently connected to #{MissionControl::Jobs::Current.server}" if MissionControl::Jobs::Current.server
 
     puts "You can connect to a job server with"
-    puts "  connect_to <app_id>:<server_id>\n\n"
+    puts '  connect_to "<app_id>:<server_id>"\n\n'
 
     puts "Available job servers:\n"
 
