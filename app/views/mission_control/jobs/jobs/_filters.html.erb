@@ -2,7 +2,7 @@
   <div class="field is-grouped">
     <div class="control">
       <%= form_for :filter, url: application_jobs_path(MissionControl::Jobs::Current.application, jobs_status), method: :get,
-        data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
+                   data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
 
         <div class="select is-rounded">
           <%= form.text_field :job_class_name, value: @job_filters[:job_class_name], class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
@@ -12,17 +12,25 @@
           <%= form.text_field :queue_name, value: @job_filters[:queue_name], class: "input", list: "queue-names", placeholder: "Filter by queue name..." %>
         </div>
 
+        <div class="select is-rounded">
+          <%= form.datetime_field :scheduled_at_start, value: @job_filters[:scheduled_at_start], class: "input",
+                             placeholder: "Scheduled from..." %>
+        </div>
+        <div class="select is-rounded">
+          <%= form.datetime_field :scheduled_at_end, value: @job_filters[:scheduled_at_end], class: "input", placeholder: "Scheduled to..." %>
+        </div>
+
         <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
 
         <datalist id="job-classes" style="display: none;">
           <% job_class_names.each do |job_class_name| %>
-            <option value="<%= job_class_name %>" />
+            <option value="<%= job_class_name %>"/>
           <% end %>
         </datalist>
 
         <datalist id="queue-names" style="display: none;">
           <% queue_names.each do |queue_name| %>
-            <option value="<%= queue_name %>" />
+            <option value="<%= queue_name %>"/>
           <% end %>
         </datalist>
       <% end %>

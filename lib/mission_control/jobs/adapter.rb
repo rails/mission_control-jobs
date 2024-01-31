@@ -5,7 +5,7 @@ module MissionControl::Jobs::Adapter
 
   def supported_statuses
     # All adapters need to support these at a minimum
-    [ :pending, :failed ]
+    [ :pending, :failed, :scheduled ]
   end
 
   def supports_filter?(jobs_relation, filter)
