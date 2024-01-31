@@ -1,17 +1,6 @@
 <% navigation(title: "Workers", section: :workers)  %>
 
-<table class="workers table jobs is-hoverable is-fullwidth">
-  <tbody>
-  <thead>
-  <tr>
-    <th>Worker</th>
-    <th>Hostname</th>
-    <th style="width: 35%;">Jobs</th>
-    <th>Last heartbeat</th>
-  </tr>
-  </thead>
+<%= render "mission_control/jobs/workers/workers_page", workers_page: @workers_page %>
 
-  <%= render partial: "mission_control/jobs/workers/worker", collection: @workers %>
+<%= render "mission_control/jobs/workers/shared/pagination_toolbar", workers_page: @workers_page %>
 
-  </tbody>
-</table>
