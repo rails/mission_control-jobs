@@ -159,7 +159,7 @@ Typing `jobs_help`, you'll get clear instructions about how to switch between ap
 ```
 >> jobs_help
 You can connect to a job server with
-  connect_to <app_id>:<server_id>
+  connect_to "<app_id>:<server_id>"
 
 Available job servers:
   * bc4:resque_ashburn
