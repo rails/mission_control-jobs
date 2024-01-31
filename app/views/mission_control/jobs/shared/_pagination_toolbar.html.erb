@@ -1,5 +1,5 @@
 <nav class="buttons is-right" role="navigation" aria-label="pagination">
-  <span class="mr-3"><%= jobs_page.index %> / <%= jobs_page.pages_count || "..." %></span>
-  <%= link_to "Previous page", url_for(page: jobs_page.previous_index, **jobs_filter_param), class: "pagination-previous", disabled: jobs_page.first? %>
-  <%= link_to "Next page", url_for(page: jobs_page.next_index, **jobs_filter_param), class: "pagination-next", disabled: jobs_page.last? %>
+  <span class="mr-3"><%= page.index %> / <%= page.pages_count || "..." %></span>
+  <%= link_to "Previous page", url_for(page: page.previous_index, **jobs_filter_param), class: "pagination-previous", disabled: page.first? %>
+  <%= link_to "Next page", url_for(page: page.next_index, **jobs_filter_param), class: "pagination-next", disabled: page.last? %>
 </nav>

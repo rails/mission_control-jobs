@@ -1,17 +1,7 @@
 <% navigation(title: "Workers", section: :workers)  %>
-
-<table class="workers table jobs is-hoverable is-fullwidth">
-  <tbody>
-  <thead>
-  <tr>
-    <th>Worker</th>
-    <th>Hostname</th>
-    <th style="width: 35%;">Jobs</th>
-    <th>Last heartbeat</th>
-  </tr>
-  </thead>
-
-  <%= render partial: "mission_control/jobs/workers/worker", collection: @workers %>
-
-  </tbody>
-</table>
+<% if @workers_page.empty? %>
+  <%= blank_status_notice "No workers found with the given filters" %>
+<% else %>
+  <%= render partial: "mission_control/jobs/workers/workers_page" %>
+  <%= render "mission_control/jobs/shared/pagination_toolbar", page: @workers_page %>
+<% end %>
