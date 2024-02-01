@@ -38,7 +38,7 @@ class JobsLoader
       case server.queue_adapter_name
       when :resque
         worker = Resque::Worker.new("*")
-        # worker.work(0.0)
+        worker.work(0.0)
       when :solid_queue
         worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0)
         worker.mode = :inline

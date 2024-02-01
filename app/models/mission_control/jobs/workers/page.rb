@@ -1,4 +1,4 @@
-class MissionControl::Jobs::WorkersPage
+class MissionControl::Jobs::Workers::Page
   DEFAULT_PAGE_SIZE = 10
 
   attr_reader :workers_collection, :index, :page_size
