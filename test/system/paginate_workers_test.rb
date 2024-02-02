@@ -4,7 +4,6 @@ require "test_helper"
 
 class PaginateWorkersTest < ApplicationSystemTestCase
   setup do
-    create_jobs
     perform_enqueued_jobs_async
   end
 
@@ -14,13 +13,5 @@ class PaginateWorkersTest < ApplicationSystemTestCase
     assert_text "Next page"
     assert_text "Previous page"
     assert_text "worker 1"
-  end
-
-  private
-
-  def create_jobs
-    20.times do |index|
-      DummyJob.perform_later
-    end
   end
 end
