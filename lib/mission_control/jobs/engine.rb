@@ -63,6 +63,7 @@ module MissionControl
       end
 
       console do
+        require "irb"
         require "irb/context"
 
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
