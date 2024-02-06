@@ -27,8 +27,4 @@ module UIHelper
   def job_row_elements
     all(".jobs .job")
   end
-
-  def worker_row_elements
-    all(".workers .worker")
-  end
 end
