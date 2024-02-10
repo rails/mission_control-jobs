@@ -60,7 +60,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     5.times { FailingJob.perform_later }
     10.times { FailingReloadedJob.perform_later }
     perform_enqueued_jobs
-$debug = true
     ActiveJob.jobs.failed.where(queue_name: :queue_1).discard_all
 
     assert_empty ActiveJob.jobs.failed.where(job_class_name: "FailingJob")
