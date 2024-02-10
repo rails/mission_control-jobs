@@ -54,6 +54,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `logger`:  the logger you want Mission Control Jobs to use. Defaults to `ActiveSupport::Logger.new(nil)` (no logging). Notice that this is different from Active Job's logger or Active Job's backend's configured logger.
 - `delay_between_bulk_operation_batches`: how long to wait between batches when performing bulk operations, such as _discard all_ or _retry all_ jobs—defaults to `0`
 - `adapters`: a list of adapters that you want Mission Control to use and extend. By default this will be the adapter you have set for `active_job.queue_adapter`.
+- `internal_query_count_limit`: the maximum number of jobs that Solid Queue adapters will query when performing a count. True counts above this number will be returned as `INFINITY`. This keeps count queries fast—defaults to `500,000`
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
