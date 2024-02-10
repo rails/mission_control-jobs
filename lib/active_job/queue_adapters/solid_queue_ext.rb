@@ -224,11 +224,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           solid_queue_status.finished? ? finished_jobs.count : executions.count
         end
 
-        INTERNAL_COUNT_LIMIT = 500_000 # Hard limit to keep unlimited count queries fast enough
-
         def internally_limited_count
-          limited_count = solid_queue_status.finished? ? finished_jobs.limit(INTERNAL_COUNT_LIMIT + 1).count : executions.limit(INTERNAL_COUNT_LIMIT + 1).count
-          (limited_count == INTERNAL_COUNT_LIMIT + 1) ? Float::INFINITY : limited_count
+          count_limit = MissionControl::Jobs.internal_query_count_limit + 1
+          limited_count = solid_queue_status.finished? ? finished_jobs.limit(count_limit).count : executions.limit(count_limit).count
+          (limited_count == count_limit) ? Float::INFINITY : limited_count
         end
 
         def execution_class_by_status
