@@ -2,7 +2,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
   before_action :ensure_exposed_workers
 
   def index
-    @workers_page = MissionControl::Jobs::Workers::Page.new(workers, page: params[:page].to_i)
+    @workers_page = MissionControl::Jobs::Page.new(workers, page: params[:page].to_i)
     @workers_count = @workers_page.total_count
   end
 
