@@ -1,5 +1,0 @@
-<nav class="buttons is-right" role="navigation" aria-label="pagination">
-  <span class="mr-3"><%= workers_page.index %> / <%= workers_page.pages_count || "..." %></span>
-  <%= link_to "Previous page", url_for(page: workers_page.previous_index), class: "pagination-previous", disabled: workers_page.first? %>
-  <%= link_to "Next page", url_for(page: workers_page.next_index), class: "pagination-next", disabled: workers_page.last? %>
-</nav>
