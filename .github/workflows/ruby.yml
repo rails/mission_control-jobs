@@ -5,13 +5,9 @@
 # This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
 # For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
 
-name: Ruby
+name: Build
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push, pull_request]
 
 permissions:
   contents: read
