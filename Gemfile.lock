@@ -154,7 +154,7 @@ GEM
     mini_mime (1.1.2)
     minitest (5.16.2)
     mocha (1.14.0)
-    mono_logger (1.1.1)
+    mono_logger (1.1.2)
     multi_json (1.15.0)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
@@ -233,8 +233,8 @@ GEM
     rdoc (6.6.2)
       psych (>= 4.0.0)
     redis (4.0.3)
-    redis-namespace (1.8.2)
-      redis (>= 3.0.4)
+    redis-namespace (1.11.0)
+      redis (>= 4)
     regexp_parser (2.5.0)
     reline (0.4.2)
       io-console (~> 0.5)
@@ -315,6 +315,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  arm64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
