@@ -20,8 +20,8 @@ module MissionControl
           MissionControl::Jobs.public_send("#{key}=", value)
         end
 
-        if config.active_job.queue_adapter.present? && MissionControl::Jobs.adapters.empty?
-          MissionControl::Jobs.adapters << config.active_job.queue_adapter
+        if MissionControl::Jobs.adapters.empty?
+          MissionControl::Jobs.adapters << (config.active_job.queue_adapter || :async)
         end
       end
 
@@ -43,6 +43,8 @@ module MissionControl
         if MissionControl::Jobs.adapters.include?(:solid_queue)
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
+
+        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
       end
 
       config.after_initialize do |app|
