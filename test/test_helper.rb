@@ -78,7 +78,7 @@ class ActionDispatch::IntegrationTest
 
     @application = MissionControl::Jobs.applications["integration-tests"]
     @server = @application.servers[:solid_queue]
-    @worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0)
+    @worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0.01)
   end
 
   teardown do
