@@ -38,7 +38,7 @@ class MissionControl::Jobs::Page
   end
 
   def total_count
-    @total_count ||= items_relation.count # Potentially expensive when filtering and a lot of jobs, with adapter in charge of doing the filtering in memory
+    @total_count ||= items_relation.count # Potentially expensive when filtering a lot of items, with the adapter in charge of doing the filtering in memory
   end
 
   private
