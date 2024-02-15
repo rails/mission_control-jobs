@@ -20,11 +20,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     worker = Resque::Worker.new("*")
     worker.work(0.0)
   end
-
-  def perform_enqueued_jobs_async
-    worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0)
-    worker.start
-  end
 end
 
 Capybara.configure do |config|
