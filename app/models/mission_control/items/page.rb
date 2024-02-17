@@ -1,4 +1,4 @@
-class MissionControl::Jobs::Page
+class MissionControl::Items::Page
   DEFAULT_PAGE_SIZE = 10
 
   attr_reader :items_relation, :index, :page_size
@@ -9,7 +9,7 @@ class MissionControl::Jobs::Page
     @index = [ page, 1 ].max
   end
 
-  def jobs
+  def items
     items_relation.limit(page_size).offset(offset)
   end
 
@@ -18,7 +18,7 @@ class MissionControl::Jobs::Page
   end
 
   def last?
-    index == pages_count || empty? || jobs.empty?
+    index == pages_count || empty? || items.empty?
   end
 
   def empty?

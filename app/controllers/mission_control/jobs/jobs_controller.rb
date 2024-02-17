@@ -5,7 +5,7 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
     @job_class_names = jobs_with_status.job_class_names
     @queue_names = ApplicationJob.queues.map(&:name)
 
-    @jobs_page = MissionControl::Jobs::Page.new(filtered_jobs_with_status, page: params[:page].to_i)
+    @jobs_page = MissionControl::Items::Page.new(filtered_jobs_with_status, page: params[:page].to_i)
     @jobs_count = @jobs_page.total_count
   end
 
