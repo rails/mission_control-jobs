@@ -22,7 +22,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
   end
 
   def workers
-    ActiveJob::WorkersRelation.new(workers: current_server.workers)
+    current_server.workers
   end
 
 end
