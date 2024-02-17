@@ -14,7 +14,7 @@ class MissionControl::Jobs::BulkDiscardsController < MissionControl::Jobs::Appli
         bulk_limited_filtered_failed_jobs
       else
         # we don't want to apply any limit since "discarding all" without parameters can be optimized in the adapter as a much faster operation
-        ApplicationJob.jobs.failed
+        ActiveJob::Base.jobs.failed
       end
     end
 end
