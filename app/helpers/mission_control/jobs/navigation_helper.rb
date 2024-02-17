@@ -45,7 +45,7 @@ module MissionControl::Jobs::NavigationHelper
   end
 
   def jobs_count_with_status(status)
-    count = ApplicationJob.jobs.with_status(status).count
+    count = ActiveJob::Base.jobs.with_status(status).count
     count.infinite? ? "..." : number_to_human(count)
   end
 end
