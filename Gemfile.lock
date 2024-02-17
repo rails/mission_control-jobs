@@ -32,7 +32,7 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (0.1.0)
+    mission_control-jobs (0.1.1)
       importmap-rails
       rails (~> 7.1)
       stimulus-rails
@@ -154,8 +154,10 @@ GEM
     mini_mime (1.1.2)
     minitest (5.16.2)
     mocha (1.14.0)
-    mono_logger (1.1.1)
+    mono_logger (1.1.2)
     multi_json (1.15.0)
+    mustermann (3.0.0)
+      ruby2_keywords (~> 0.0.1)
     mutex_m (0.2.0)
     net-imap (0.2.3)
       digest
@@ -171,10 +173,10 @@ GEM
       digest
       net-protocol
       timeout
-    nio4r (2.5.8)
-    nokogiri (1.16.0-arm64-darwin)
+    nio4r (2.7.0)
+    nokogiri (1.16.2-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.0-x86_64-linux)
+    nokogiri (1.16.2-x86_64-linux)
       racc (~> 1.4)
     parallel (1.24.0)
     parser (3.3.0.4)
@@ -183,10 +185,13 @@ GEM
     psych (5.1.2)
       stringio
     public_suffix (5.0.4)
-    puma (5.6.4)
+    puma (6.4.2)
       nio4r (~> 2.0)
-    racc (1.6.0)
-    rack (3.0.8)
+    racc (1.7.3)
+    rack (3.0.9)
+    rack-protection (4.0.0)
+      base64 (>= 0.1.0)
+      rack (>= 3.0.0, < 4)
     rack-session (2.0.0)
       rack (>= 3.0.0)
     rack-test (2.1.0)
@@ -228,8 +233,8 @@ GEM
     rdoc (6.6.2)
       psych (>= 4.0.0)
     redis (4.0.3)
-    redis-namespace (1.8.2)
-      redis (>= 3.0.4)
+    redis-namespace (1.11.0)
+      redis (>= 4)
     regexp_parser (2.5.0)
     reline (0.4.2)
       io-console (~> 0.5)
@@ -271,8 +276,12 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
-    sinatra (1.0)
-      rack (>= 1.0)
+    sinatra (4.0.0)
+      mustermann (~> 3.0)
+      rack (>= 3.0.0, < 4)
+      rack-protection (= 4.0.0)
+      rack-session (>= 2.0.0, < 3)
+      tilt (~> 2.0)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -286,6 +295,7 @@ GEM
     stringio (3.1.0)
     strscan (3.0.4)
     thor (1.3.0)
+    tilt (2.3.0)
     timeout (0.4.1)
     turbo-rails (1.5.0)
       actionpack (>= 6.0.0)
@@ -306,6 +316,7 @@ GEM
 PLATFORMS
   arm64-darwin-21
   arm64-darwin-23
+  arm64-darwin-22
   x86_64-linux
 
 DEPENDENCIES

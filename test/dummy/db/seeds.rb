@@ -40,7 +40,7 @@ class JobsLoader
         worker = Resque::Worker.new("*")
         worker.work(0.0)
       when :solid_queue
-        worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0)
+        worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0.01)
         worker.mode = :inline
         worker.start
       else

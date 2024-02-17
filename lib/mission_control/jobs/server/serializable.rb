@@ -18,7 +18,7 @@ module MissionControl::Jobs::Server::Serializable
   end
 
   def to_global_id
-    suffix = ":#{id}" if application.servers.length > 1
+    suffix = ":#{id}" if application.servers.many?
     "#{application&.id}#{suffix}"
   end
 end

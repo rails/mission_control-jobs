@@ -54,6 +54,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `logger`:  the logger you want Mission Control Jobs to use. Defaults to `ActiveSupport::Logger.new(nil)` (no logging). Notice that this is different from Active Job's logger or Active Job's backend's configured logger.
 - `delay_between_bulk_operation_batches`: how long to wait between batches when performing bulk operations, such as _discard all_ or _retry all_ jobs—defaults to `0`
 - `adapters`: a list of adapters that you want Mission Control to use and extend. By default this will be the adapter you have set for `active_job.queue_adapter`.
+- `internal_query_count_limit`: in count queries, the maximum number of records that will be counted if the adapter needs to limit these queries. True counts above this number will be returned as `INFINITY`. This keeps count queries fast—defaults to `500,000`
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
@@ -159,7 +160,7 @@ Typing `jobs_help`, you'll get clear instructions about how to switch between ap
 ```
 >> jobs_help
 You can connect to a job server with
-  connect_to <app_id>:<server_id>
+  connect_to "<app_id>:<server_id>"
 
 Available job servers:
   * bc4:resque_ashburn
@@ -185,19 +186,19 @@ ActiveJob.jobs
 ActiveJob.jobs.failed
 
 # All pending jobs in some queue
-ActiveJob.jobs.pending.where(queue: "some_queue")
+ActiveJob.jobs.pending.where(queue_name: "some_queue")
 
 # All failed jobs of a given class
-ActiveJob.jobs.failed.where(job_class: "SomeJob")
+ActiveJob.jobs.failed.where(job_class_name: "SomeJob")
 
 # All pending jobs of a given class with limit and offset
-ActiveJob.jobs.pending.where(job_class: "SomeJob").limit(10).offset(5)
+ActiveJob.jobs.pending.where(job_class_name: "SomeJob").limit(10).offset(5)
 
 # For adapters that support these statuses:
 # All scheduled/in-progress/finished jobs of a given class
-ActiveJob.jobs.scheudled.where(job_class: "SomeJob")
-ActiveJob.jobs.in_progress.where(job_class: "SomeJob")
-ActiveJob.jobs.finished.where(job_class: "SomeJob")
+ActiveJob.jobs.scheduled.where(job_class_name: "SomeJob")
+ActiveJob.jobs.in_progress.where(job_class_name: "SomeJob")
+ActiveJob.jobs.finished.where(job_class_name: "SomeJob")
 
 # For adapters that support filtering by worker:
 # All jobs in progress being run by a given worker
@@ -211,13 +212,13 @@ Some examples of bulk operations:
 ActiveJob.jobs.failed.retry_all
 
 # Retry all the jobs of a given class (only possible for failed jobs)
-ActiveJob.jobs.failed.where(job_class: "SomeJob").retry_all
+ActiveJob.jobs.failed.where(job_class_name: "SomeJob").retry_all
 
 # Discard all failed jobs
 ActiveJob.jobs.failed.discard_all
 
 # Discard all pending jobs of a given class
-ActiveJob.jobs.pending.where(job_class: "SomeJob").discard_all
+ActiveJob.jobs.pending.where(job_class_name: "SomeJob").discard_all
 # Or all pending jobs in a given queue:
 ActiveJob.jobs.pending.where(queue_name: "some-queue").discard_all
 ```

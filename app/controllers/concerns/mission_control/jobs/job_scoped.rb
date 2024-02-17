@@ -2,7 +2,7 @@ module MissionControl::Jobs::JobScoped
   extend ActiveSupport::Concern
 
   included do
-    before_action :set_job, except: :index
+    before_action :set_job
   end
 
   private
