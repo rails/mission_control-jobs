@@ -9,7 +9,7 @@ def clean_database
 end
 
 class JobsLoader
-  attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count, :finished_jobs_count
+  attr_reader :application, :server, :failed_jobs_count, :regular_jobs_count, :finished_jobs_count, :blocked_jobs_count
 
   def initialize(application, server, failed_jobs_count: 100, regular_jobs_count: 50)
     @application = application
@@ -17,6 +17,7 @@ class JobsLoader
     @failed_jobs_count = randomize(failed_jobs_count)
     @regular_jobs_count = randomize(regular_jobs_count)
     @finished_jobs_count = randomize(regular_jobs_count)
+    @blocked_jobs_count = randomize(regular_jobs_count)
   end
 
   def load
@@ -24,6 +25,7 @@ class JobsLoader
       load_finished_jobs
       load_failed_jobs
       load_regular_jobs
+      load_blocked_jobs if server.queue_adapter.supported_statuses.include?(:blocked)
     end
   end
 
@@ -31,10 +33,10 @@ class JobsLoader
     def load_failed_jobs
       puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server}..."
       failed_jobs_count.times { |index| enqueue_one_of FailingJob => index, FailingReloadedJob => index, FailingPostJob => [ Post.last, 1.year.ago ] }
-      dispatch_jobs
+      perform_jobs
     end
 
-    def dispatch_jobs
+    def perform_jobs
       case server.queue_adapter_name
       when :resque
         worker = Resque::Worker.new("*")
@@ -53,13 +55,20 @@ class JobsLoader
       regular_jobs_count.times do |index|
         enqueue_one_of DummyJob => index, DummyReloadedJob => index
       end
-      dispatch_jobs
+      perform_jobs
     end
 
     def load_regular_jobs
       puts "Generating #{regular_jobs_count} regular jobs for #{application} - #{server}..."
       regular_jobs_count.times do |index|
         enqueue_one_of DummyJob => index, DummyReloadedJob => index
+      end
+    end
+
+    def load_blocked_jobs
+      puts "Generating #{blocked_jobs_count} blocked jobs for #{application} - #{server}..."
+      blocked_jobs_count.times do |index|
+        enqueue_one_of BlockingJob => index
       end
     end
 

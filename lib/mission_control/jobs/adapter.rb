@@ -102,6 +102,10 @@ module MissionControl::Jobs::Adapter
     raise_incompatible_adapter_error_from :discard_job
   end
 
+  def dispatch_job(job, jobs_relation)
+    raise_incompatible_adapter_error_from :dispatch_job
+  end
+
   def find_job(job_id, *)
     raise_incompatible_adapter_error_from :find_job
   end

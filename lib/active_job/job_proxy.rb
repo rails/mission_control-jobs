@@ -23,4 +23,10 @@ class ActiveJob::JobProxy < ActiveJob::Base
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end
+
+  ActiveJob::JobsRelation::STATUSES.each do |status|
+    define_method "#{status}?" do
+      self.status == status
+    end
+  end
 end
