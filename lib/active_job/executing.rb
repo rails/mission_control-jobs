@@ -4,9 +4,8 @@ module ActiveJob::Executing
   extend ActiveSupport::Concern
 
   included do
-    attr_accessor :raw_data, :position, :finished_at, :blocked_by, :blocked_until, :worker_id, :started_at
+    attr_accessor :raw_data, :position, :finished_at, :blocked_by, :blocked_until, :worker_id, :started_at, :status
     attr_reader :serialized_arguments
-    attr_writer :status
 
     thread_cattr_accessor :current_queue_adapter
   end
@@ -25,10 +24,8 @@ module ActiveJob::Executing
     jobs_relation_for_discarding.discard_job(self)
   end
 
-  def status
-    return @status if @status.present?
-
-    failed? ? :failed : :pending
+  def dispatch
+    ActiveJob.jobs.blocked.dispatch_job(self)
   end
 
   private

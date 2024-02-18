@@ -2,6 +2,7 @@ require "test_helper"
 
 class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
   include ActiveJob::QueueAdapters::AdapterTesting
+  include DispatchJobs
 
   setup do
     SolidQueue.logger = ActiveSupport::Logger.new(nil)
