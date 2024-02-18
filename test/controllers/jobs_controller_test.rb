@@ -63,5 +63,6 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tr.job", 2
     assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+in 1 minute/
     assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+(1 minute ago|less than a minute ago)/
+    assert_select "tr.job", /Discard/
   end
 end
