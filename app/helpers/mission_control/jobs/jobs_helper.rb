@@ -26,6 +26,10 @@ module MissionControl::Jobs::JobsHelper
     end
   end
 
+  def job_delayed?(job)
+    job.scheduled_at.before?(MissionControl::Jobs.scheduled_job_delay_threshold.ago)
+  end
+
   private
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|

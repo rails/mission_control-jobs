@@ -30,7 +30,6 @@ module MissionControl
           include ActiveJob::Querying
           include ActiveJob::Executing
           include ActiveJob::Failed
-          include ActiveJob::Scheduled
           ActiveJob.extend ActiveJob::Querying::Root
         end
       end
