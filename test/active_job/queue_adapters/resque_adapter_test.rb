@@ -65,13 +65,13 @@ class ActiveJob::QueueAdapters::ResqueAdapterTest < ActiveSupport::TestCase
 
     with_active_job_adapter(adapter_1) do
       adapter_1.activating do
-        assert_equal 5, ApplicationJob.jobs.pending.count
+        assert_equal 5, ActiveJob.jobs.pending.count
       end
     end
 
     with_active_job_adapter(adapter_2) do
       adapter_2.activating do
-        assert_equal 10, ApplicationJob.jobs.pending.count
+        assert_equal 10, ActiveJob.jobs.pending.count
       end
     end
   end

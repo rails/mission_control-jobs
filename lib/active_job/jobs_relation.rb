@@ -1,12 +1,12 @@
 # A relation of jobs that can be filtered and acted on.
 #
-# Relations of jobs are normally fetched via +ActiveJob::Base.jobs+
+# Relations of jobs are normally fetched via +ActiveJob.jobs+
 # or through a given queue (+ActiveJob::Queue#jobs+).
 #
 # This class offers a fluid interface to query a subset of jobs. For
 # example:
 #
-#   queue = ActiveJob::Base.queues[:default]
+#   queue = ActiveJob.queues[:default]
 #   queue.jobs.limit(10).where(job_class_name: "DummyJob").last
 #
 # Relations are enumerable, so you can use +Enumerable+ methods on them.

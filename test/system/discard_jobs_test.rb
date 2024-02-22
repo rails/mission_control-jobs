@@ -23,7 +23,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
 
   test "discard a single job" do
     assert_equal 9, job_row_elements.length
-    expected_job_id = ApplicationJob.jobs.failed[2].job_id
+    expected_job_id = ActiveJob.jobs.failed[2].job_id
 
     within_job_row "2" do
       accept_confirm do
@@ -66,7 +66,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
 
   test "discard a job from its details screen" do
     assert_equal 9, job_row_elements.length
-    failed_job = ApplicationJob.jobs.failed[2]
+    failed_job = ActiveJob.jobs.failed[2]
     visit job_path(failed_job.job_id)
 
     accept_confirm do
