@@ -92,10 +92,20 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :key, :value ], name: "index_solid_queue_semaphores_on_key_and_value"
     end
 
+    create_table :solid_queue_recurring_executions do |t|
+      t.references :job, index: { unique: true }, null: false
+      t.string :task_key, null: false
+      t.datetime :run_at, null: false
+      t.datetime :created_at, null: false
+
+      t.index [ :task_key, :run_at ], unique: true
+    end
+
     add_foreign_key :solid_queue_blocked_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
     add_foreign_key :solid_queue_claimed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
     add_foreign_key :solid_queue_failed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
     add_foreign_key :solid_queue_ready_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
+    add_foreign_key :solid_queue_recurring_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
     add_foreign_key :solid_queue_scheduled_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
   end
 end

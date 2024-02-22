@@ -10,9 +10,12 @@ GIT
 
 GIT
   remote: https://github.com/basecamp/solid_queue
-  revision: fe57349a126efc381fe0adf4c1ec444bd8a4f53f
+  revision: f2f10f593126669fd903092cf8d7901db7d521fa
+  branch: cron-jobs-take-2
   specs:
     solid_queue (0.2.1)
+      concurrent-ruby (~> 1.2.2)
+      fugit (~> 1.9.0)
       rails (~> 7.1)
 
 GIT
@@ -131,6 +134,11 @@ GEM
     drb (2.2.0)
       ruby2_keywords
     erubi (1.12.0)
+    et-orbi (1.2.7)
+      tzinfo
+    fugit (1.9.0)
+      et-orbi (~> 1, >= 1.2.7)
+      raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
     i18n (1.14.1)
@@ -194,6 +202,7 @@ GEM
     public_suffix (5.0.4)
     puma (6.4.2)
       nio4r (~> 2.0)
+    raabro (1.4.0)
     racc (1.7.3)
     rack (3.0.9.1)
     rack-protection (4.0.0)
