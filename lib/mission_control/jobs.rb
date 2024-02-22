@@ -16,5 +16,6 @@ module MissionControl
     mattr_accessor :delay_between_bulk_operation_batches, default: 0
     mattr_accessor :logger, default: ActiveSupport::Logger.new(nil)
     mattr_accessor :internal_query_count_limit, default: 500_000 # Hard limit to keep unlimited count queries fast enough
+    mattr_accessor :show_console_help, default: true
   end
 end
