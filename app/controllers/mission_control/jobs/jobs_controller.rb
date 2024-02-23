@@ -5,9 +5,9 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
 
   def index
     @job_class_names = jobs_with_status.job_class_names
-    @queue_names = ApplicationJob.queues.map(&:name)
+    @queue_names = ActiveJob::Base.queues.map(&:name)
 
-    @jobs_page = MissionControl::Items::Page.new(filtered_jobs_with_status, page: params[:page].to_i)
+    @jobs_page = MissionControl::Jobs::Page.new(filtered_jobs_with_status, page: params[:page].to_i)
     @jobs_count = @jobs_page.total_count
   end
 
@@ -24,11 +24,11 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
     end
 
     def jobs_with_status
-      ApplicationJob.jobs.with_status(jobs_status)
+      ActiveJob::Base.jobs.with_status(jobs_status)
     end
 
     def filtered_jobs
-      ApplicationJob.jobs.where(**@job_filters)
+      ActiveJob::Base.jobs.where(**@job_filters)
     end
 
     helper_method :jobs_status

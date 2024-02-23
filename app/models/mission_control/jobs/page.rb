@@ -1,16 +1,16 @@
-class MissionControl::Items::Page
+class MissionControl::Jobs::Page
   DEFAULT_PAGE_SIZE = 10
 
-  attr_reader :items_relation, :index, :page_size
+  attr_reader :records_relation, :index, :page_size
 
-  def initialize(items_relation, page: 1, page_size: DEFAULT_PAGE_SIZE)
-    @items_relation =items_relation
+  def initialize(relation, page: 1, page_size: DEFAULT_PAGE_SIZE)
+    @relation = relation
     @page_size = page_size
     @index = [ page, 1 ].max
   end
 
-  def items
-    items_relation.limit(page_size).offset(offset)
+  def records
+    @relation.limit(page_size).offset(offset)
   end
 
   def first?
@@ -18,7 +18,7 @@ class MissionControl::Items::Page
   end
 
   def last?
-    index == pages_count || empty? || items.empty?
+    index == pages_count || empty? || records.empty?
   end
 
   def empty?
@@ -38,7 +38,7 @@ class MissionControl::Items::Page
   end
 
   def total_count
-    @total_count ||= items_relation.count # Potentially expensive when filtering a lot of items, with the adapter in charge of doing the filtering in memory
+    @total_count ||= @relation.count # Potentially expensive when filtering a lot of records, with the adapter in charge of doing the filtering in memory
   end
 
   private

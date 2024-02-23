@@ -13,7 +13,7 @@
   <% else %>
     <%= render "mission_control/jobs/jobs/jobs_page", jobs_page: @jobs_page %>
 
-    <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: {} %>
+    <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: jobs_filter_param %>
   <% end %>
 <% end %>
 

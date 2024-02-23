@@ -2,7 +2,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
   before_action :ensure_exposed_workers
 
   def index
-    @workers_page = MissionControl::Items::Page.new(workers, page: params[:page].to_i)
+    @workers_page = MissionControl::Jobs::Page.new(workers_relation, page: params[:page].to_i)
     @workers_count = @workers_page.total_count
   end
 
@@ -21,8 +21,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
     MissionControl::Jobs::Current.server
   end
 
-  def workers
-    current_server.workers
+  def workers_relation
+    current_server.workers_relation
   end
-
 end
