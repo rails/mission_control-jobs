@@ -169,7 +169,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def find_job(active_job_id)
-        if job = SolidQueue::Job.find_by(active_job_id: active_job_id)
+        if job = SolidQueue::Job.where(active_job_id: active_job_id).order(:id).last
           job if matches_relation_filters?(job)
         end
       end
