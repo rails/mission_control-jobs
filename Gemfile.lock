@@ -316,6 +316,7 @@ GEM
 PLATFORMS
   arm64-darwin-21
   arm64-darwin-22
+  arm64-darwin-23
   x86_64-linux
 
 DEPENDENCIES
@@ -324,11 +325,11 @@ DEPENDENCIES
   mission_control-jobs!
   mocha
   puma
-  redis (~> 4.0.0)
+  redis
   redis-namespace
   resque
   resque-pause
-  rubocop (~> 1.52.0)
+  rubocop
   rubocop-37signals!
   rubocop-performance
   rubocop-rails
