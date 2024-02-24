@@ -47,7 +47,7 @@ module ActiveJob::QueueAdapters::ResqueExt
     ResquePauseHelper.paused?(queue_name)
   end
 
-  def supported_filters(jobs_relation)
+  def supported_job_filters(jobs_relation)
     if jobs_relation.pending? then [ :queue_name ]
     else []
     end

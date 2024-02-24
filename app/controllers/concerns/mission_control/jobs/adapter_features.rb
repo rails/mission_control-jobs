@@ -11,7 +11,7 @@ module MissionControl::Jobs::AdapterFeatures
     end
 
     def supported_job_statuses
-      MissionControl::Jobs::Current.server.queue_adapter.supported_statuses & ActiveJob::JobsRelation::STATUSES
+      MissionControl::Jobs::Current.server.queue_adapter.supported_job_statuses & ActiveJob::JobsRelation::STATUSES
     end
 
     def queue_pausing_supported?

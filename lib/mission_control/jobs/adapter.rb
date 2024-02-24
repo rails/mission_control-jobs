@@ -3,17 +3,17 @@ module MissionControl::Jobs::Adapter
     block.call
   end
 
-  def supported_statuses
+  def supported_job_statuses
     # All adapters need to support these at a minimum
     [ :pending, :failed ]
   end
 
-  def supports_filter?(jobs_relation, filter)
-    supported_filters(jobs_relation).include?(filter)
+  def supports_job_filter?(jobs_relation, filter)
+    supported_job_filters(jobs_relation).include?(filter)
   end
 
   # List of filters supported natively. Non-supported filters are done in memory.
-  def supported_filters(jobs_relation)
+  def supported_job_filters(jobs_relation)
     []
   end
 
@@ -22,6 +22,10 @@ module MissionControl::Jobs::Adapter
   end
 
   def exposes_workers?
+    false
+  end
+
+  def supports_recurring_jobs?
     false
   end
 

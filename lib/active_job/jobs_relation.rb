@@ -263,7 +263,7 @@ class ActiveJob::JobsRelation
     end
 
     def filters
-      @filters ||= FILTERS.select { |property| public_send(property).present? && !queue_adapter.supports_filter?(self, property) }
+      @filters ||= FILTERS.select { |property| public_send(property).present? && !queue_adapter.supports_job_filter?(self, property) }
     end
 
     def ensure_failed_status

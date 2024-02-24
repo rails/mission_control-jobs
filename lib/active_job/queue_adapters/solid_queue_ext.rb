@@ -34,11 +34,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_queue_by_name(queue_name).paused?
   end
 
-  def supported_statuses
+  def supported_job_statuses
     RelationAdapter::STATUS_MAP.keys
   end
 
-  def supported_filters(*)
+  def supported_job_filters(*)
     [ :queue_name, :job_class_name ]
   end
 
