@@ -92,5 +92,9 @@ class ActionDispatch::IntegrationTest
 
     def perform_enqueued_jobs_async
       @worker.start
+      if block_given?
+        yield
+        @worker.stop
+      end
     end
 end
