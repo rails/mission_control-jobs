@@ -3,6 +3,10 @@ module MissionControl::Jobs::Adapter
     block.call
   end
 
+  def supports_job_status?(status)
+    supported_job_statuses.include?(status)
+  end
+
   def supported_job_statuses
     # All adapters need to support these at a minimum
     [ :pending, :failed ]
@@ -25,8 +29,23 @@ module MissionControl::Jobs::Adapter
     false
   end
 
-  def supports_recurring_jobs?
+  def supports_recurring_tasks?
     false
+  end
+
+  # Returns an array with the list of recurring tasks. Each task is represented as a hash
+  # with these attributes:
+  #   {
+  #     id: "periodic-job",
+  #     job_class_name: "MyJob",
+  #     arguments: [ 123, { arg: :value }]
+  #     schedule: "every monday at 9 am",
+  #     last_run_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00
+  #   }
+  def recurring_tasks
+    if supports_recurring_tasks?
+      raise_incompatible_adapter_error_from :recurring_tasks
+    end
   end
 
   # Returns an array with the list of workers. Each worker is represented as a hash
