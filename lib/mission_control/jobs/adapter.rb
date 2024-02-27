@@ -39,14 +39,21 @@ module MissionControl::Jobs::Adapter
   #     id: "periodic-job",
   #     job_class_name: "MyJob",
   #     arguments: [ 123, { arg: :value }]
-  #     schedule: "every monday at 9 am",
-  #     last_run_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00
+  #     schedule: "every monday at 9 am"
   #   }
   def recurring_tasks
     if supports_recurring_tasks?
       raise_incompatible_adapter_error_from :recurring_tasks
     end
   end
+
+  # Returns a recurring task represented by a hash as indicated above
+  def find_recurring_task(recurring_task_id)
+    if supports_recurring_tasks?
+      raise_incompatible_adapter_error_from :find_recurring_task
+    end
+  end
+
 
   # Returns an array with the list of workers. Each worker is represented as a hash
   # with these attributes:
@@ -63,6 +70,14 @@ module MissionControl::Jobs::Adapter
       raise_incompatible_adapter_error_from :workers
     end
   end
+
+  # Returns a worker represented by a hash as indicated above
+  def find_worker(worker_id)
+    if exposes_workers?
+      raise_incompatible_adapter_error_from :find_worker
+    end
+  end
+
 
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:

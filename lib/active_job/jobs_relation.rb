@@ -25,7 +25,7 @@ class ActiveJob::JobsRelation
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
   FILTERS = %i[ queue_name job_class_name ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id ]
   attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
@@ -50,9 +50,15 @@ class ActiveJob::JobsRelation
   #   for large sets of jobs.
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
-  def where(job_class_name: nil, queue_name: nil, worker_id: nil)
+  # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
-    arguments = { job_class_name: job_class_name, queue_name: queue_name, worker_id: worker_id }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    arguments = { job_class_name: job_class_name,
+      queue_name: queue_name,
+      worker_id: worker_id,
+      recurring_task_id: recurring_task_id
+    }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+
     clone_with **arguments
   end
 
