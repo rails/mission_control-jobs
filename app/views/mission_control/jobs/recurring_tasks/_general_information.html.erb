@@ -1,0 +1,16 @@
+<table class="table">
+  <tbody>
+  <tr>
+    <th>Job class</th>
+    <td><%= recurring_task.job_class_name %></td>
+  </tr>
+  <tr>
+    <th>Arguments</th>
+    <td><div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div></td>
+  </tr>
+  <tr>
+    <th>Schedule</th>
+    <td><%= recurring_task.schedule %></td>
+  </tr>
+  </tbody>
+</table>
