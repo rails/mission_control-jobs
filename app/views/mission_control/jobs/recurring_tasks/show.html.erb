@@ -6,7 +6,7 @@
 <% if @jobs_page.empty? %>
   <%= blank_status_notice "No jobs found for this recurring task" %>
 <% else %>
-  <h2 class="subtitle"><%= @recurring_task.jobs.count %> jobs</h2>
+  <h2 class="subtitle"><%= pluralize @recurring_task.jobs.count, "job" %></h2>
 
   <%= render "mission_control/jobs/shared/jobs", jobs: @jobs_page.jobs %>
 

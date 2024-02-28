@@ -258,7 +258,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           if solid_queue_status.claimed?
             executions.where(process_id: worker_id)
           else
-            raise ActiveJob::Errors::QueryError, "Filtering by worker ID is not supported for status #{jobs_relation.status}"
+            raise ActiveJob::Errors::QueryError, "Filtering by worker id is not supported for status #{jobs_relation.status}"
           end
         end
 

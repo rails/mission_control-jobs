@@ -7,7 +7,7 @@ module MissionControl::Jobs::Server::Workers
     if worker = queue_adapter.find_worker(worker_id)
       MissionControl::Jobs::Worker.new(queue_adapter: queue_adapter, **worker)
     else
-      raise MissionControl::Jobs::Errors::ResourceNotFound, "No worker found with ID #{worker_id}"
+      raise MissionControl::Jobs::Errors::ResourceNotFound, "Worker with id '#{worker_id}' not found"
     end
   end
 end
