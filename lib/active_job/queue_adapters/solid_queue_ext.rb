@@ -148,7 +148,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def jobs
-        solid_queue_status.finished? ? order_finished_jobs(finished_jobs) : order_executions(executions).map(&:job)
+        solid_queue_status.finished? ? order_finished_jobs(finished_jobs) : order_executions(executions).map(&:job).compact
       end
 
       def count
@@ -199,10 +199,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def order_executions(executions)
-          # Follow polling order for scheduled executions, the rest by job_id
-          if solid_queue_status.scheduled? then executions.ordered
-          else
-            executions.order(:job_id)
+          case
+            # Follow polling order for scheduled executions, the rest by job_id
+          when solid_queue_status.scheduled? then executions.ordered
+          when recurring_task_id.present?    then executions.order(job_id: :desc)
+          else executions.order(job_id: :desc)
           end
         end
 
@@ -231,7 +232,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def include_execution_association(executions)
-          solid_queue_status.present? ? executions.includes(job: "#{solid_queue_status}_execution") : executions
+          solid_queue_status.present? ? executions.includes(job: "#{solid_queue_status}_execution") : executions.includes(:job)
         end
 
         def filter_executions_by_queue(executions)

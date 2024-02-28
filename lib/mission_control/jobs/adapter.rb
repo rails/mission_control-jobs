@@ -39,7 +39,8 @@ module MissionControl::Jobs::Adapter
   #     id: "periodic-job",
   #     job_class_name: "MyJob",
   #     arguments: [ 123, { arg: :value }]
-  #     schedule: "every monday at 9 am"
+  #     schedule: "every monday at 9 am",
+  #     last_enqueued_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
   #   }
   def recurring_tasks
     if supports_recurring_tasks?
