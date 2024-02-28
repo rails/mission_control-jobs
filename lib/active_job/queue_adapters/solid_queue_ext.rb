@@ -200,10 +200,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def order_executions(executions)
           case
-            # Follow polling order for scheduled executions, the rest by job_id
+            # Follow polling order for scheduled executions, the rest by job_id, desc or asc
           when solid_queue_status.scheduled? then executions.ordered
           when recurring_task_id.present?    then executions.order(job_id: :desc)
-          else executions.order(job_id: :desc)
+          else executions.order(job_id: :asc)
           end
         end
 

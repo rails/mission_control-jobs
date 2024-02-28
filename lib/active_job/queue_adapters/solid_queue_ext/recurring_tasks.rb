@@ -18,7 +18,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
     if task_attrs = recurring_tasks_from_dispatchers[task_id]
       recurring_task_attributes_from_solid_queue_task_attributes(task_attrs).merge \
         id: task_id,
-        last_enqueued_at: recurring_task_last_enqueued_at(task_id)
+        last_enqueued_at: recurring_task_last_enqueued_at(task_id).values&.first
     end
   end
 
@@ -38,7 +38,6 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
     end
 
     def recurring_task_last_enqueued_at(task_keys)
-      times = SolidQueue::RecurringExecution.where(task_key: task_keys).group(:task_key).maximum(:run_at)
-      times.one? ? times.first : times
+      SolidQueue::RecurringExecution.where(task_key: task_keys).group(:task_key).maximum(:run_at)
     end
 end
