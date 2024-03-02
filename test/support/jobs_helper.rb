@@ -16,10 +16,4 @@ module JobsHelper
   def default_job_server
     MissionControl::Jobs.applications.first.servers.first
   end
-
-  def skip_unless_queue_adapter_supports_status(status)
-    return if ActiveJob::Base.queue_adapter.supported_statuses.include? status
-
-    skip "#{ActiveJob::Base.queue_adapter_name} does not support #{status} jobs"
-  end
 end

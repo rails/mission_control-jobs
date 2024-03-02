@@ -2,7 +2,7 @@ module ActiveJob::QueueAdapters::AdapterTesting
   extend ActiveSupport::Concern
 
   included do
-    include CountJobs, DiscardJobs, FindJobs, JobBatches, QueryJobs, Queues, RetryJobs, JobStatuses
+    include CountJobs, DiscardJobs, FindJobs, JobBatches, QueryJobs, Queues, RetryJobs
 
     setup do
       ActiveJob::Base.queue_adapter = queue_adapter
