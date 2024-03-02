@@ -20,8 +20,8 @@ module MissionControl
           MissionControl::Jobs.public_send("#{key}=", value)
         end
 
-        if config.active_job.queue_adapter.present? && MissionControl::Jobs.adapters.empty?
-          MissionControl::Jobs.adapters << config.active_job.queue_adapter
+        if MissionControl::Jobs.adapters.empty?
+          MissionControl::Jobs.adapters << (config.active_job.queue_adapter || :async)
         end
       end
 
@@ -43,6 +43,8 @@ module MissionControl
         if MissionControl::Jobs.adapters.include?(:solid_queue)
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
+
+        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
       end
 
       config.after_initialize do |app|
@@ -63,6 +65,7 @@ module MissionControl
       end
 
       console do
+        require "irb"
         require "irb/context"
 
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
@@ -76,7 +79,9 @@ module MissionControl
           MissionControl::Jobs::Current.server = application.servers.first
         end
 
-        puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
+        if MissionControl::Jobs.show_console_help
+          puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
+        end
       end
 
       initializer "mission_control-jobs.assets" do |app|

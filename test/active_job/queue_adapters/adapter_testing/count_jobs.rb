@@ -107,4 +107,22 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     assert_equal 2, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").offset(3).limit(2).count
     assert_equal 3, ApplicationJob.jobs.failed.where(job_class_name: "FailingJob").offset(7).limit(10).count
   end
+
+  test "count jobs with internal query count limit configured" do
+    skip "Only Solid Queue supports internal query count limit" unless queue_adapter == :solid_queue
+
+    begin
+      original_limit = MissionControl::Jobs.internal_query_count_limit
+      MissionControl::Jobs.internal_query_count_limit = 5
+      assert_equal 0, ApplicationJob.jobs.pending.count
+
+      5.times { DummyJob.perform_later }
+      assert_equal 5, ApplicationJob.jobs.pending.count
+
+      DummyJob.perform_later
+      assert_equal Float::INFINITY, ApplicationJob.jobs.pending.count
+    ensure
+      MissionControl::Jobs.internal_query_count_limit = original_limit
+    end
+  end
 end

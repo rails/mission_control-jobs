@@ -147,6 +147,11 @@ class ActiveJob::JobsRelation
     queue_adapter.discard_job(job, self)
   end
 
+  # Dispatch the provided job.
+  def dispatch_job(job)
+    queue_adapter.dispatch_job(job, self)
+  end
+
   # Find a job by id.
   #
   # Returns nil when not found.
