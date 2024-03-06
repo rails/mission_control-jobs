@@ -20,16 +20,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'importmap-rails'
   spec.add_dependency 'turbo-rails'
   spec.add_dependency 'stimulus-rails'
-
-  spec.add_development_dependency "resque"
-  spec.add_development_dependency "solid_queue"
-  spec.add_development_dependency "selenium-webdriver"
-  spec.add_development_dependency "resque-pause"
-  spec.add_development_dependency "mocha"
-  spec.add_development_dependency "debug"
-  spec.add_development_dependency "redis"
-  spec.add_development_dependency "redis-namespace"
-  spec.add_development_dependency "rubocop"
-  spec.add_development_dependency "rubocop-performance"
-  spec.add_development_dependency "rubocop-rails"
 end

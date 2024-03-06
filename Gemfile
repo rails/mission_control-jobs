@@ -1,14 +1,20 @@
 source "https://rubygems.org"
-git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-git_source(:bc)     { |repo| "https://github.com/basecamp/#{repo}" }
 
-# Specify your gem's dependencies in mission_control-jobs.gemspec.
 gemspec
 
-gem "sqlite3"
-
-gem "sprockets-rails"
-gem "solid_queue", bc: "solid_queue", require: false
-gem "rubocop-37signals", bc: "house-style", require: false
+gem "capybara"
+gem "debug"
+gem "mocha"
 gem "puma"
-gem "capybara", github: "teamcapybara/capybara"
+gem "redis"
+gem "redis-namespace"
+gem "resque"
+gem "resque-pause"
+gem "rubocop"
+gem "rubocop-37signals"
+gem "rubocop-performance"
+gem "rubocop-rails"
+gem "selenium-webdriver"
+gem "solid_queue"
+gem "sprockets-rails"
+gem "sqlite3"

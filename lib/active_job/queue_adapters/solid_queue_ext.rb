@@ -82,6 +82,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_solid_queue_job!(job.job_id, jobs_relation).discard
   end
 
+  def dispatch_job(job, jobs_relation)
+    dispatch_immediately find_solid_queue_job!(job.job_id, jobs_relation)
+  end
+
   def find_job(job_id, *)
     if job = SolidQueue::Job.where(active_job_id: job_id).order(:id).last
       deserialize_and_proxy_solid_queue_job job
@@ -146,6 +150,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
     end
 
+    def dispatch_immediately(job)
+      SolidQueue::Job.transaction do
+        job.dispatch_bypassing_concurrency_limits
+        job.blocked_execution.destroy!
+      end
+    end
+
     class RelationAdapter
       STATUS_MAP = {
         pending: :ready,
@@ -169,7 +180,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def find_job(active_job_id)
-        if job = SolidQueue::Job.find_by(active_job_id: active_job_id)
+        if job = SolidQueue::Job.where(active_job_id: active_job_id).order(:id).last
           job if matches_relation_filters?(job)
         end
       end

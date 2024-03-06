@@ -63,7 +63,7 @@ class ActiveSupport::TestCase
     end
 
     def root_resque_redis
-      @root_resque_redis ||= Redis.new(host: "localhost", port: 6379, thread_safe: true)
+      @root_resque_redis ||= Redis.new(host: "localhost", port: 6379)
     end
 
     def reset_configured_queues_for_job_classes
@@ -92,5 +92,9 @@ class ActionDispatch::IntegrationTest
 
     def perform_enqueued_jobs_async
       @worker.start
+      if block_given?
+        yield
+        @worker.stop
+      end
     end
 end
