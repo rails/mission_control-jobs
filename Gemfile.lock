@@ -239,7 +239,10 @@ GEM
     rake (13.1.0)
     rdoc (6.6.2)
       psych (>= 4.0.0)
-    redis (4.0.3)
+    redis (5.1.0)
+      redis-client (>= 0.17.0)
+    redis-client (0.21.0)
+      connection_pool
     redis-namespace (1.11.0)
       redis (>= 4)
     regexp_parser (2.9.0)
@@ -344,7 +347,7 @@ DEPENDENCIES
   mission_control-jobs!
   mocha
   puma
-  redis (~> 4.0.0)
+  redis
   redis-namespace
   resque
   resque-pause
