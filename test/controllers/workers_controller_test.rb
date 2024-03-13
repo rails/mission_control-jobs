@@ -8,7 +8,7 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
 
   test "get workers" do
     perform_enqueued_jobs_async
-    worker = @server.workers.first
+    worker = @server.workers_relation.first
 
     get mission_control_jobs.application_workers_url(@application)
 
@@ -19,7 +19,7 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
 
   test "get worker details" do
     perform_enqueued_jobs_async
-    worker = @server.workers.first
+    worker = @server.workers_relation.first
 
     get mission_control_jobs.application_worker_url(@application, worker.id)
     assert_response :ok

@@ -1,8 +1,6 @@
 module MissionControl::Jobs::Server::Workers
-  def workers
-    queue_adapter.workers.collect do |worker|
-      MissionControl::Jobs::Worker.new(queue_adapter: queue_adapter, **worker)
-    end
+  def workers_relation
+    MissionControl::Jobs::WorkersRelation.new(queue_adapter: queue_adapter)
   end
 
   def find_worker(worker_id)
