@@ -64,4 +64,23 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+(1 minute ago|less than a minute ago)/
     assert_select "tr.job", /Discard/
   end
+
+  test "get scheduled jobs when some are delayed" do
+    DummyJob.set(wait: 5.minutes).perform_later(37)
+    DummyJob.set(wait: 7.minutes).perform_later(42)
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+    assert_select "tr.job", 2 do # lists two jobs
+      assert_select "div.tag", text: /delayed/, count: 0 # no delayed tag
+    end
+
+    travel 5.minutes + MissionControl::Jobs.scheduled_job_delay_threshold + 1.second
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+    assert_select "tr.job", 2 do # lists two jobs
+      assert_select "div.tag", text: /delayed/, count: 1 # total of one delayed tag
+    end
+  end
 end

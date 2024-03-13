@@ -9,6 +9,7 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :jobs, only: :show do
       resource :retry, only: :create
       resource :discard, only: :create
+      resource :dispatch, only: :create
 
       collection do
         resource :bulk_retries, only: :create

@@ -81,6 +81,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_solid_queue_job!(job.job_id, jobs_relation).discard
   end
 
+  def dispatch_job(job, jobs_relation)
+    dispatch_immediately find_solid_queue_job!(job.job_id, jobs_relation)
+  end
+
   def find_job(job_id, *)
     if job = SolidQueue::Job.where(active_job_id: job_id).order(:id).last
       deserialize_and_proxy_solid_queue_job job
@@ -146,6 +150,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           error_class: solid_queue_job.failed_execution.exception_class,
           message: solid_queue_job.failed_execution.message,
           backtrace: solid_queue_job.failed_execution.backtrace
+      end
+    end
+
+    def dispatch_immediately(job)
+      SolidQueue::Job.transaction do
+        job.dispatch_bypassing_concurrency_limits
+        job.blocked_execution.destroy!
       end
     end
 
