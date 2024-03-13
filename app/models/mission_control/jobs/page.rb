@@ -1,7 +1,7 @@
 class MissionControl::Jobs::Page
   DEFAULT_PAGE_SIZE = 10
 
-  attr_reader :records_relation, :index, :page_size
+  attr_reader :records, :index, :page_size
 
   def initialize(relation, page: 1, page_size: DEFAULT_PAGE_SIZE)
     @relation = relation
