@@ -8,6 +8,7 @@ module MissionControl::Jobs::NavigationHelper
       end
 
       sections[:workers] = [ "Workers", application_workers_path(@application) ] if workers_exposed?
+      sections[:recurring_tasks] = [ "Recurring tasks", application_recurring_tasks_path(@application) ] if recurring_tasks_supported?
     end
   end
 
@@ -45,7 +46,7 @@ module MissionControl::Jobs::NavigationHelper
   end
 
   def jobs_count_with_status(status)
-    count = ActiveJob::Base.jobs.with_status(status).count
+    count = ActiveJob.jobs.with_status(status).count
     count.infinite? ? "..." : number_to_human(count)
   end
 end

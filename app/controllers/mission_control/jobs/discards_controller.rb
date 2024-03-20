@@ -8,6 +8,6 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
 
   private
     def jobs_relation
-      ActiveJob::Base.jobs.failed
+      ActiveJob.jobs.failed
     end
 end

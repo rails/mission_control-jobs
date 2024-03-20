@@ -12,8 +12,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   test "retry jobs when there are multiple instances of the same job due to automatic retries" do
     job = AutoRetryingJob.perform_later
 
-    # Wait until the job has been executed and retried
-    perform_enqueued_jobs_async { sleep(1) }
+    perform_enqueued_jobs_async
 
     get mission_control_jobs.application_jobs_url(@application, :failed)
     assert_response :ok

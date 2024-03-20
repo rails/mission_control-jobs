@@ -1,0 +1,26 @@
+default: &default
+  workers:
+    - queues: background
+      threads: 3
+    - queues: default
+      threads: 5
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+      recurring_tasks:
+        periodic_dummy_job:
+          class: DummyJob
+          args: 42
+          schedule: every second
+        periodic_pause_job:
+          class: PauseJob
+          args: 10
+          schedule: every minute
+    - recurring_tasks:
+        periodic_dummy_job_bis:
+          class: DummyJob
+          args: 24
+          schedule: every second
+
+development:
+  <<: *default

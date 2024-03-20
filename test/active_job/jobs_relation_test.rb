@@ -40,7 +40,7 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
 
   test "caches the fetched set of jobs" do
     ActiveJob::Base.queue_adapter.expects(:fetch_jobs).twice.returns([ :job_1, :job_2 ], [])
-    ActiveJob::Base.queue_adapter.expects(:supports_filter?).at_least_once.returns(true)
+    ActiveJob::Base.queue_adapter.expects(:supports_job_filter?).at_least_once.returns(true)
 
     jobs = @jobs.where(queue_name: "my_queue")
 
@@ -51,7 +51,7 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
 
   test "caches the count of jobs" do
     ActiveJob::Base.queue_adapter.expects(:jobs_count).once.returns(2)
-    ActiveJob::Base.queue_adapter.expects(:supports_filter?).at_least_once.returns(true)
+    ActiveJob::Base.queue_adapter.expects(:supports_job_filter?).at_least_once.returns(true)
 
     jobs = @jobs.where(queue_name: "my_queue")
 

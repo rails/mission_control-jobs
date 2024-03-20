@@ -1,5 +1,6 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
   include MissionControl::Jobs::Adapter
+  include RecurringTasks, Workers
 
   def queues
     queues = SolidQueue::Queue.all
@@ -34,39 +35,26 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     find_queue_by_name(queue_name).paused?
   end
 
-  def supported_statuses
-    RelationAdapter::STATUS_MAP.keys
+  def supported_job_statuses
+    SolidQueueJobs::STATUS_MAP.keys
   end
 
-  def supported_filters(*)
+  def supported_job_filters(*)
     [ :queue_name, :job_class_name ]
   end
 
-  def exposes_workers?
-    true
-  end
-
-  def fetch_workers(workers_relation)
-    workers = SolidQueue::Process.where(kind: "Worker").offset(workers_relation.offset_value).limit(workers_relation.limit_value)
-    workers.collect { |process| worker_from_solid_queue_process(process) }
-  end
-
-  def find_worker(worker_id)
-    if process = SolidQueue::Process.find_by(id: worker_id)
-      worker_attributes_from_solid_queue_process(process)
-    end
-  end
-
   def jobs_count(jobs_relation)
-    RelationAdapter.new(jobs_relation).count
+    SolidQueueJobs.new(jobs_relation).count
   end
 
   def fetch_jobs(jobs_relation)
-    find_solid_queue_jobs_within(jobs_relation).map { |job| deserialize_and_proxy_solid_queue_job(job, jobs_relation.status) }
+    SolidQueueJobs.new(jobs_relation).jobs.map do |job|
+      deserialize_and_proxy_solid_queue_job(job, jobs_relation.status)
+    end
   end
 
   def retry_all_jobs(jobs_relation)
-    RelationAdapter.new(jobs_relation).retry_all
+    SolidQueueJobs.new(jobs_relation).retry_all
   end
 
   def retry_job(job, jobs_relation)
@@ -74,7 +62,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def discard_all_jobs(jobs_relation)
-    RelationAdapter.new(jobs_relation).discard_all
+    SolidQueueJobs.new(jobs_relation).discard_all
   end
 
   def discard_job(job, jobs_relation)
@@ -100,27 +88,12 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       SolidQueue::Queue.find_by_name(queue_name)
     end
 
-    def worker_attributes_from_solid_queue_process(process)
-      {
-        id: process.id,
-        name: "PID: #{process.pid}",
-        hostname: process.hostname,
-        last_heartbeat_at: process.last_heartbeat_at,
-        configuration: process.metadata,
-        raw_data: process.as_json
-      }
-    end
-
     def find_solid_queue_job!(job_id, jobs_relation)
       find_solid_queue_job(job_id, jobs_relation) or raise ActiveJob::Errors::JobNotFoundError.new(job_id, jobs_relation)
     end
 
     def find_solid_queue_job(job_id, jobs_relation)
-      RelationAdapter.new(jobs_relation).find_job(job_id)
-    end
-
-    def find_solid_queue_jobs_within(jobs_relation)
-      RelationAdapter.new(jobs_relation).jobs
+      SolidQueueJobs.new(jobs_relation).find_job(job_id)
     end
 
     def deserialize_and_proxy_solid_queue_job(solid_queue_job, job_status = nil)
@@ -141,7 +114,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def status_from_solid_queue_job(solid_queue_job)
-      RelationAdapter::STATUS_MAP.invert[solid_queue_job.status]
+      SolidQueueJobs::STATUS_MAP.invert[solid_queue_job.status]
     end
 
     def execution_error_from_solid_queue_job(solid_queue_job)
@@ -160,7 +133,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
     end
 
-    class RelationAdapter
+    class SolidQueueJobs
       STATUS_MAP = {
         pending: :ready,
         failed: :failed,
@@ -175,7 +148,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def jobs
-        solid_queue_status.finished? ? order_finished_jobs(finished_jobs) : order_executions(executions).map(&:job)
+        solid_queue_status.finished? ? order_finished_jobs(finished_jobs) : order_executions(executions).map(&:job).compact
       end
 
       def count
@@ -199,13 +172,16 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       private
         attr_reader :jobs_relation
 
-        delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name, :default_page_size, :worker_id, to: :jobs_relation
+        delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
+          :default_page_size, :worker_id, :recurring_task_id, to: :jobs_relation
 
         def executions
-          execution_class_by_status.includes(job: "#{solid_queue_status}_execution")
+          execution_class_by_status
+            .then { |executions| include_execution_association(executions) }
             .then { |executions| filter_executions_by_queue(executions) }
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
+            .then { |executions| filter_executions_by_task_key(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -223,10 +199,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def order_executions(executions)
-          # Follow polling order for scheduled executions, the rest by job_id
-          if solid_queue_status.scheduled? then executions.ordered
-          else
-            executions.order(:job_id)
+          case
+            # Follow polling order for scheduled executions, the rest by job_id, desc or asc
+          when solid_queue_status.scheduled? then executions.ordered
+          when recurring_task_id.present?    then executions.order(job_id: :desc)
+          else executions.order(job_id: :asc)
           end
         end
 
@@ -245,11 +222,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def execution_class_by_status
-          if solid_queue_status.present? && !solid_queue_status.finished?
+          if recurring_task_id.present?
+            SolidQueue::RecurringExecution
+          elsif solid_queue_status.present? && !solid_queue_status.finished?
             "SolidQueue::#{solid_queue_status.capitalize}Execution".safe_constantize
           else
             raise ActiveJob::Errors::QueryError, "Status not supported: #{jobs_relation.status}"
           end
+        end
+
+        def include_execution_association(executions)
+          solid_queue_status.present? ? executions.includes(job: "#{solid_queue_status}_execution") : executions.includes(:job)
         end
 
         def filter_executions_by_queue(executions)
@@ -276,8 +259,12 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           if solid_queue_status.claimed?
             executions.where(process_id: worker_id)
           else
-            raise ActiveJob::Errors::QueryError, "Filtering by worker ID is not supported for status #{jobs_relation.status}"
+            raise ActiveJob::Errors::QueryError, "Filtering by worker id is not supported for status #{jobs_relation.status}"
           end
+        end
+
+        def filter_executions_by_task_key(executions)
+          recurring_task_id.present? ? executions.where(task_key: recurring_task_id) : executions
         end
 
         def filter_jobs_by_class(jobs)

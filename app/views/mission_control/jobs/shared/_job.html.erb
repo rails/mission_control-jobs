@@ -14,6 +14,13 @@
   </td>
 
   <td>
-    <div class="has-text-grey"><%= job.started_at ? time_distance_in_words_with_title(job.started_at) : "(Finished)" %></div>
+    <div class="has-text-grey">
+      <% if job.started_at %>
+        Running for <%= time_distance_in_words_with_title(job.started_at) %>
+      <% elsif job.finished_at %>
+        Finished <%= time_ago_in_words_with_title(job.finished_at) %> ago
+      <% else %>
+        Pending
+      <% end %>
   </td>
 </tr>
