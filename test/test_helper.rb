@@ -94,6 +94,10 @@ class ActionDispatch::IntegrationTest
       ActiveJob::QueueAdapters::SolidQueueAdapter.new
     end
 
+    def register_workers(count: 1)
+      count.times { |i| SolidQueue::Process.register(kind: "Worker", pid: i) }
+    end
+
     def perform_enqueued_jobs_async(wait: 1.second)
       @worker.start
       sleep(wait)

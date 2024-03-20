@@ -8,7 +8,7 @@ class MissionControl::Jobs::WorkersRelation
 
   attr_accessor :offset_value, :limit_value
 
-  delegate :last, :[], :count, :empty?, :length, :size, :to_s, :inspect, :reverse, to: :to_a
+  delegate :last, :[], :to_s, :reverse, to: :to_a
 
   ALL_WORKERS_LIMIT = 100_000_000 # When no limit value it defaults to "all workers"
 
@@ -31,9 +31,24 @@ class MissionControl::Jobs::WorkersRelation
   end
 
   def reload
-    @count = nil
+    @count = @workers = nil
     self
   end
+
+  def count
+    if loaded?
+      to_a.length
+    else
+      query_count
+    end
+  end
+
+  def empty?
+    count == 0
+  end
+
+  alias length count
+  alias size count
 
   private
     def set_defaults
@@ -45,11 +60,19 @@ class MissionControl::Jobs::WorkersRelation
       @workers ||= @queue_adapter.fetch_workers(self)
     end
 
+    def query_count
+      @count ||= @queue_adapter.count_workers(self)
+    end
+
+    def loaded?
+      !@workers.nil?
+    end
+
     def clone_with(**properties)
       dup.reload.tap do |relation|
-          properties.each do |key, value|
-              relation.send("#{key}=", value)
-          end
+        properties.each do |key, value|
+          relation.send("#{key}=", value)
+        end
       end
     end
 end

@@ -7,7 +7,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
   end
 
   def show
-    @worker = current_server.find_worker(params[:id])
+    @worker = MissionControl::Jobs::Current.server.find_worker(params[:id])
   end
 
   private
@@ -17,11 +17,7 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
       end
     end
 
-  def current_server
-    MissionControl::Jobs::Current.server
-  end
-
-  def workers_relation
-    current_server.workers_relation
-  end
+    def workers_relation
+      MissionControl::Jobs::Current.server.workers_relation
+    end
 end

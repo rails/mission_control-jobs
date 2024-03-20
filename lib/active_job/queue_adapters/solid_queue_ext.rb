@@ -80,10 +80,6 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   private
-    def worker_from_solid_queue_process(process)
-      MissionControl::Jobs::Worker.new(queue_adapter: self, **worker_attributes_from_solid_queue_process(process))
-    end
-
     def find_queue_by_name(queue_name)
       SolidQueue::Queue.find_by_name(queue_name)
     end

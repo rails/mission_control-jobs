@@ -11,9 +11,20 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
       worker = @server.workers_relation.first
       get mission_control_jobs.application_workers_url(@application)
 
-      assert_includes response.body, "worker #{worker.id}"
-      assert_includes response.body, "PauseJob"
-      assert_includes response.body, "my-hostname-123"
+      assert_select "tr.worker", 1
+      assert_select "tr.worker", /worker #{worker.id}\s+PID: \d+\s+my-hostname-123\s+PauseJob/
+    end
+  end
+
+  test "paginate workers" do
+    register_workers(count: 6)
+
+    stub_const(MissionControl::Jobs::Page, :DEFAULT_PAGE_SIZE, 2) do
+      get mission_control_jobs.application_workers_url(@application)
+      assert_response :ok
+
+      assert_select "tr.worker", 2
+      assert_select "nav[aria-label=\"pagination\"]", /1 \/ 3/
     end
   end
 
@@ -24,8 +35,8 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
       get mission_control_jobs.application_worker_url(@application, worker.id)
       assert_response :ok
 
-      assert_includes response.body, "Worker #{worker.id}"
-      assert_includes response.body, "Running 2 jobs"
+      assert_select "h1", /Worker #{worker.id} — PID: \d+/
+      assert_select "h2", "Running 2 jobs"
     end
   end
 end
