@@ -34,7 +34,7 @@ class MissionControl::Jobs::Page
   end
 
   def pages_count
-    (total_count.to_f / 10).ceil unless total_count.infinite?
+    (total_count.to_f / page_size).ceil unless total_count.infinite?
   end
 
   def total_count
