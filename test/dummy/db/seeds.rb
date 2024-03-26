@@ -25,7 +25,7 @@ class JobsLoader
       load_finished_jobs
       load_failed_jobs
       load_regular_jobs
-      load_blocked_jobs if server.queue_adapter.supported_statuses.include?(:blocked)
+      load_blocked_jobs if server.queue_adapter.supported_job_statuses.include?(:blocked)
     end
   end
 
