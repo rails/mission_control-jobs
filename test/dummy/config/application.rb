@@ -1,8 +1,9 @@
 require_relative "boot"
 
 require "rails/all"
-require "resque"
+require "sprockets/railtie"
 
+require "resque"
 require "solid_queue"
 
 # Require the gems listed in Gemfile, including any gems
