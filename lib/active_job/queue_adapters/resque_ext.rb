@@ -261,7 +261,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           resque_job = job.raw_data
           resque_job["retried_at"] = Time.now.strftime("%Y/%m/%d %H:%M:%S")
 
-          redis.lset(queue_redis_key, job.position, resque_job.to_json)
+          redis.lset(queue_redis_key, job.position, Resque.encode(resque_job))
           Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])
         rescue Redis::CommandError => error
           handle_resque_job_error(job, error)
