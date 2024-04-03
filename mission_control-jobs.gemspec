@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"
   spec.add_development_dependency "debug"
-  spec.add_development_dependency "redis", "~> 4.0.0"
+  spec.add_development_dependency "redis"
   spec.add_development_dependency "redis-namespace"
   spec.add_development_dependency "rubocop", "~> 1.52.0"
   spec.add_development_dependency "rubocop-performance"
