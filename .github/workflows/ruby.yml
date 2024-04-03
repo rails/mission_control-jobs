@@ -16,8 +16,6 @@ jobs:
   rubocop:
     name: Rubocop
     runs-on: ubuntu-latest
-    env:
-      BUNDLE_GITHUB__COM: x-access-token:${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

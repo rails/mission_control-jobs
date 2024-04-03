@@ -17,9 +17,9 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", "~> 7.1"
-  spec.add_dependency 'importmap-rails'
-  spec.add_dependency 'turbo-rails'
-  spec.add_dependency 'stimulus-rails'
+  spec.add_dependency "importmap-rails"
+  spec.add_dependency "turbo-rails"
+  spec.add_dependency "stimulus-rails"
 
   spec.add_development_dependency "resque"
   spec.add_development_dependency "solid_queue"
@@ -31,5 +31,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "redis-namespace"
   spec.add_development_dependency "rubocop", "~> 1.52.0"
   spec.add_development_dependency "rubocop-performance"
-  spec.add_development_dependency "rubocop-rails"
+  spec.add_development_dependency "rubocop-rails-omakase"
+  spec.add_development_dependency "sprockets-rails"
+  spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency "puma"
 end

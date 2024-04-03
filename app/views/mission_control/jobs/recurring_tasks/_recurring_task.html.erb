@@ -1,0 +1,14 @@
+<tr class="recurring_task">
+  <td>
+    <%= link_to recurring_task.id, application_recurring_task_path(@application, recurring_task.id) %>
+  </td>
+  <td>
+    <%= link_to recurring_task.job_class_name, application_recurring_task_path(@application, recurring_task.id) %>
+
+    <% if recurring_task.arguments.present? %>
+      <div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div>
+    <% end %>
+  </td>
+  <td> <%= recurring_task.schedule %> </td>
+  <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? bidirectional_time_distance_in_words_with_title(recurring_task.last_enqueued_at) : "Never" %></div></td>
+</tr>

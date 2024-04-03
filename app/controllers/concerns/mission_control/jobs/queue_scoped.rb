@@ -7,6 +7,6 @@ module MissionControl::Jobs::QueueScoped
 
   private
     def set_queue
-      @queue = ActiveJob::Base.queues[params[:queue_id]] or raise MissionControl::Jobs::Errors::ResourceNotFound, "Queue '#{params[:queue_id]}' not found"
+      @queue = ActiveJob.queues[params[:queue_id]] or raise MissionControl::Jobs::Errors::ResourceNotFound, "Queue '#{params[:queue_id]}' not found"
     end
 end

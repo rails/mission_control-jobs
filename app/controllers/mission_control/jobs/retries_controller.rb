@@ -8,6 +8,6 @@ class MissionControl::Jobs::RetriesController < MissionControl::Jobs::Applicatio
 
   private
     def jobs_relation
-      ActiveJob::Base.jobs.failed
+      ActiveJob.jobs.failed
     end
 end

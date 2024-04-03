@@ -2,7 +2,8 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
   before_action :ensure_exposed_workers
 
   def index
-    @workers = MissionControl::Jobs::Current.server.workers.sort_by { |worker| -worker.jobs.count }
+    @workers_page = MissionControl::Jobs::Page.new(workers_relation, page: params[:page].to_i)
+    @workers_count = @workers_page.total_count
   end
 
   def show
@@ -14,5 +15,9 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
       unless workers_exposed?
         redirect_to root_url, alert: "This server doesn't expose workers"
       end
+    end
+
+    def workers_relation
+      MissionControl::Jobs::Current.server.workers_relation
     end
 end

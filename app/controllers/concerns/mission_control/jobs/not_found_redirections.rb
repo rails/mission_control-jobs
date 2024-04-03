@@ -7,7 +7,7 @@ module MissionControl::Jobs::NotFoundRedirections
     end
 
     rescue_from(MissionControl::Jobs::Errors::ResourceNotFound) do |error|
-      redirect_to root_url, alert: error.message
+      redirect_to best_location_for_resource_not_found_error(error), alert: error.message
     end
   end
 
@@ -20,6 +20,14 @@ module MissionControl::Jobs::NotFoundRedirections
         application_queue_path(@application, job_relation.queue_name)
       else
         root_path
+      end
+    end
+
+    def best_location_for_resource_not_found_error(error)
+      if error.message.match?(/recurring task/i)
+        application_recurring_tasks_path(@application)
+      else
+        root_url
       end
     end
 end

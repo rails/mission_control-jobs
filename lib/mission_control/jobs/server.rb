@@ -2,7 +2,7 @@ require "active_job/queue_adapter"
 
 class MissionControl::Jobs::Server
   include MissionControl::Jobs::IdentifiedByName
-  include Serializable, Workers
+  include Serializable, RecurringTasks, Workers
 
   attr_reader :name, :queue_adapter, :application
 

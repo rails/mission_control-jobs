@@ -36,6 +36,7 @@ module MissionControl
 
       config.before_initialize do
         if MissionControl::Jobs.adapters.include?(:resque)
+          require "resque/thread_safe_redis"
           ActiveJob::QueueAdapters::ResqueAdapter.prepend ActiveJob::QueueAdapters::ResqueExt
           Resque.prepend Resque::ThreadSafeRedis
         end

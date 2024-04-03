@@ -2,6 +2,13 @@
 
 <%= render "mission_control/jobs/workers/title", worker: @worker %>
 <%= render "mission_control/jobs/workers/configuration", worker: @worker %>
-<%= render "mission_control/jobs/workers/jobs", worker: @worker %>
-<%= render "mission_control/jobs/workers/raw_data", worker: @worker %>
 
+<% if @worker.jobs.empty? %>
+  <%= blank_status_notice "This worker is idle" %>
+<% else %>
+  <h2 class="subtitle">Running <%= pluralize @worker.jobs.size, "job" %></h2>
+
+  <%= render "mission_control/jobs/shared/jobs", jobs: @worker.jobs %>
+<% end %>
+
+<%= render "mission_control/jobs/workers/raw_data", worker: @worker %>

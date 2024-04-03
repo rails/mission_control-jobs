@@ -17,7 +17,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     FailingJob.perform_later
     perform_enqueued_jobs
 
-    execution_error = ApplicationJob.jobs.failed.last.last_execution_error
+    execution_error = ActiveJob.jobs.failed.last.last_execution_error
 
     assert_equal "RuntimeError", execution_error.error_class
     assert_equal "This always fails!", execution_error.message
@@ -28,7 +28,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { FailingJob.perform_later }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.to_a
+    jobs = ActiveJob.jobs.failed.to_a
 
     assert_equal 10, jobs.size
     jobs.each do |job|
@@ -42,7 +42,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.limit(2).to_a
+    jobs = ActiveJob.jobs.failed.limit(2).to_a
     assert_equal 2, jobs.size
     assert_equal [ 0 ], jobs[0].serialized_arguments
     assert_equal [ 1 ], jobs[1].serialized_arguments
@@ -52,7 +52,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.offset(2).to_a
+    jobs = ActiveJob.jobs.failed.offset(2).to_a
     assert_equal 8, jobs.size
     assert_equal [ 2 ], jobs[0].serialized_arguments
     assert_equal [ 9 ], jobs[7].serialized_arguments
@@ -62,7 +62,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.offset(2).limit(2).to_a
+    jobs = ActiveJob.jobs.failed.offset(2).limit(2).to_a
     assert_equal 2, jobs.size
     assert_equal [ 2 ], jobs[0].serialized_arguments
     assert_equal [ 3 ], jobs[1].serialized_arguments
@@ -72,7 +72,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.limit(1000).to_a
+    jobs = ActiveJob.jobs.failed.limit(1000).to_a
     assert_equal 10, jobs.size
   end
 
@@ -80,7 +80,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs
 
-    jobs = ApplicationJob.jobs.failed.offset(1000).to_a
+    jobs = ActiveJob.jobs.failed.offset(1000).to_a
     assert_empty jobs
   end
 
@@ -112,7 +112,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| WithPaginationDummyJob.perform_later(index) }
     4.times { |index| WithPaginationFailingJob.perform_later(index) }
 
-    jobs = ActiveJob::Base.jobs.pending.where(queue_name: :default, job_class_name: WithPaginationDummyJob).to_a
+    jobs = ActiveJob.jobs.pending.where(queue_name: :default, job_class_name: WithPaginationDummyJob).to_a
     assert_equal 10, jobs.size
   end
 
@@ -122,8 +122,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     DummyJob.queue_as :queue_2
     5.times { DummyJob.perform_later }
 
-    assert_equal 3, ApplicationJob.jobs.pending.where(queue_name: "queue_1").to_a.length
-    assert_equal 5, ApplicationJob.jobs.pending.where(queue_name: "queue_2").to_a.length
+    assert_equal 3, ActiveJob.jobs.pending.where(queue_name: "queue_1").to_a.length
+    assert_equal 5, ActiveJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
 
   test "fetch job classes in the first jobs" do
@@ -132,6 +132,6 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     2.times { DummyJob.perform_later }
     15.times { DummyReloadedJob.perform_later }
 
-    assert_equal [ "DummyJob", "DummyReloadedJob" ], ApplicationJob.queues[:default].jobs.pending.job_class_names
+    assert_equal [ "DummyJob", "DummyReloadedJob" ], ActiveJob.queues[:default].jobs.pending.job_class_names
   end
 end

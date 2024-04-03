@@ -11,14 +11,14 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
 
   private
     def set_queue
-      @queue = ActiveJob::Base.queues[params[:id]]
+      @queue = ActiveJob.queues[params[:id]]
     end
 
     def filtered_queues
       if prefix = ActiveJob::Base.queue_name_prefix
-        ActiveJob::Base.queues.select { |queue| queue.name.start_with?(prefix) }
+        ActiveJob.queues.select { |queue| queue.name.start_with?(prefix) }
       else
-        ActiveJob::Base.queues
+        ActiveJob.queues
       end
     end
 end

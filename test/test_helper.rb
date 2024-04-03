@@ -79,10 +79,14 @@ class ActionDispatch::IntegrationTest
     @application = MissionControl::Jobs.applications["integration-tests"]
     @server = @application.servers[:solid_queue]
     @worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0.01)
+
+    recurring_task = { periodic_pause_job: { class: "PauseJob", schedule: "every second" } }
+    @dispatcher = SolidQueue::Dispatcher.new(recurring_tasks: recurring_task)
   end
 
   teardown do
     @worker.stop
+    @dispatcher.stop
   end
 
   private
@@ -90,11 +94,23 @@ class ActionDispatch::IntegrationTest
       ActiveJob::QueueAdapters::SolidQueueAdapter.new
     end
 
-    def perform_enqueued_jobs_async
+    def register_workers(count: 1)
+      count.times { |i| SolidQueue::Process.register(kind: "Worker", pid: i) }
+    end
+
+    def perform_enqueued_jobs_async(wait: 1.second)
       @worker.start
-      if block_given?
-        yield
-        @worker.stop
-      end
+      sleep(wait)
+
+      yield if block_given?
+      @worker.stop
+    end
+
+    def dispatch_jobs_async(wait: 1.second)
+      @dispatcher.start
+      sleep(wait)
+
+      yield if block_given?
+      @dispatcher.stop
     end
 end
