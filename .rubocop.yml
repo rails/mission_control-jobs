@@ -7,4 +7,3 @@ AllCops:
   TargetRubyVersion: 3.0
   Exclude:
     - "test/dummy/db/schema.rb"
-    - "infrastructure/ci/plugins/**/*"
