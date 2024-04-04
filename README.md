@@ -60,6 +60,11 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
 
+
+## Adapter Specifics
+
+- **Resque**: Queue pausing is supported only if you have `resque-pause` installed in your project
+
 ## Advanced configuration
 
 When we built Mission Control Jobs, we did it with the idea of managing multiple apps' job backends from a single, centralized app that we used for monitoring, alerts and other tools that related to all our apps. Some of our apps run in more than one datacenter, and we run different Resque instances with different Redis configurations in each. Because of this, we added support for multiple apps and multiple adapters per app. Even when running Mission Control Job within the app it manages, and a single DC, as we migrated from Resque to Solid Queue, we needed to manage both adapters from Mission Control.
