@@ -3,11 +3,11 @@ require "test_helper"
 class ActiveJob::QueueAdapters::ResqueTest < ActiveSupport::TestCase
   include ActiveJob::QueueAdapters::AdapterTesting
 
-  test "it supports queue pausing when ResquePauseHelper is defined" do
+  test "supports queue pausing when ResquePauseHelper is defined" do
     assert ActiveJob::Base.queue_adapter.supports_queue_pausing?
   end
 
-  test "it does not support queue pausing when ResquePauseHelper is not defined" do
+  test "does not support queue pausing when ResquePauseHelper is not defined" do
     emulating_resque_pause_gem_absence do
       assert_not ActiveJob::Base.queue_adapter.supports_queue_pausing?
     end
