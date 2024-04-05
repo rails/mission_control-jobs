@@ -3,7 +3,7 @@ require "resque_pause_helper"
 
 require "solid_queue"
 
-Resque.redis = Redis::Namespace.new "#{Rails.env}", redis: Redis.new(host: "localhost", port: 6379, thread_safe: true)
+Resque.redis = Redis::Namespace.new "#{Rails.env}", redis: Redis.new(host: "localhost", port: 6379)
 
 SERVERS_BY_APP = {
   BC4: %w[ resque_ashburn resque_chicago ],
