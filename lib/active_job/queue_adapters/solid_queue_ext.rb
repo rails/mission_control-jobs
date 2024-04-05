@@ -40,7 +40,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def supported_job_filters(*)
-    [ :queue_name, :job_class_name ]
+    [ :queue_name, :job_class_name, :finished_at_start, :finished_at_end ]
   end
 
   def jobs_count(jobs_relation)
@@ -169,7 +169,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         attr_reader :jobs_relation
 
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
-          :default_page_size, :worker_id, :recurring_task_id, to: :jobs_relation
+          :default_page_size, :worker_id, :recurring_task_id, :finished_at_start, :finished_at_end, to: :jobs_relation
 
         def executions
           execution_class_by_status
@@ -186,6 +186,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           SolidQueue::Job.finished
             .then { |jobs| filter_jobs_by_queue(jobs) }
             .then { |jobs| filter_jobs_by_class(jobs) }
+            .then { |jobs| filter_jobs_by_finished_at(jobs) }
             .then { |jobs| limit(jobs) }
             .then { |jobs| offset(jobs) }
         end
@@ -265,6 +266,18 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_jobs_by_class(jobs)
           job_class_name.present? ? jobs.where(class_name: job_class_name) : jobs
+        end
+
+        def filter_jobs_by_finished_at(jobs)
+          if finished_at_start.present? && finished_at_end.present?
+            jobs.where("finished_at >= ? AND finished_at <= ?", finished_at_start, finished_at_end)
+          elsif finished_at_start.present?
+            jobs.where("finished_at >= ?", finished_at_start)
+          elsif finished_at_end.present?
+            jobs.where("finished_at <= ?", finished_at_end)
+          else
+            jobs
+          end
         end
 
         def limit(executions_or_jobs)

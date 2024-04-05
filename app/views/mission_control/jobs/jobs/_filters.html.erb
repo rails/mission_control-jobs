@@ -12,6 +12,16 @@
           <%= form.text_field :queue_name, value: @job_filters[:queue_name], class: "input", list: "queue-names", placeholder: "Filter by queue name..." %>
         </div>
 
+        <% if jobs_status == 'finished' %>
+          <div class="select is-rounded">
+            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at_start], class: "input", placeholder: "Finished from" %>
+          </div>
+
+          <div class="select is-rounded">
+            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at_end], class: "input", placeholder: "Finished to" %>
+          </div>
+        <% end %>
+
         <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
 
         <datalist id="job-classes" class="is-hidden">
@@ -29,7 +39,7 @@
     </div>
 
     <div class="control">
-      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil), class: "button" %>
+      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil, finished_at_start: nil, finished_at_end: nil), class: "button" %>
     </div>
   </div>
 </div>
