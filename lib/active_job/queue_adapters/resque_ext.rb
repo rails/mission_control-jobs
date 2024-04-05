@@ -81,6 +81,10 @@ module ActiveJob::QueueAdapters::ResqueExt
     resque_jobs_for(jobs_relation).find_job(job_id)
   end
 
+  def supports_queue_pausing?
+    defined?(ResquePauseHelper)
+  end
+
   private
     attr_reader :redis
 
