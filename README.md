@@ -56,7 +56,8 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `adapters`: a list of adapters that you want Mission Control to use and extend. By default this will be the adapter you have set for `active_job.queue_adapter`.
 - `internal_query_count_limit`: in count queries, the maximum number of records that will be counted if the adapter needs to limit these queries. True counts above this number will be returned as `INFINITY`. This keeps count queries fast—defaults to `500,000`
 - `scheduled_job_delay_threshold`: the time duration before a scheduled job is considered delayed. Defaults to `1.minute` (a job is considered delayed if it hasn't transitioned from the `scheduled` status 1 minute after the scheduled time).
-- `show_console_help`: Boolean to shows the console help, e.g. if you don't want the console help message `config.mission_control.jobs.show_console_help = false`
+- `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
+
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
 
