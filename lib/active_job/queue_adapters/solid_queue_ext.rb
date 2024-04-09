@@ -198,6 +198,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           case
             # Follow polling order for scheduled executions, the rest by job_id, desc or asc
           when solid_queue_status.scheduled? then executions.ordered
+          when solid_queue_status.failed? then executions.order(created_at: :desc)
           when recurring_task_id.present?    then executions.order(job_id: :desc)
           else executions.order(job_id: :asc)
           end
