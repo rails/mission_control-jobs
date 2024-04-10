@@ -270,11 +270,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_jobs_by_finished_at(jobs)
           if finished_at_start.present? && finished_at_end.present?
-            jobs.where('finished_at >= ? AND finished_at <= ?', finished_at_start, finished_at_end)
+            jobs.where("finished_at >= ? AND finished_at <= ?", finished_at_start, finished_at_end)
           elsif finished_at_start.present?
-            jobs.where('finished_at >= ?', finished_at_start)
+            jobs.where("finished_at >= ?", finished_at_start)
           elsif finished_at_end.present?
-            jobs.where('finished_at <= ?', finished_at_end)
+            jobs.where("finished_at <= ?", finished_at_end)
           else
             jobs
           end
