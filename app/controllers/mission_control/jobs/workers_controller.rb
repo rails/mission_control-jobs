@@ -1,5 +1,8 @@
 class MissionControl::Jobs::WorkersController < MissionControl::Jobs::ApplicationController
   before_action :ensure_exposed_workers
+  before_action :set_filters, only: :index
+
+  helper_method :active_filters?, :workers_filter_param
 
   def index
     @workers_page = MissionControl::Jobs::Page.new(workers_relation, page: params[:page].to_i)
@@ -18,6 +21,22 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
     end
 
     def workers_relation
-      MissionControl::Jobs::Current.server.workers_relation
+      MissionControl::Jobs::Current.server.workers_relation.where(**@worker_filters)
+    end
+
+    def active_filters?
+      @worker_filters.any?
+    end
+
+    def workers_filter_param
+      if @worker_filters&.any?
+        { filter: @worker_filters }
+      else
+        {}
+      end
+    end
+
+    def set_filters
+      @worker_filters = { hostname: params.dig(:filter, :hostname).presence }.compact
     end
 end

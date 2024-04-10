@@ -1,0 +1,20 @@
+<div class="filter level-left">
+  <div class="field is-grouped">
+    <div class="control">
+      <%= form_for :filter, url: application_workers_path(MissionControl::Jobs::Current.application), method: :get,
+        data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
+
+        <div class="select is-rounded">
+          <%= form.text_field :hostname, value: @worker_filters[:hostname], class: "input", list: "job-classes", placeholder: "Filter by hostname..." %>
+        </div>
+
+        <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
+
+      <% end %>
+    </div>
+
+    <div class="control">
+      <%= link_to "Clear", application_workers_path(MissionControl::Jobs::Current.application, hostname: nil), class: "button" %>
+    </div>
+  </div>
+</div>
