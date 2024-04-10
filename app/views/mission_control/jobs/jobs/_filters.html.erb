@@ -39,7 +39,7 @@
     </div>
 
     <div class="control">
-      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil), class: "button" %>
+      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil, finished_at_start: nil, finished_at_end: nil), class: "button" %>
     </div>
   </div>
 </div>
