@@ -51,6 +51,8 @@ class ActiveJob::JobsRelation
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
+  # * <tt>:finished_at_start</tt> - To only include the jobs finished after the provided date.
+  # * <tt>:finished_at_end</tt> - To only include the jobs finished before the provided date.
   def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at_start: nil, finished_at_end: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
