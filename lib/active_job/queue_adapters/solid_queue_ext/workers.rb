@@ -24,12 +24,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Workers
     def workers(workers_relation)
       SolidQueue::Process.where(kind: "Worker")
         .then { |workers| filter_by_hostname(workers, workers_relation.hostname) }
+        .then { |workers| filter_by_name(workers, workers_relation.name) }
         .then { |workers| limit(workers, workers_relation.limit_value) }
         .then { |workers| offset(workers, workers_relation.offset_value) }
     end
 
     def filter_by_hostname(workers, hostname)
       hostname.present? ? workers.where(hostname: hostname) : workers
+    end
+
+    def filter_by_name(workers, name)
+      name.present? ? workers.where(pid: name) : workers
     end
 
     def limit(workers, limit)
