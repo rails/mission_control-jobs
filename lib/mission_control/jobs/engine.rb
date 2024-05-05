@@ -67,10 +67,11 @@ module MissionControl
 
       console do
         require "irb"
-        require "irb/context"
+
+        IRB::Command.register :connect_to, Console::ConnectTo
+        IRB::Command.register :jobs_help, Console::JobsHelp
 
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
-        Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
 
         MissionControl::Jobs.delay_between_bulk_operation_batches = 2
         MissionControl::Jobs.logger = ActiveSupport::Logger.new(STDOUT)
