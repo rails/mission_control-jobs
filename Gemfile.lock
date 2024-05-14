@@ -17,7 +17,7 @@ PATH
   specs:
     mission_control-jobs (0.2.1)
       importmap-rails
-      rails (~> 7.1)
+      rails (>= 7.1)
       stimulus-rails
       turbo-rails
 
