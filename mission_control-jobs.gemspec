@@ -5,18 +5,18 @@ Gem::Specification.new do |spec|
   spec.version = MissionControl::Jobs::VERSION
   spec.authors = [ "Jorge Manrubia" ]
   spec.email = [ "jorge@hey.com" ]
-  spec.homepage = "https://github.com/basecamp/mission_control-jobs"
+  spec.homepage = "https://github.com/rails/mission_control-jobs"
   spec.summary = "Operational controls for Active Job"
   spec.license = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/basecamp/mission_control-jobs"
+  spec.metadata["source_code_uri"] = "https://github.com/rails/mission_control-jobs"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "rails", "~> 7.1"
+  spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"

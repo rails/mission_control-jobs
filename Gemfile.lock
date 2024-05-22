@@ -18,7 +18,7 @@ PATH
     mission_control-jobs (0.2.1)
       importmap-rails
       irb (~> 1.13)
-      rails (~> 7.1)
+      rails (>= 7.1)
       stimulus-rails
       turbo-rails
 
