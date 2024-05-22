@@ -1,3 +1,5 @@
+require "irb/command"
+
 module MissionControl::Jobs::Console
   class JobsHelp < IRB::Command::Base
     category "Mission control jobs"
