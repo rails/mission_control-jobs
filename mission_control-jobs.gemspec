@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"
+  spec.add_dependency "irb", "~> 1.13"
 
   spec.add_development_dependency "resque"
   spec.add_development_dependency "solid_queue"
