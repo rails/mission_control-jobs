@@ -27,7 +27,7 @@ class MissionControl::Jobs::WorkersRelation
   # * <tt>:name</tt> - To only include the workers of a given name.
   def where(hostname: nil, name: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
-    arguments = { hostname: hostname, name: name }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    arguments = { hostname: hostname, name: name }.compact
 
     clone_with **arguments
   end
