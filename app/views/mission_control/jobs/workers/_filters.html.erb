@@ -9,7 +9,7 @@
         </div>
 
         <div class="select is-rounded">
-          <%= form.text_field :name, value: @worker_filters[:name], class: "input", list: "job-classes", placeholder: "Filter by name..." %>
+          <%= form.text_field :name, value: @worker_filters[:pid], class: "input", list: "job-classes", placeholder: "Filter by pid..." %>
         </div>
 
         <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="control">
-      <%= link_to "Clear", application_workers_path(MissionControl::Jobs::Current.application, hostname: nil, name: nil), class: "button" %>
+      <%= link_to "Clear", application_workers_path(MissionControl::Jobs::Current.application, hostname: nil, pid: nil), class: "button" %>
     </div>
   </div>
 </div>

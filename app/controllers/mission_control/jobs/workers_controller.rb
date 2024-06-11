@@ -37,6 +37,6 @@ class MissionControl::Jobs::WorkersController < MissionControl::Jobs::Applicatio
     end
 
     def set_filters
-      @worker_filters = { hostname: params.dig(:filter, :hostname).presence, name: params.dig(:filter, :name) }.compact
+      @worker_filters = { hostname: params.dig(:filter, :hostname).presence, pid: params.dig(:filter, :pid) }.compact
     end
 end
