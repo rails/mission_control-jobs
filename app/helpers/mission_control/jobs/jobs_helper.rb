@@ -57,7 +57,7 @@ module MissionControl::Jobs::JobsHelper
       elsif argument["_aj_serialized"] == "ActiveJob::Serializers::ModuleSerializer"
         argument["value"]
       else
-        ActiveJob::Arguments.deserialize([ argument ])
+        argument.transform_values { |value| as_renderable_argument(value) }
       end
     end
 
