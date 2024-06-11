@@ -10,7 +10,7 @@ class MissionControl::Jobs::WorkersRelation
 
   delegate :last, :[], :to_s, :reverse, to: :to_a
 
-  attr_reader :hostname, :name
+  attr_reader :hostname, :pid
 
   ALL_WORKERS_LIMIT = 100_000_000 # When no limit value it defaults to "all workers"
 
@@ -24,10 +24,10 @@ class MissionControl::Jobs::WorkersRelation
   #
   # === Options
   # * <tt>:hostname</tt> - To only include the workers of a given hostname.
-  # * <tt>:name</tt> - To only include the workers of a given name.
-  def where(hostname: nil, name: nil)
+  # * <tt>:pid</tt> - To only include the workers of a given pid.
+  def where(hostname: nil, pid: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
-    arguments = { hostname: hostname, name: name }.compact
+    arguments = { hostname: hostname, pid: pid }.compact
 
     clone_with **arguments
   end
@@ -65,7 +65,7 @@ class MissionControl::Jobs::WorkersRelation
   alias size count
 
   private
-    attr_writer :hostname, :name
+    attr_writer :hostname, :pid
 
     def set_defaults
       self.offset_value = 0
