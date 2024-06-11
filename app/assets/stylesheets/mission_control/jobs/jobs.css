@@ -7,6 +7,6 @@
 }
 
 .job .arguments {
-    max-height: 20rem;
+    max-height: 10rem;
     overflow: scroll;
 }
