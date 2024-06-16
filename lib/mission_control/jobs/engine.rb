@@ -1,10 +1,6 @@
 require "mission_control/jobs/version"
 require "mission_control/jobs/engine"
 
-require "importmap-rails"
-require "turbo-rails"
-require "stimulus-rails"
-
 module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
@@ -84,16 +80,6 @@ module MissionControl
         if MissionControl::Jobs.show_console_help
           puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
         end
-      end
-
-      initializer "mission_control-jobs.assets" do |app|
-        app.config.assets.paths << root.join("app/javascript")
-        app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
-      end
-
-      initializer "mission_control-jobs.importmap", before: "importmap" do |app|
-        app.config.importmap.paths << root.join("config/importmap.rb")
-        app.config.importmap.cache_sweepers << root.join("app/javascript")
       end
     end
   end
