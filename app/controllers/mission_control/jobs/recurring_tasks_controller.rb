@@ -10,6 +10,19 @@ class MissionControl::Jobs::RecurringTasksController < MissionControl::Jobs::App
     @jobs_page = MissionControl::Jobs::Page.new(@recurring_task.jobs, page: params[:page].to_i)
   end
 
+  def update
+    recurring_task = MissionControl::Jobs::Current.server.recurring_tasks.find { |e| e.id == params[:id] }
+
+    SolidQueue::Dispatcher::RecurringTask.from_configuration(
+      recurring_task.id,
+      class: recurring_task.job_class_name,
+      schedule: recurring_task.schedule,
+      arguments: recurring_task.arguments
+    ).enqueue(at: Time.current)
+
+    redirect_to application_recurring_tasks_path(@application), notice: "Job has been enqueued"
+  end
+
   private
     def ensure_supported_recurring_tasks
       unless recurring_tasks_supported?
