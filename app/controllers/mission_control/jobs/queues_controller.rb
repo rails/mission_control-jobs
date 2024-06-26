@@ -2,7 +2,7 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
   before_action :set_queue, only: :show
 
   def index
-    @queues = filtered_queues.sort_by(&:name)
+    @queues = ActiveJob.queues.sort_by(&:name)
   end
 
   def show
@@ -12,13 +12,5 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
   private
     def set_queue
       @queue = ActiveJob.queues[params[:id]]
-    end
-
-    def filtered_queues
-      if prefix = ActiveJob::Base.queue_name_prefix
-        ActiveJob.queues.select { |queue| queue.name.start_with?(prefix) }
-      else
-        ActiveJob.queues
-      end
     end
 end
