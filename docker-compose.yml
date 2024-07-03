@@ -1,7 +1,4 @@
-version: "3.4"
-
 volumes:
-  db: {}
   redis: {}
 
 services:
