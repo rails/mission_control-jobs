@@ -90,6 +90,7 @@ module MissionControl
       end
 
       initializer "mission_control-jobs.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
