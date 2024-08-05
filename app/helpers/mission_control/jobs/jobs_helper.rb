@@ -11,8 +11,16 @@ module MissionControl::Jobs::JobsHelper
     "#{job.last_execution_error.error_class}: #{job.last_execution_error.message}"
   end
 
-  def failed_job_backtrace(job)
-    job.last_execution_error.backtrace.join("\n")
+  def backtrace_cleaner = MissionControl::Jobs.backtrace_cleaner
+
+  def backtrace_cleaner? = backtrace_cleaner.present?
+
+  def should_clean_backtrace? = params["clean_backtrace"] == "true"
+
+  def failed_job_backtrace(job, clean: false)
+    return job.last_execution_error.backtrace.join("\n") if !clean || !backtrace_cleaner?
+
+    backtrace_cleaner.clean(job.last_execution_error.backtrace).join("\n")
   end
 
   def attribute_names_for_job_status(status)
@@ -31,6 +39,7 @@ module MissionControl::Jobs::JobsHelper
   end
 
   private
+
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|
         as_renderable_argument(argument)
