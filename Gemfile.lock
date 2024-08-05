@@ -18,7 +18,7 @@ PATH
     mission_control-jobs (0.2.1)
       importmap-rails
       irb (~> 1.13)
-      rails
+      rails (>= 7.1)
       stimulus-rails
       turbo-rails
 
@@ -356,4 +356,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   2.5.6
+   2.5.7
