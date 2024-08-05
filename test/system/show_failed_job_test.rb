@@ -29,4 +29,26 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
     visit jobs_path(:failed)
     assert_text /there are no failed jobs/i
   end
+
+  test "show backtrace cleaner buttons" do
+    visit jobs_path(:failed)
+    within_job_row /FailingJob\s*2/ do
+      click_on "RuntimeError: This always fails!"
+    end
+
+    assert_text /clean/i
+  end
+
+  test "click on 'clean' shows a backtrace cleaned by the Rails default backtrace cleaner" do
+    visit jobs_path(:failed)
+    within_job_row /FailingJob\s*2/ do
+      click_on "RuntimeError: This always fails!"
+    end
+
+    click_on "Clean"
+    within ".backtrace-selector" do
+      assert_no_selector "*"
+    end
+  end
+
 end
