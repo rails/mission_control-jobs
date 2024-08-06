@@ -7,9 +7,9 @@
 
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="turbo-cache-control" content="no-cache">
+  <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <%= stylesheet_link_tag "mission_control/jobs/application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags "application-mcj" %>
+  <%= render 'layouts/mission_control/jobs/style' %>
 </head>
 <body>
 
