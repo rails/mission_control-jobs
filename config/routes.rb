@@ -20,7 +20,7 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :jobs, only: :index, path: ":status/jobs"
 
     resources :workers, only: [ :index, :show ]
-    resources :recurring_tasks, only: [ :index, :show ]
+    resources :recurring_tasks, only: [ :index, :show, :update ]
   end
 
   # Allow referencing urls without providing an application_id. It will default to the first one.

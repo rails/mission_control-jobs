@@ -11,4 +11,7 @@
   </td>
   <td> <%= recurring_task.schedule %> </td>
   <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? bidirectional_time_distance_in_words_with_title(recurring_task.last_enqueued_at) : "Never" %></div></td>
+  <td>
+    <%= button_to 'Enqueue', application_recurring_task_path(@application, recurring_task.id), method: :put, class: 'button is-info is-light mr-0' %>
+  </td>
 </tr>
