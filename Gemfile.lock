@@ -15,7 +15,7 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (0.2.2)
+    mission_control-jobs (0.3.0)
       importmap-rails
       irb (~> 1.13)
       rails (>= 7.1)
