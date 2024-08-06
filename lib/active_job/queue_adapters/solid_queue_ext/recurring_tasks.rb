@@ -4,36 +4,29 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
   end
 
   def recurring_tasks
-    tasks = recurring_tasks_from_dispatchers
-    last_enqueued_at_times = recurring_task_last_enqueued_at(tasks.keys)
+    tasks = SolidQueue::RecurringTask.all
+    last_enqueued_at_times = recurring_task_last_enqueued_at(tasks.map(&:key))
 
-    recurring_tasks_from_dispatchers.collect do |task_id, task_attrs|
-      recurring_task_attributes_from_solid_queue_task_attributes(task_attrs).merge \
-        id: task_id,
-        last_enqueued_at: last_enqueued_at_times[task_id]
+    tasks.collect do |task|
+      recurring_task_attributes_from_solid_queue_recurring_task(task).merge \
+        last_enqueued_at: last_enqueued_at_times[task.key]
     end
   end
 
   def find_recurring_task(task_id)
-    if task_attrs = recurring_tasks_from_dispatchers[task_id]
-      recurring_task_attributes_from_solid_queue_task_attributes(task_attrs).merge \
-        id: task_id,
-        last_enqueued_at: recurring_task_last_enqueued_at(task_id).values&.first
+    if task = SolidQueue::RecurringTask.find_by(key: task_id)
+      recurring_task_attributes_from_solid_queue_recurring_task(task).merge \
+        last_enqueued_at: recurring_task_last_enqueued_at(task.key).values&.first
     end
   end
 
   private
-    def recurring_tasks_from_dispatchers
-      SolidQueue::Process.where(kind: "Dispatcher").flat_map do |process|
-        process.metadata["recurring_schedule"]
-      end.compact.reduce({}, &:merge)
-    end
-
-    def recurring_task_attributes_from_solid_queue_task_attributes(task_attributes)
+    def recurring_task_attributes_from_solid_queue_recurring_task(task)
       {
-        job_class_name: task_attributes["class_name"],
-        arguments: task_attributes["arguments"],
-        schedule: task_attributes["schedule"]
+        id: task.key,
+        job_class_name: task.class_name,
+        arguments: task.arguments,
+        schedule: task.schedule
       }
     end
 
