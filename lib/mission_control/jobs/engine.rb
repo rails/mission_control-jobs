@@ -4,11 +4,14 @@ require "mission_control/jobs/engine"
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
+require "propshaft"
 
 module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
+
+      config.middleware.use ActionDispatch::Flash unless config.action_dispatch.flash
 
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
@@ -87,6 +90,7 @@ module MissionControl
       end
 
       initializer "mission_control-jobs.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
