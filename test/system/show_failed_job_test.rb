@@ -50,5 +50,4 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
       assert_no_selector "*"
     end
   end
-
 end
