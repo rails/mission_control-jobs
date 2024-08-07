@@ -11,7 +11,7 @@ module MissionControl::Jobs::JobsHelper
     "#{job.last_execution_error.error_class}: #{job.last_execution_error.message}"
   end
 
-  def backtrace_cleaner = MissionControl::Jobs.backtrace_cleaner
+  def backtrace_cleaner = Rails.backtrace_cleaner
 
   def backtrace_cleaner? = backtrace_cleaner.present?
 
