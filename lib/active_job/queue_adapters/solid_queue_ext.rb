@@ -118,7 +118,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         ActiveJob::ExecutionError.new \
           error_class: solid_queue_job.failed_execution.exception_class,
           message: solid_queue_job.failed_execution.message,
-          backtrace: solid_queue_job.failed_execution.backtrace
+          backtrace: solid_queue_job.failed_execution.backtrace || []
       end
     end
 
