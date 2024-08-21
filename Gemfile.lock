@@ -16,22 +16,18 @@ PATH
   remote: .
   specs:
     mission_control-jobs (0.3.1)
+      activejob (>= 7.1)
+      activerecord (>= 7.1)
       importmap-rails
       irb (~> 1.13)
       propshaft
-      rails (>= 7.1)
+      railties (>= 7.1)
       stimulus-rails
       turbo-rails
 
 GEM
   remote: https://rubygems.org/
   specs:
-    actioncable (7.1.3.2)
-      actionpack (= 7.1.3.2)
-      activesupport (= 7.1.3.2)
-      nio4r (~> 2.0)
-      websocket-driver (>= 0.6.1)
-      zeitwerk (~> 2.6)
     actionpack (7.1.3.2)
       actionview (= 7.1.3.2)
       activesupport (= 7.1.3.2)
@@ -67,8 +63,8 @@ GEM
       minitest (>= 5.1)
       mutex_m
       tzinfo (~> 2.0)
-    addressable (2.8.6)
-      public_suffix (>= 2.0.2, < 6.0)
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.2)
     base64 (0.2.0)
     bigdecimal (3.1.7)
@@ -76,7 +72,6 @@ GEM
     concurrent-ruby (1.3.3)
     connection_pool (2.4.1)
     crass (1.0.6)
-    date (3.3.4)
     debug (1.9.1)
       irb (~> 1.10)
       reline (>= 0.3.8)
@@ -104,6 +99,7 @@ GEM
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
     matrix (0.4.2)
+    mini_mime (1.1.5)
     minitest (5.22.3)
     mocha (2.1.0)
       ruby2_keywords (>= 0.0.5)
@@ -129,14 +125,14 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
-    propshaft (0.8.0)
+    propshaft (0.9.1)
       actionpack (>= 7.0.0)
       activesupport (>= 7.0.0)
       rack
       railties (>= 7.0.0)
     psych (5.1.2)
       stringio
-    public_suffix (5.0.4)
+    public_suffix (6.0.1)
     puma (6.4.2)
       nio4r (~> 2.0)
     raabro (1.4.0)
@@ -250,12 +246,13 @@ GEM
     sqlite3 (1.7.2-x86-linux)
     sqlite3 (1.7.2-x86_64-darwin)
     sqlite3 (1.7.2-x86_64-linux)
-    stimulus-rails (1.3.3)
+    stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.1.0)
     thor (1.3.1)
     tilt (2.3.0)
-    turbo-rails (2.0.5)
+    timeout (0.4.1)
+    turbo-rails (2.0.6)
       actionpack (>= 6.0.0)
       activejob (>= 6.0.0)
       railties (>= 6.0.0)
@@ -264,9 +261,6 @@ GEM
     unicode-display_width (2.5.0)
     webrick (1.8.1)
     websocket (1.2.10)
-    websocket-driver (0.7.6)
-      websocket-extensions (>= 0.1.0)
-    websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.6.13)
