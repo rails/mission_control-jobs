@@ -15,8 +15,10 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (0.2.1)
+    mission_control-jobs (0.3.1)
       importmap-rails
+      irb (~> 1.13)
+      propshaft
       rails (>= 7.1)
       stimulus-rails
       turbo-rails
@@ -71,7 +73,7 @@ GEM
     base64 (0.2.0)
     bigdecimal (3.1.7)
     builder (3.2.4)
-    concurrent-ruby (1.2.3)
+    concurrent-ruby (1.3.3)
     connection_pool (2.4.1)
     crass (1.0.6)
     date (3.3.4)
@@ -82,8 +84,8 @@ GEM
     erubi (1.12.0)
     et-orbi (1.2.11)
       tzinfo
-    fugit (1.9.0)
-      et-orbi (~> 1, >= 1.2.7)
+    fugit (1.11.0)
+      et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -94,8 +96,8 @@ GEM
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
     io-console (0.7.2)
-    irb (1.12.0)
-      rdoc
+    irb (1.13.1)
+      rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.7.1)
     loofah (2.22.0)
@@ -127,6 +129,11 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
+    propshaft (0.8.0)
+      actionpack (>= 7.0.0)
+      activesupport (>= 7.0.0)
+      rack
+      railties (>= 7.0.0)
     psych (5.1.2)
       stringio
     public_suffix (5.0.4)
@@ -171,7 +178,7 @@ GEM
     redis-namespace (1.11.0)
       redis (>= 4)
     regexp_parser (2.9.0)
-    reline (0.5.0)
+    reline (0.5.5)
       io-console (~> 0.5)
     resque (2.6.0)
       mono_logger (~> 1.0)
@@ -224,11 +231,11 @@ GEM
       rack-protection (= 4.0.0)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
-    solid_queue (0.3.0)
+    solid_queue (0.5.0)
       activejob (>= 7.1)
       activerecord (>= 7.1)
-      concurrent-ruby (~> 1.2.2)
-      fugit (~> 1.9.0)
+      concurrent-ruby (>= 1.3.1)
+      fugit (~> 1.11.0)
       railties (>= 7.1)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
@@ -286,7 +293,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rails-omakase
   selenium-webdriver
-  solid_queue
+  solid_queue (>= 0.5)
   sprockets-rails
   sqlite3
 

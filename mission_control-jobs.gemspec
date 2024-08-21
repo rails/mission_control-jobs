@@ -20,12 +20,14 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activerecord", rails_version
   spec.add_dependency "activejob", rails_version
   spec.add_dependency "railties", rails_version
+  spec.add_dependency "propshaft"
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"
+  spec.add_dependency "irb", "~> 1.13"
 
   spec.add_development_dependency "resque"
-  spec.add_development_dependency "solid_queue"
+  spec.add_development_dependency "solid_queue", ">= 0.5"
   spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"

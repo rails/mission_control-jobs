@@ -82,4 +82,17 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
       assert_select "div.tag", text: /delayed/, count: 1 # total of one delayed tag
     end
   end
+
+  test "get jobs and job details the default locale is set to another language than English" do
+    I18n.available_locales = %i[en nl]
+
+    DummyJob.set(wait: 3.minutes).perform_later
+
+    I18n.with_locale(:nl) do
+      get mission_control_jobs.application_jobs_url(@application, :scheduled)
+      assert_response :ok
+
+      assert_select "tr.job", /DummyJob\s+Enqueued less than a minute ago\s+queue_1\s+in 3 minutes/
+    end
+  end
 end
