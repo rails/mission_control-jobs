@@ -4,12 +4,13 @@ class MissionControl::Jobs::Server
   include MissionControl::Jobs::IdentifiedByName
   include Serializable, RecurringTasks, Workers
 
-  attr_reader :name, :queue_adapter, :application
+  attr_reader :name, :queue_adapter, :application, :backtrace_cleaner
 
-  def initialize(name:, queue_adapter:, application:)
+  def initialize(name:, queue_adapter:, application:, backtrace_cleaner:)
     super(name: name)
     @queue_adapter = queue_adapter
     @application = application
+    @backtrace_cleaner = backtrace_cleaner
   end
 
   def activating(&block)

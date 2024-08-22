@@ -11,16 +11,16 @@ module MissionControl::Jobs::JobsHelper
     "#{job.last_execution_error.error_class}: #{job.last_execution_error.message}"
   end
 
-  def backtrace_cleaner = Rails.backtrace_cleaner
+  def clean_backtrace?
+    params["clean_backtrace"] == "true"
+  end
 
-  def backtrace_cleaner? = backtrace_cleaner.present?
-
-  def should_clean_backtrace? = params["clean_backtrace"] == "true"
-
-  def failed_job_backtrace(job, clean: false)
-    return job.last_execution_error.backtrace.join("\n") if !clean || !backtrace_cleaner?
-
-    backtrace_cleaner.clean(job.last_execution_error.backtrace).join("\n")
+  def failed_job_backtrace(job)
+    if clean_backtrace? && @backtrace_cleaner
+      @backtrace_cleaner.clean(job.last_execution_error.backtrace).join("\n")
+    else
+      job.last_execution_error.backtrace.join("\n")
+    end
   end
 
   def attribute_names_for_job_status(status)
