@@ -2,6 +2,7 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
   include MissionControl::Jobs::JobScoped, MissionControl::Jobs::JobFilters
 
   skip_before_action :set_job, only: :index
+  before_action :set_backtrace_cleaner, only: :show
 
   def index
     @job_class_names = jobs_with_status.job_class_names
@@ -15,6 +16,7 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
   end
 
   private
+
     def jobs_relation
       filtered_jobs
     end
@@ -35,5 +37,13 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
 
     def jobs_status
       params[:status].presence&.inquiry
+    end
+
+    def set_backtrace_cleaner
+      @backtrace_cleaner = @application.servers[server_id]&.backtrace_cleaner
+    end
+
+    def server_id
+      params[:server_id]
     end
 end
