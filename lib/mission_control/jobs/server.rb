@@ -6,11 +6,11 @@ class MissionControl::Jobs::Server
 
   attr_reader :name, :queue_adapter, :application, :backtrace_cleaner
 
-  def initialize(name:, queue_adapter:, application:, backtrace_cleaner:)
+  def initialize(name:, queue_adapter:, application:, backtrace_cleaner: nil)
     super(name: name)
     @queue_adapter = queue_adapter
     @application = application
-    @backtrace_cleaner = backtrace_cleaner
+    @backtrace_cleaner = backtrace_cleaner || MissionControl::Jobs.backtrace_cleaner
   end
 
   def activating(&block)
