@@ -15,9 +15,9 @@ module MissionControl::Jobs::JobsHelper
     params["clean_backtrace"] == "true"
   end
 
-  def failed_job_backtrace(job)
-    if clean_backtrace? && @backtrace_cleaner
-      @backtrace_cleaner.clean(job.last_execution_error.backtrace).join("\n")
+  def failed_job_backtrace(job, server)
+    if clean_backtrace? && server&.backtrace_cleaner
+      server.backtrace_cleaner.clean(job.last_execution_error.backtrace).join("\n")
     else
       job.last_execution_error.backtrace.join("\n")
     end

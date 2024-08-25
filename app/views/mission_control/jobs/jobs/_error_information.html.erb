@@ -14,9 +14,9 @@
     </tbody>
   </table>
 
-  <% if @backtrace_cleaner %>
+  <% if @server.backtrace_cleaner %>
     <%= render "mission_control/jobs/jobs/failed/backtrace_toggle", application: @application, job: job %>
   <% end %>
 
-  <pre class="is-family-monospace mb-4 backtrace-content"><%= failed_job_backtrace(job) %></pre>
+  <pre class="is-family-monospace mb-4 backtrace-content"><%= failed_job_backtrace(job, @server) %></pre>
 <% end %>
