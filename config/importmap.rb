@@ -1,6 +1,15 @@
-pin "application-mcj", to: "mission_control/jobs/application.js", preload: true
-pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
-pin "@hotwired/stimulus", to: "stimulus.min.js", preload: true
-pin "@hotwired/stimulus-loading", to: "stimulus-loading.js", preload: true
-pin_all_from MissionControl::Jobs::Engine.root.join("app/javascript/mission_control/jobs/controllers"), under: "controllers", to: "mission_control/jobs/controllers"
-pin_all_from MissionControl::Jobs::Engine.root.join("app/javascript/mission_control/jobs/helpers"), under: "helpers", to: "mission_control/jobs/helpers"
+with_options preload: "mcj" do
+  pin "mcj", to: "mission_control/jobs/application.js"
+
+  pin "mcj-@hotwired/turbo-rails", to: "turbo.min.js"
+  pin "mcj-@hotwired/stimulus", to: "stimulus.min.js"
+  pin "mcj-@hotwired/stimulus-loading", to: "stimulus-loading.js"
+
+  pin_all_from MissionControl::Jobs::Engine.root.join("app/javascript/mission_control/jobs/controllers"),
+    under: "mcj-controllers",
+    to: "mission_control/jobs/controllers"
+
+  pin_all_from MissionControl::Jobs::Engine.root.join("app/javascript/mission_control/jobs/helpers"),
+    under: "mcj-helpers",
+    to: "mission_control/jobs/helpers"
+end
