@@ -3,7 +3,7 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
 
   def create
     @job.discard
-    redirect_to application_jobs_url(@application, :failed), notice: "Discarded job with id #{@job.job_id}"
+    redirect_back fallback_location: application_jobs_url(@application, :failed), notice: "Discarded job with id #{@job.job_id}"
   end
 
   private
