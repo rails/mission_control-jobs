@@ -95,9 +95,13 @@ module MissionControl
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
 
-      initializer "mission_control-jobs.importmap", before: "importmap" do |app|
-        app.config.importmap.paths << root.join("config/importmap.rb")
-        app.config.importmap.cache_sweepers << root.join("app/javascript")
+      initializer "mission_control-jobs.importmap", after: "importmap" do |app|
+        MissionControl::Jobs.importmap.draw(root.join("config/importmap.rb"))
+        MissionControl::Jobs.importmap.cache_sweeper(watches: root.join("app/javascript"))
+
+        ActiveSupport.on_load(:action_controller_base) do
+          before_action { MissionControl::Jobs.importmap.cache_sweeper.execute_if_updated }
+        end
       end
     end
   end
