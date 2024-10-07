@@ -58,7 +58,29 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 ### Authentication and base controller class
 
-By default, Mission Control's controllers will extend the host app's `ApplicationController`. If no authentication is enforced, `/jobs` will be available to everyone. You might want to implement some kind of authentication for this in your app. To make this easier, you can specify a different controller as the base class for Mission Control's controllers:
+By default, Mission Control's controllers will extend the host app's `ApplicationController`. If no authentication is enforced, `/jobs` will be available to everyone.
+
+#### HTTP authentication
+
+You can set a simple HTTP authentication by either using
+
+```ruby
+Rails.application.configure do
+  config.mission_control.jobs.http_auth_user = "captain"
+  config.mission_control.jobs.http_auth_password = "topsecret"
+end
+```
+or you can set it via ENV
+
+```shell
+ENV["MISSION_CONTROL_JOBS_HTTP_AUTH_USER"]=captain
+ENV["MISSION_CONTROL_JOBS_HTTP_AUTH_password"]=topsecret
+```
+If no value is provided (`nil`, `""` or `false`), authentication is skipped.
+
+#### Custom authentication
+
+You might want to implement your own authentication. To make this easier, you can specify a different controller as the base class for Mission Control's controllers:
 
 ```ruby
 Rails.application.configure do
