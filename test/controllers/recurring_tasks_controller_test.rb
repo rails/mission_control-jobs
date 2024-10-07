@@ -22,6 +22,7 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
       assert_select "td", "PauseJob"
       assert_select "td", "every second"
       assert_select "td", /less than \d+ seconds ago/
+      assert_select "td.next_time", /less than \d+ seconds ago/
     end
   end
 
