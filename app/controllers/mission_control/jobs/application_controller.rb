@@ -20,6 +20,6 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
     end
 
     def set_current_locale(&block)
-      I18n.with_locale(:en, &block)
+      I18n.with_locale(I18n.available_locales.sort.find { |locale| locale.start_with?("en") } || I18n.default_locale, &block)
     end
 end
