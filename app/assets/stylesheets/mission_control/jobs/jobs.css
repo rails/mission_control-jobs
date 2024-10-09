@@ -5,3 +5,8 @@
 .jobs td {
     word-break: break-all;
 }
+
+.job .arguments {
+    max-height: 10rem;
+    overflow: scroll;
+}
