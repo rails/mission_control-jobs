@@ -47,6 +47,18 @@ module MissionControl::Jobs::NavigationHelper
 
   def jobs_count_with_status(status)
     count = ActiveJob.jobs.with_status(status).count
-    count.infinite? ? "..." : number_to_human(count)
+    if count.infinite?
+      "..."
+    else
+      number_to_human(count,
+        format: "%n%u",
+        units: {
+          thousand: "K",
+          million: "M",
+          billion: "B",
+          trillion: "T",
+          quadrillion: "Q"
+        })
+    end
   end
 end
