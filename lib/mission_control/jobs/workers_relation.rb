@@ -10,12 +10,26 @@ class MissionControl::Jobs::WorkersRelation
 
   delegate :last, :[], :to_s, :reverse, to: :to_a
 
+  attr_reader :hostname, :pid
+
   ALL_WORKERS_LIMIT = 100_000_000 # When no limit value it defaults to "all workers"
 
   def initialize(queue_adapter:)
     @queue_adapter = queue_adapter
 
     set_defaults
+  end
+
+  # Returns a +MissionControl::Jobs::WorkersRelation+ with the configured filtering options.
+  #
+  # === Options
+  # * <tt>:hostname</tt> - To only include the workers of a given hostname.
+  # * <tt>:pid</tt> - To only include the workers of a given pid.
+  def where(hostname: nil, pid: nil)
+    # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
+    arguments = { hostname: hostname, pid: pid }.compact
+
+    clone_with **arguments
   end
 
   def offset(offset)
@@ -51,6 +65,8 @@ class MissionControl::Jobs::WorkersRelation
   alias size count
 
   private
+    attr_writer :hostname, :pid
+
     def set_defaults
       self.offset_value = 0
       self.limit_value = ALL_WORKERS_LIMIT
