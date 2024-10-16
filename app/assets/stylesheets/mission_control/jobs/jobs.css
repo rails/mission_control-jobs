@@ -2,6 +2,35 @@
     width: 15rem;
 }
 
-.jobs td {
-    word-break: break-all;
+table.jobs {
+    td {
+        word-break: break-all;
+    }
+    th.job-header{
+        width: 30%;
+    }
+    th.duration-header {
+        width: 20%;
+    }
+    &.queues th.job-header {
+        width: 30%;
+    }
+    &.failed th.job-header {
+        width: 35%;
+    }
+    &.in_progress th.job-header {
+        width: 50%;
+    }
+    &.blocked th.job-header {
+        width: 45%;
+    }
+    &.scheduled th.job-header {
+        width: 60%;
+    }
+    &.finished th.job-header {
+        width: 65%;
+    }
+    &.workers th.job-header {
+        width: 40%;
+    }
 }
