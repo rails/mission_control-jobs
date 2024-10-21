@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_06_160416) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_09_204136) do
   create_table "posts", force: :cascade do |t|
     t.string "title"
     t.text "body"
@@ -77,7 +77,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_06_160416) do
     t.string "hostname"
     t.text "metadata"
     t.datetime "created_at", null: false
+    t.string "name", null: false
     t.index ["last_heartbeat_at"], name: "index_solid_queue_processes_on_last_heartbeat_at"
+    t.index ["name", "supervisor_id"], name: "index_solid_queue_processes_on_name_and_supervisor_id", unique: true
     t.index ["supervisor_id"], name: "index_solid_queue_processes_on_supervisor_id"
   end
 
@@ -108,7 +110,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_06_160416) do
     t.text "arguments"
     t.string "queue_name"
     t.integer "priority", default: 0
-    t.boolean "static", default: true
+    t.boolean "static", default: true, null: false
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

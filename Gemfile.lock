@@ -1,4 +1,17 @@
 GIT
+  remote: https://github.com/rails/solid_queue.git
+  revision: 8df600df2d22261cdce3e51e103c1cf58d4da391
+  branch: improve-recurring-tasks-config
+  specs:
+    solid_queue (0.8.2)
+      activejob (>= 7.1)
+      activerecord (>= 7.1)
+      concurrent-ruby (>= 1.3.1)
+      fugit (~> 1.11.0)
+      railties (>= 7.1)
+      thor (~> 1.3.1)
+
+GIT
   remote: https://github.com/teamcapybara/capybara.git
   revision: c0cbf4024c1abd48b0c22c2930e7b05af58ab284
   specs:
@@ -15,7 +28,7 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (0.3.1)
+    mission_control-jobs (0.3.3)
       activejob (>= 7.1)
       activerecord (>= 7.1)
       importmap-rails
@@ -79,7 +92,7 @@ GEM
     erubi (1.12.0)
     et-orbi (1.2.11)
       tzinfo
-    fugit (1.11.0)
+    fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
     globalid (1.2.1)
@@ -125,11 +138,6 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
-    propshaft (0.9.1)
-      actionpack (>= 7.0.0)
-      activesupport (>= 7.0.0)
-      rack
-      railties (>= 7.0.0)
     psych (5.1.2)
       stringio
     public_suffix (6.0.1)
@@ -227,12 +235,6 @@ GEM
       rack-protection (= 4.0.0)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
-    solid_queue (0.5.0)
-      activejob (>= 7.1)
-      activerecord (>= 7.1)
-      concurrent-ruby (>= 1.3.1)
-      fugit (~> 1.11.0)
-      railties (>= 7.1)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -287,7 +289,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rails-omakase
   selenium-webdriver
-  solid_queue (>= 0.5)
+  solid_queue!
   sprockets-rails
   sqlite3
 
