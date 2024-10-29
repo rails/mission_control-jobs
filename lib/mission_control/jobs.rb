@@ -20,5 +20,6 @@ module MissionControl
     mattr_accessor :show_console_help, default: true
     mattr_accessor :scheduled_job_delay_threshold, default: 1.minute
     mattr_accessor :importmap, default: Importmap::Map.new
+    mattr_accessor :backtrace_cleaner
   end
 end

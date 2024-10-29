@@ -29,4 +29,68 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
     visit jobs_path(:failed)
     assert_text /there are no failed jobs/i
   end
+
+  test "Has Clean/Full buttons when a backtrace cleaner is configured" do
+    visit jobs_path(:failed)
+    within_job_row(/FailingJob\s*2/) do
+      click_on "RuntimeError: This always fails!"
+    end
+
+    assert_selector ".backtrace-toggle-selector"
+  end
+
+  test "Does not offer Clean/Full buttons when a backtrace cleaner is not configured" do
+    setup do
+      # grab the current state
+      @backtrace_cleaner = MissionControl::Jobs.backtrace_cleaner
+      @applications = MissionControl::Jobs.backtrace_cleaner
+
+      # reset the state
+      MissionControl::Jobs.backtrace_cleaner = nil
+      MissionControl::Jobs.applications = Applications.new
+
+      # Setup the application with what we had before *minus* a backtrace cleaner
+      @applications.each do |application|
+        MissionControl::Jobs.applications.add(application.name).tap do |it|
+          application.servers.each do |server|
+            it.add_servers(server.name, server.queue_adapter)
+          end
+        end
+      end
+    end
+
+    teardown do
+      # reset back to the known state before the start of the test
+      MissionControl::Jobs.backtrace_cleaner = @backtrace_cleaner
+      MissionControl::Jobs.applications = @application
+    end
+
+    visit jobs_path(:failed)
+    within_job_row(/FailingJob\s*2/) do
+      click_on "RuntimeError: This always fails!"
+    end
+
+    assert_no_selector ".backtrace-toggle-selector"
+  end
+
+  test "click on 'clean' shows a backtrace cleaned by the Rails default backtrace cleaner" do
+    visit jobs_path(:failed)
+    within_job_row /FailingJob\s*2/ do
+      click_on "RuntimeError: This always fails!"
+    end
+
+    assert_selector ".backtrace-toggle-selector"
+
+    within ".backtrace-toggle-selector" do
+      click_on "Clean"
+    end
+
+    assert_selector "pre.backtrace-content", text: /.*/, visible: true
+
+    within ".backtrace-toggle-selector" do
+      click_on "Full"
+    end
+
+    assert_selector "pre.backtrace-content", text: /.*/, visible: true
+  end
 end
