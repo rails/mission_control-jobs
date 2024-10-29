@@ -15,6 +15,7 @@ module MissionControl
 
       config.before_initialize do
         config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
+        config.mission_control.jobs.backtrace_cleaner ||= Rails::BacktraceCleaner.new
 
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
