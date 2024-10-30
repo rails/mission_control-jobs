@@ -29,7 +29,7 @@ PATH
   remote: .
   specs:
     mission_control-jobs (0.3.3)
-      importmap-rails
+      importmap-rails (>= 1.2.1)
       irb (~> 1.13)
       rails (>= 7.1)
       stimulus-rails
