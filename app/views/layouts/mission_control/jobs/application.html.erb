@@ -9,7 +9,7 @@
   <meta name="turbo-cache-control" content="no-cache">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css">
   <%= stylesheet_link_tag "mission_control/jobs/application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags "application-mcj" %>
+  <%= javascript_importmap_tags "application", importmap: MissionControl::Jobs.importmap  %>
 </head>
 <body>
 
