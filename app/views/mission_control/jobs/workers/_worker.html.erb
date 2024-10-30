@@ -17,5 +17,5 @@
     <% end %>
   </td>
 
-  <td><div class="has-text-grey"><%= time_ago_in_words_with_title(worker.last_heartbeat_at) %> ago</div></td>
+  <td><div class="has-text-grey"><%= formatted_time(worker.last_heartbeat_at) %></div></td>
 </tr>

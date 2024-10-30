@@ -14,5 +14,5 @@
     <% end %>
   </td>
   <td> <%= recurring_task.schedule %> </td>
-  <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? bidirectional_time_distance_in_words_with_title(recurring_task.last_enqueued_at) : "Never" %></div></td>
+  <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? formatted_time(recurring_task.last_enqueued_at) : "Never" %></div></td>
 </tr>
