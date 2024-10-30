@@ -6,7 +6,7 @@
       <div class="is-family-monospace"><%= job_arguments(job) %></div>
     <% end %>
 
-    <div class="has-text-grey is-size-7">Enqueued <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+    <div class="has-text-grey is-size-7">Enqueued <%= formatted_time(job.enqueued_at.to_datetime) %></div>
   </td>
 
   <%= render "mission_control/jobs/jobs/#{jobs_status}/job", job: job %>
