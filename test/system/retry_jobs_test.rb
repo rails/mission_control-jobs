@@ -2,9 +2,10 @@ require_relative "../application_system_test_case"
 
 class RetryJobsTest < ApplicationSystemTestCase
   setup do
-    4.times { |index| FailingJob.set(queue: "queue_1").perform_later(index) }
-    3.times { |index| FailingReloadedJob.set(queue: "queue_2").perform_later(4 + index) }
-    2.times { |index| FailingJob.set(queue: "queue_2").perform_later(7 + index) }
+    4.times { |index| FailingJob.set(queue: "queue_1").perform_later("failing-arg-#{index}") }
+    3.times { |index| FailingReloadedJob.set(queue: "queue_2").perform_later("failing-reloaded-arg-#{4 + index}") }
+    2.times { |index| FailingJob.set(queue: "queue_2").perform_later("failing-arg-#{7 + index}") }
+    perform_enqueued_jobs
     perform_enqueued_jobs
 
     visit jobs_path(:failed)
@@ -23,7 +24,7 @@ class RetryJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
     expected_job_id = ActiveJob.jobs.failed[2].job_id
 
-    within_job_row "2" do
+    within_job_row "failing-arg-2" do
       click_on "Retry"
     end
 

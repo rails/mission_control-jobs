@@ -28,10 +28,9 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (0.3.1)
-      importmap-rails
+    mission_control-jobs (0.3.3)
+      importmap-rails (>= 1.2.1)
       irb (~> 1.13)
-      propshaft
       rails (>= 7.1)
       stimulus-rails
       turbo-rails
@@ -117,6 +116,13 @@ GEM
       public_suffix (>= 2.0.2, < 6.0)
     ast (2.4.2)
     base64 (0.2.0)
+    better_html (2.1.1)
+      actionview (>= 6.0)
+      activesupport (>= 6.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     bigdecimal (3.1.7)
     builder (3.2.4)
     concurrent-ruby (1.3.3)
@@ -191,11 +197,6 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
-    propshaft (0.8.0)
-      actionpack (>= 7.0.0)
-      activesupport (>= 7.0.0)
-      rack
-      railties (>= 7.0.0)
     psych (5.1.2)
       stringio
     public_suffix (5.0.4)
@@ -307,6 +308,7 @@ GEM
       rack-protection (= 4.0.0)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
+    smart_properties (1.17.0)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -351,6 +353,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  better_html
   capybara!
   debug
   mission_control-jobs!
