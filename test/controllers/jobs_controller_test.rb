@@ -85,6 +85,6 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
 
   private
     def time_pattern(time)
-      /#{time.utc.strftime("%Y-%m-%d %H:%M")}:\d{2}\.\d{3}/
+      /#{time.utc.strftime("%Y-%m-%d %H:%M")}:\d{2}\.\d{3} UTC/
     end
 end
