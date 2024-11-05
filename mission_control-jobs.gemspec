@@ -16,7 +16,12 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "rails", ">= 7.1"
+  rails_version = ">= 7.1"
+  spec.add_dependency "activerecord", rails_version
+  spec.add_dependency "activejob", rails_version
+  spec.add_dependency "actionpack", rails_version
+  spec.add_dependency "actioncable", rails_version
+  spec.add_dependency "railties", rails_version
   spec.add_dependency "importmap-rails", ">= 1.2.1"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"
