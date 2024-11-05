@@ -6,6 +6,7 @@ end
 def clean_database
   SolidQueue::Job.all.each(&:destroy)
   SolidQueue::Process.all.each(&:destroy)
+  SolidQueue::RecurringTask.all.each(&:destroy)
 end
 
 class JobsLoader
@@ -25,7 +26,7 @@ class JobsLoader
       load_finished_jobs
       load_failed_jobs
       load_regular_jobs
-      load_blocked_jobs if server.queue_adapter.supported_job_statuses.include?(:blocked)
+      load_blocked_jobs
     end
   end
 
@@ -51,6 +52,8 @@ class JobsLoader
     end
 
     def load_finished_jobs
+      return unless supported_status?(:finished)
+
       puts "Generating #{finished_jobs_count} finished jobs for #{application} - #{server}..."
       regular_jobs_count.times do |index|
         enqueue_one_of DummyJob => index, DummyReloadedJob => index
@@ -66,10 +69,16 @@ class JobsLoader
     end
 
     def load_blocked_jobs
+      return unless supported_status?(:blocked)
+
       puts "Generating #{blocked_jobs_count} blocked jobs for #{application} - #{server}..."
       blocked_jobs_count.times do |index|
         enqueue_one_of BlockingJob => index
       end
+    end
+
+    def supported_status?(status)
+      server.queue_adapter.supported_job_statuses.include?(status)
     end
 
     def with_random_queue(job_class)
