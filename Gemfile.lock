@@ -249,7 +249,7 @@ GEM
     resque-pause (0.3.0)
       multi_json (~> 1.0)
       resque (>= 1.9.10)
-    rexml (3.2.6)
+    rexml (3.3.9)
     rubocop (1.52.1)
       json (~> 2.3)
       parallel (~> 1.10)
