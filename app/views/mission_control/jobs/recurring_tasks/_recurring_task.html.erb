@@ -3,12 +3,17 @@
     <%= link_to recurring_task.id, application_recurring_task_path(@application, recurring_task.id) %>
   </td>
   <td>
-    <%= link_to recurring_task.job_class_name, application_recurring_task_path(@application, recurring_task.id) %>
+    <% if recurring_task.job_class_name.present? %>
+      <%= recurring_task.job_class_name %>
 
-    <% if recurring_task.arguments.present? %>
-      <div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div>
+      <% if recurring_task.arguments.present? %>
+        <div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div>
+      <% end %>
+    <% elsif recurring_task.command.present? %>
+      <div class="is-family-monospace"><%= recurring_task.command %></div>
     <% end %>
   </td>
   <td> <%= recurring_task.schedule %> </td>
-  <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? bidirectional_time_distance_in_words_with_title(recurring_task.last_enqueued_at) : "Never" %></div></td>
+  <td><div class="has-text-grey"><%= recurring_task.last_enqueued_at ? formatted_time(recurring_task.last_enqueued_at) : "Never" %></div></td>
+  <td class="next_time"><div class="has-text-grey"><%= formatted_time(recurring_task.next_time) %></div></td>
 </tr>

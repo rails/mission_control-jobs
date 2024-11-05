@@ -59,6 +59,8 @@ Rails.application.configure do
   # config.action_view.annotate_rendered_view_with_filenames = true
   config.active_job.queue_adapter = :resque
 
+  config.solid_queue.connects_to = { database: { writing: :queue } }
+
   # Silence Solid Queue logging
   config.solid_queue.logger = ActiveSupport::Logger.new(nil)
 end

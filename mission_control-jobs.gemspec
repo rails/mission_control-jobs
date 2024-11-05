@@ -17,14 +17,13 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 7.1"
-  spec.add_dependency "propshaft"
-  spec.add_dependency "importmap-rails"
+  spec.add_dependency "importmap-rails", ">= 1.2.1"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"
   spec.add_dependency "irb", "~> 1.13"
 
   spec.add_development_dependency "resque"
-  spec.add_development_dependency "solid_queue", ">= 0.5"
+  spec.add_development_dependency "solid_queue", "~> 1.0"
   spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"
@@ -34,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop", "~> 1.52.0"
   spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "rubocop-rails-omakase"
+  spec.add_development_dependency "better_html"
   spec.add_development_dependency "sprockets-rails"
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "puma"

@@ -57,6 +57,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `internal_query_count_limit`: in count queries, the maximum number of records that will be counted if the adapter needs to limit these queries. True counts above this number will be returned as `INFINITY`. This keeps count queries fast—defaults to `500,000`
 - `scheduled_job_delay_threshold`: the time duration before a scheduled job is considered delayed. Defaults to `1.minute` (a job is considered delayed if it hasn't transitioned from the `scheduled` status 1 minute after the scheduled time).
 - `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
+- `backtrace_cleaner`: a backtrace cleaner used for optionally filtering backtraces on the Failed Jobs detail page. Defaults to `Rails::BacktraceCleaner.new`. See the [Advanced configuration](#advanced-configuration) section for how to configure/override this setting on a per application/server basis.
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
@@ -65,7 +66,7 @@ This library extends Active Job with a querying interface and the following sett
 ## Adapter Specifics
 
 - **Resque**: Queue pausing is supported only if you have `resque-pause` installed in your project
-- **Solid Queue**: Requires version >= 0.5.
+- **Solid Queue**: Requires version >= 0.9.
 
 ## Advanced configuration
 
@@ -107,7 +108,24 @@ SERVERS_BY_APP.each do |app, servers|
       ActiveJob::QueueAdapters::SolidQueueAdapter.new
     end
 
-    [ server, queue_adapter ]
+    # Default:
+    # 
+    # @return Array<String, ActiveJob::QueueAdapters::Base)
+    # An array where:
+    # * the String represents the symbolic name for this server within the UI
+    # * ActiveJob::QueueAdapters::Base adapter instance used to access this Application Server/Service
+    [ server, queue_adapter ] 
+    
+    # Optional return formats:
+    # 
+    # @return Array<String, Array<ActiveJob::QueueAdapters::Base>>
+    # * This is equivalent, and behaves identically to, the format the default format above. 
+    # [ server, [ queue_adapter ]]  # without optional backtrace cleaner
+    # 
+    # @return Array<String, Array<ActiveJob::QueueAdapters::Base, ActiveSupport::BacktraceCleaner>>
+    # * This format adds an optional ActiveSupport::BacktraceCleaner to override the system wide
+    #   backtrace cleaner for *this* Application Server/Service.
+    # [ server, [ queue_adapter, BacktraceCleaner.new ]]  # with optional backtrace cleaner
   end.to_h
 
   MissionControl::Jobs.applications.add(app, queue_adapters_by_name)

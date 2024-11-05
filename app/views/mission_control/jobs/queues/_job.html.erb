@@ -3,7 +3,7 @@
     <%= link_to application_job_path(@application, job.job_id, filter: { queue_name: job.queue }) do %>
       <%= job_title(job) %>
     <% end %>
-    <div class="has-text-grey">Enqueued <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+    <div class="has-text-grey">Enqueued on <%= formatted_time(job.enqueued_at.to_datetime) %></div>
   </td>
   <td>
     <% if job.serialized_arguments.present? %>

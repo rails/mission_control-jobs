@@ -1,16 +1,37 @@
 <table class="table">
   <tbody>
-  <tr>
-    <th>Job class</th>
-    <td><%= recurring_task.job_class_name %></td>
-  </tr>
-  <tr>
-    <th>Arguments</th>
-    <td><div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div></td>
-  </tr>
+  <% if recurring_task.job_class_name.present? %>
+    <tr>
+      <th>Job class</th>
+      <td><%= recurring_task.job_class_name %></td>
+    </tr>
+
+    <tr>
+      <th>Arguments</th>
+      <td><div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div></td>
+    </tr>
+  <% elsif recurring_task.command.present? %>
+    <tr>
+      <th>Command</th>
+      <td><div class="is-family-monospace"><%= recurring_task.command %></div></td>
+    </tr>
+  <% end %>
+
   <tr>
     <th>Schedule</th>
     <td><%= recurring_task.schedule %></td>
   </tr>
+  <% if recurring_task.queue_name.present? %>
+    <tr>
+      <th>Queue</th>
+      <td><%= recurring_task.queue_name %></td>
+    </tr>
+  <% end %>
+  <% if recurring_task.priority.present? %>
+    <tr>
+      <th>Priority</th>
+      <td><%= recurring_task.priority %></td>
+    </tr>
+  <% end %>
   </tbody>
 </table>

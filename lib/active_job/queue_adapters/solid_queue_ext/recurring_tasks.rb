@@ -25,8 +25,12 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
       {
         id: task.key,
         job_class_name: task.class_name,
+        command: task.command,
         arguments: task.arguments,
-        schedule: task.schedule
+        schedule: task.schedule,
+        next_time: task.next_time,
+        queue_name: task.queue_name,
+        priority: task.priority
       }
     end
 

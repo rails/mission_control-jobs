@@ -69,6 +69,7 @@ Rails.application.configure do
   # config.action_cable.disable_request_forgery_protection = true
 
   config.active_job.queue_adapter = :resque
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Silence Solid Queue logging
   config.solid_queue.logger = ActiveSupport::Logger.new(nil)
