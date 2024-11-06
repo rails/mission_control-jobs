@@ -10,16 +10,27 @@ default: &default
   timeout: 5000
 
 development:
-  <<: *default
-  database: db/development.sqlite3
+  primary:
+    <<: *default
+    database: db/development.sqlite3
+  queue:
+    <<: *default
+    database: db/development_queue.sqlite3
+    migrations_paths: db/queue_migrate
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
-  <<: *default
-  pool: 10
-  database: db/test.sqlite3
+  primary:
+    <<: *default
+    pool: 10
+    database: db/test.sqlite3
+  queue:
+    <<: *default
+    pool: 10
+    database: db/test_queue.sqlite3
+    migrations_paths: db/queue_migrate
 
 production:
   <<: *default

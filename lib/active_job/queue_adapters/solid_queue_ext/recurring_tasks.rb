@@ -28,6 +28,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
         command: task.command,
         arguments: task.arguments,
         schedule: task.schedule,
+        next_time: task.next_time,
         queue_name: task.queue_name,
         priority: task.priority
       }

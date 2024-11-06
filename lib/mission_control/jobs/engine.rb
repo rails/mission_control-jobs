@@ -1,23 +1,18 @@
-require "mission_control/jobs/version"
-require "mission_control/jobs/engine"
-
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
-require "propshaft"
 
 module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
 
-      config.middleware.use ActionDispatch::Flash unless config.action_dispatch.flash
-
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
 
       config.before_initialize do
         config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
+        config.mission_control.jobs.backtrace_cleaner ||= Rails::BacktraceCleaner.new
 
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
@@ -79,25 +74,23 @@ module MissionControl
         MissionControl::Jobs.delay_between_bulk_operation_batches = 2
         MissionControl::Jobs.logger = ActiveSupport::Logger.new(STDOUT)
 
-        if MissionControl::Jobs.applications.one? && (application = MissionControl::Jobs.applications.first) && application.servers.one?
-          MissionControl::Jobs::Current.application = application
-          MissionControl::Jobs::Current.server = application.servers.first
-        end
-
         if MissionControl::Jobs.show_console_help
           puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
         end
       end
 
       initializer "mission_control-jobs.assets" do |app|
-        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
 
-      initializer "mission_control-jobs.importmap", before: "importmap" do |app|
-        app.config.importmap.paths << root.join("config/importmap.rb")
-        app.config.importmap.cache_sweepers << root.join("app/javascript")
+      initializer "mission_control-jobs.importmap", after: "importmap" do |app|
+        MissionControl::Jobs.importmap.draw(root.join("config/importmap.rb"))
+        MissionControl::Jobs.importmap.cache_sweeper(watches: root.join("app/javascript"))
+
+        ActiveSupport.on_load(:action_controller_base) do
+          before_action { MissionControl::Jobs.importmap.cache_sweeper.execute_if_updated }
+        end
       end
     end
   end

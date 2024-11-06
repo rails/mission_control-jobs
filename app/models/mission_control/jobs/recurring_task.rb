@@ -1,7 +1,7 @@
 class MissionControl::Jobs::RecurringTask
   include ActiveModel::Model
 
-  attr_accessor :id, :job_class_name, :command, :arguments, :schedule, :last_enqueued_at, :queue_name, :priority
+  attr_accessor :id, :job_class_name, :command, :arguments, :schedule, :last_enqueued_at, :next_time, :queue_name, :priority
 
   def initialize(queue_adapter: ActiveJob::Base.queue_adapter, **kwargs)
     @queue_adapter = queue_adapter

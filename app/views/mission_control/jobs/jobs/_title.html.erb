@@ -11,6 +11,9 @@
       <% if job.blocked? %>
         <%= render "mission_control/jobs/jobs/blocked/actions", job: job %>
       <% end %>
+      <% if job.scheduled? %>
+        <%= render "mission_control/jobs/jobs/scheduled/actions", job: job %>
+      <% end %>
     </div>
   </div>
 </h1>
