@@ -43,7 +43,7 @@ module MissionControl
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
 
-        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
+        ActiveJob::QueueAdapters::AsyncAdapter.include ActiveJob::QueueAdapters::AsyncExt
       end
 
       config.after_initialize do |app|
