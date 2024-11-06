@@ -1,6 +1,3 @@
-require "mission_control/jobs/version"
-require "mission_control/jobs/engine"
-
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
