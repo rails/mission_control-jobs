@@ -27,7 +27,7 @@ module Dummy
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    # Mission Control supported adapters
-    config.mission_control.jobs.adapters = [ :resque, :solid_queue ]
+    # Mission Control configured adapters
+    config.mission_control.jobs.adapters = [ :resque, :solid_queue, :async ]
   end
 end
