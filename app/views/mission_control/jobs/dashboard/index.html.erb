@@ -1,0 +1,182 @@
+<% navigation(title: "Dashboard", section: :dashboard)  %>
+
+<div class="columns">
+  <div class="column">
+    <div class="notification">
+      <h6 class="title is-6">Pending</h6>
+      <span id="pending">--</span>
+    </div>
+  </div>
+  <div class="column">
+    <div class="notification">
+      <h6 class="title is-6">Scheduled</h6>
+      <span id="scheduled">--</span>
+    </div>
+  </div>
+  <div class="column">
+    <div class="notification">
+      <h6 class="title is-6">In Progress</h6>
+      <span id="in-progress">--</span>
+    </div>
+  </div>
+  <div class="column">
+    <div class="notification">
+      <h6 class="title is-6">Finished</h6>
+      <span id="finished">--</span>
+    </div>
+  </div>
+  <div class="column">
+    <div class="notification">
+      <h6 class="title is-6">Failed</h6>
+      <span id="failed">--</span>
+    </div>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column">
+    General Overview
+  </div>
+  <div class="column has-text-right">
+    <div class="select is-small">
+      <select id="change-uptime" value="5" onchange="handleSelectUptime(this.value)">
+        <option value="10">10 seconds</option>
+        <option value="5">5 seconds</option>
+        <option value="3">3 seconds</option>
+        <option value="1">1 second</option>
+      </select>
+    </div>
+  </div>
+</div>
+<hr/>
+
+<div>
+  <canvas id="general-overview-chart"></canvas>
+</div>
+
+<script>
+ 
+  if (typeof uptimeInterval === "undefined") {
+    var uptimeInterval = null;
+  }
+  if (typeof chart === "undefined") {
+    var chart = null;
+  }
+
+  document.addEventListener("turbo:load", () => {
+    const canvas = document.getElementById('general-overview-chart');
+
+    if (!canvas)
+      return;
+
+    const ctx = canvas.getContext('2d');
+
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
+
+    const finished = document.getElementById('finished');
+    const scheduled = document.getElementById('scheduled');
+    const pending = document.getElementById('pending');
+    const inProgress = document.getElementById('in-progress');
+    const failed = document.getElementById('failed');
+
+    let uptime = 5;
+
+    const labels = [];
+    const data = {
+      labels: labels,
+      datasets: [{
+        label: 'Success',
+        data: [],
+        fill: false,
+        borderColor: 'rgb(0, 219, 124)',
+        tension: 0.1
+      },
+      {
+        label: 'Error',
+        data: [],
+        fill: false,
+        borderColor: 'rgb(226, 15, 15)',
+        tension: 0.1
+      },
+      {
+        label: 'Pending',
+        data: [],
+        fill: false,
+        borderColor: 'rgb(237, 209, 0)',
+        tension: 0.1
+      }]
+    };
+
+    const config = {
+      type: 'line',
+      data: data,
+    };
+
+    chart = new Chart(ctx, config);
+
+    function handleSelectUptime(value) {
+      // console.log("Update Uptime to " + value);
+      uptime = value;
+      clearInterval(uptimeInterval);
+      uptimeInterval = setInterval(() => updateChartData(), value * 1000);
+    }
+
+    async function updateChartData() {
+      try {
+        const response = await fetch(`<%= application_internal_api_dashboard_index_path %>?uptime=${uptime}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+
+        if (chart == null) return;
+
+        chart.data.labels.push(data.uptime.label);
+        chart.data.labels = chart.data.labels.slice(-20);
+
+        AddChartData(0, data.uptime.finished);
+        AddChartData(1, data.uptime.failed);
+        AddChartData(2, data.uptime.pending);
+
+        finished.innerHTML = data.total.finished;
+        inProgress.innerHTML = data.total.in_progress;
+        pending.innerHTML = data.total.pending;
+        scheduled.innerHTML = data.total.scheduled;
+        failed.innerHTML = data.total.failed;
+
+        chart.update();
+      } catch (error) {
+        console.error('Error at consult chart API:', error);
+      }
+    }
+
+    function AddChartData(datasetIndex, quantity) {
+      chart.data.datasets[datasetIndex].data.push(quantity);
+      chart.data.datasets[datasetIndex].data = chart.data.datasets[datasetIndex].data.slice(-10);
+    }
+
+    if (uptimeInterval != null)
+      clearInterval(uptimeInterval);
+
+    uptimeInterval = setInterval(() => updateChartData(), 5000);
+    updateChartData();
+
+    // Exponha a função no escopo global
+    window.handleSelectUptime = handleSelectUptime;
+  });
+
+  // Limpa o gráfico e o intervalo antes de sair da página
+  document.addEventListener("turbo:before-render", () => {
+    if (uptimeInterval != null) {
+      clearInterval(uptimeInterval);
+      uptimeInterval = null;
+    }
+
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
+  });
+</script>

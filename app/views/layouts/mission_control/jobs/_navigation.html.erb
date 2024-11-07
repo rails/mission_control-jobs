@@ -1,4 +1,4 @@
-<div class="tabs is-boxed">
+<div class="tabs is-boxed" id="navigation-sections">
   <ul>
     <% navigation_sections.each do |key, (label, url)| %>
       <li class="<%= "is-active" if key == current_section %>">
@@ -7,3 +7,31 @@
     <% end %>
   </ul>
 </div>
+
+<script>
+  document.addEventListener("turbo:load", () => {
+    if (!window.Navigation || typeof window.Navigation.currentSection === 'undefined') {
+      window.Navigation = {
+        currentSection: "<%= @current_section %>",
+
+        changeSection(section) {
+          this.currentSection = section;
+        }
+      };
+
+      setInterval(() => {
+        fetch(`/jobs/applications/solidqueueusage/internal_api/navigation?section=${window.Navigation.currentSection}`)
+          .then(response => response.text())
+          .then(html => {
+            const navigationSections = document.querySelector('#navigation-sections');
+            if (navigationSections) {
+              navigationSections.innerHTML = html;
+            }
+          })
+          .catch(error => console.error("Error fetching navigation update:", error));
+      }, 5000);
+    } else {
+      window.Navigation.currentSection = "<%= @current_section %>";
+    }
+  });
+</script>

@@ -113,4 +113,15 @@ class ActionDispatch::IntegrationTest
       yield if block_given?
       @scheduler.stop
     end
+
+    def await_perform_all_enqueued_jobs
+      @worker.start
+      
+      while ActiveJob.jobs.pending.count > 0 do
+        sleep(1.second)
+      end
+
+      yield if block_given?
+      @worker.stop
+    end
 end
