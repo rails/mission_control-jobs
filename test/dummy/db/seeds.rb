@@ -10,7 +10,7 @@ def clean_database
 end
 
 class JobsLoader
-  attr_reader :application, :server, :failed_jobs_count, :pending_jobs_count, :finished_jobs_count, :blocked_jobs_count
+  attr_reader :application, :server, :failed_jobs_count, :pending_jobs_count, :finished_jobs_count, :blocked_jobs_count, :scheduled_jobs_count
 
   def initialize(application, server, failed_jobs_count: 100, pending_jobs_count: 50)
     @application = application
@@ -19,6 +19,7 @@ class JobsLoader
     @pending_jobs_count = randomize(pending_jobs_count)
     @finished_jobs_count = randomize(pending_jobs_count)
     @blocked_jobs_count = randomize(pending_jobs_count)
+    @scheduled_jobs_count = randomize(pending_jobs_count)
   end
 
   def load
@@ -27,6 +28,7 @@ class JobsLoader
       load_failed_jobs
       load_pending_jobs
       load_blocked_jobs
+      load_scheduled_jobs
       load_recurring_tasks
     end
   end
@@ -61,6 +63,15 @@ class JobsLoader
       puts "Generating #{blocked_jobs_count} blocked jobs for #{application} - #{server}..."
       blocked_jobs_count.times do |index|
         enqueue_one_of BlockingJob => index
+      end
+    end
+
+    def load_scheduled_jobs
+      return unless supported_status?(:scheduled)
+
+      puts "Generating #{scheduled_jobs_count} scheduled jobs for #{application} - #{server}..."
+      scheduled_jobs_count.times do |index|
+        DummyJob.set(wait: randomize(60).minutes).perform_later(index)
       end
     end
 

@@ -8,7 +8,7 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
 
   private
     def jobs_relation
-      ActiveJob.jobs.failed
+      ActiveJob.jobs
     end
 
     def redirect_location
