@@ -3,11 +3,16 @@ class MissionControl::Jobs::DispatchesController < MissionControl::Jobs::Applica
 
   def create
     @job.dispatch
-    redirect_to application_jobs_url(@application, :blocked), notice: "Dispatched job with id #{@job.job_id}"
+    redirect_to redirect_location, notice: "Dispatched job with id #{@job.job_id}"
   end
 
   private
-  def jobs_relation
-    ApplicationJob.jobs.blocked
-  end
+    def jobs_relation
+      ActiveJob.jobs
+    end
+
+    def redirect_location
+      status = @job.status.presence_in(supported_job_statuses) || :blocked
+      application_jobs_url(@application, status)
+    end
 end

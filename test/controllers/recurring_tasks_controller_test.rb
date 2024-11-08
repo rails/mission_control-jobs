@@ -52,4 +52,17 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
       assert_select "article.is-danger", /Recurring task with id 'invalid_key' not found/
     end
   end
+
+  test "enqueue recurring task successfully" do
+    schedule_recurring_tasks_async(wait: 0.1.seconds)
+
+    assert_difference -> { ActiveJob.jobs.pending.count } do
+      put mission_control_jobs.application_recurring_task_url(@application, "periodic_pause_job")
+      assert_response :redirect
+    end
+
+    job = ActiveJob.jobs.pending.last
+    assert_equal "PauseJob", job.job_class_name
+    assert_match /jobs\/#{job.job_id}\?server_id=solid_queue\z/, response.location
+  end
 end

@@ -12,6 +12,10 @@ class MissionControl::Jobs::RecurringTask
     ActiveJob::JobsRelation.new(queue_adapter: queue_adapter).where(recurring_task_id: id)
   end
 
+  def enqueue
+    queue_adapter.enqueue_recurring_task(id)
+  end
+
   private
     attr_reader :queue_adapter
 end

@@ -66,7 +66,7 @@ This library extends Active Job with a querying interface and the following sett
 ## Adapter Specifics
 
 - **Resque**: Queue pausing is supported only if you have `resque-pause` installed in your project
-- **Solid Queue**: Requires version >= 0.9.
+- **Solid Queue**: Requires version >= 1.0.1.
 
 ## Advanced configuration
 
