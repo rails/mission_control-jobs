@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "irb", "~> 1.13"
 
   spec.add_development_dependency "resque"
-  spec.add_development_dependency "solid_queue", "~> 1.0"
+  spec.add_development_dependency "solid_queue", "~> 1.0.1"
   spec.add_development_dependency "selenium-webdriver"
   spec.add_development_dependency "resque-pause"
   spec.add_development_dependency "mocha"

@@ -3,7 +3,7 @@ class MissionControl::Jobs::DispatchesController < MissionControl::Jobs::Applica
 
   def create
     @job.dispatch
-    redirect_to redirect_location
+    redirect_to redirect_location, notice: "Dispatched job with id #{@job.job_id}"
   end
 
   private
