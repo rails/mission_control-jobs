@@ -60,6 +60,7 @@ class ActiveSupport::TestCase
     def delete_solid_queue_data
       SolidQueue::Job.find_each(&:destroy)
       SolidQueue::Process.find_each(&:destroy)
+      SolidQueue::RecurringTask.find_each(&:destroy)
     end
 
     def root_resque_redis

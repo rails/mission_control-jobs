@@ -15,7 +15,6 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
   end
 
   private
-
     def jobs_relation
       filtered_jobs
     end
