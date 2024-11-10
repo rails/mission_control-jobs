@@ -16,6 +16,10 @@ class MissionControl::Jobs::RecurringTask
     queue_adapter.enqueue_recurring_task(id)
   end
 
+  def runnable?
+    queue_adapter.can_enqueue_recurring_task?(id)
+  end
+
   private
     attr_reader :queue_adapter
 end

@@ -23,6 +23,7 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
         assert_select "td", "PauseJob"
         assert_select "td", "every second"
         assert_select "td", /2024-10-30 19:07:1\d\.\d{3}/
+        assert_select "button", "Run now"
       end
     end
   end
@@ -53,6 +54,19 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
     end
   end
 
+  test "get recurring task with undefined class" do
+    # simulate recurring task inserted from another app, no validations or callbacks
+    SolidQueue::RecurringTask.insert({ key: "missing_class_task", class_name: "MissingJob", schedule: "every minute" })
+    get mission_control_jobs.application_recurring_tasks_url(@application)
+    assert_response :ok
+
+    assert_select "tr.recurring_task", 1
+    assert_select "td a", "missing_class_task"
+    assert_select "td", "MissingJob"
+    assert_select "td", "every minute"
+    assert_select "button", text: "Run now", count: 0 # Can't be run because the class doesn't exist
+  end
+
   test "enqueue recurring task successfully" do
     schedule_recurring_tasks_async(wait: 0.1.seconds)
 
@@ -64,5 +78,18 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
     job = ActiveJob.jobs.pending.last
     assert_equal "PauseJob", job.job_class_name
     assert_match /jobs\/#{job.job_id}\?server_id=solid_queue\z/, response.location
+  end
+
+  test "fail to enqueue recurring task with undefined class" do
+    # simulate recurring task inserted from another app, no validations or callbacks
+    SolidQueue::RecurringTask.insert({ key: "missing_class_task", class_name: "MissingJob", schedule: "every minute" })
+
+    assert_no_difference -> { ActiveJob.jobs.pending.count } do
+      put mission_control_jobs.application_recurring_task_url(@application, "missing_class_task")
+      assert_response :redirect
+
+      follow_redirect!
+      assert_select "article.is-danger", /This task can.t be enqueued/
+    end
   end
 end
