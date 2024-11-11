@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "rubocop-rails-omakase"
   spec.add_development_dependency "better_html"
-  spec.add_development_dependency "sprockets-rails"
+  spec.add_development_dependency "propshaft"
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "puma"
 end
