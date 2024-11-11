@@ -7,6 +7,8 @@ module MissionControl
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
 
+      config.middleware.use ActionDispatch::Flash unless config.action_dispatch.flash
+
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
 
