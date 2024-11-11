@@ -1,5 +1,5 @@
 <ul>
-  <% navigation_sections.each do |key, (label, url)| %>
+  <% @navigation_sections.each do |key, (label, url)| %>
     <li class="<%= "is-active" if key == section %>">
       <%= link_to label, url %>
     </li>

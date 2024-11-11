@@ -85,6 +85,10 @@ module ActiveJob::QueueAdapters::ResqueExt
     defined?(ResquePauseHelper)
   end
 
+  def supports_dashboard?
+    false
+  end
+
   private
     attr_reader :redis
 

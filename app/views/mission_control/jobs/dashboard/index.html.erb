@@ -118,7 +118,6 @@
     chart = new Chart(ctx, config);
 
     function handleSelectUptime(value) {
-      // console.log("Update Uptime to " + value);
       uptime = value;
       clearInterval(uptimeInterval);
       uptimeInterval = setInterval(() => updateChartData(), value * 1000);
@@ -126,7 +125,7 @@
 
     async function updateChartData() {
       try {
-        const response = await fetch(`<%= application_internal_api_dashboard_index_path %>?uptime=${uptime}`);
+        const response = await fetch(`<%= application_internal_api_dashboard_index_path %>&uptime=${uptime}`);
         if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();
@@ -163,11 +162,9 @@
     uptimeInterval = setInterval(() => updateChartData(), 5000);
     updateChartData();
 
-    // Exponha a função no escopo global
     window.handleSelectUptime = handleSelectUptime;
   });
 
-  // Limpa o gráfico e o intervalo antes de sair da página
   document.addEventListener("turbo:before-render", () => {
     if (uptimeInterval != null) {
       clearInterval(uptimeInterval);

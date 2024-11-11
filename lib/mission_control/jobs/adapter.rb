@@ -25,6 +25,10 @@ module MissionControl::Jobs::Adapter
     true
   end
 
+  def supports_dashboard?
+    true
+  end
+
   def exposes_workers?
     false
   end

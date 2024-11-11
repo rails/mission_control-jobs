@@ -14,15 +14,13 @@
   <%= javascript_importmap_tags "application", importmap: MissionControl::Jobs.importmap  %>
 </head>
 <body>
-
-<section class="section">
-  <div class="container">
-    <%= render "layouts/mission_control/jobs/application_selection" %>
-    <%= render "layouts/mission_control/jobs/flash" %>
-    <%= render "layouts/mission_control/jobs/navigation" %>
-    <%= yield %>
-  </div>
-</section>
-
+  <section class="section">
+    <div class="container">
+      <%= render "layouts/mission_control/jobs/application_selection" %>
+      <%= render "layouts/mission_control/jobs/flash" %>
+      <%= render "layouts/mission_control/jobs/navigation" %>
+      <%= yield %>
+    </div>
+  </section>
 </body>
 </html>

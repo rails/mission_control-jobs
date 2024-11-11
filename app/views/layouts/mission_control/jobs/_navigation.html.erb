@@ -9,6 +9,10 @@
 </div>
 
 <script>
+  if (typeof navigationInterval === "undefined") {
+    var navigationInterval = null;
+  }
+
   document.addEventListener("turbo:load", () => {
     if (!window.Navigation || typeof window.Navigation.currentSection === 'undefined') {
       window.Navigation = {
@@ -19,19 +23,36 @@
         }
       };
 
-      setInterval(() => {
-        fetch(`/jobs/applications/solidqueueusage/internal_api/navigation?section=${window.Navigation.currentSection}`)
-          .then(response => response.text())
-          .then(html => {
-            const navigationSections = document.querySelector('#navigation-sections');
-            if (navigationSections) {
-              navigationSections.innerHTML = html;
-            }
-          })
-          .catch(error => console.error("Error fetching navigation update:", error));
-      }, 5000);
+      startNavigationInterval();
     } else {
       window.Navigation.currentSection = "<%= @current_section %>";
     }
   });
+
+  document.addEventListener("turbo:visit", () => {
+    clearInterval(navigationInterval);
+    startNavigationInterval();
+  });
+
+  function startNavigationInterval() {
+    let urlParams = new URLSearchParams(window.location.search);
+
+    navigationInterval = setInterval(() => {
+      urlParams = new URLSearchParams(window.location.search);
+      fetch(`<%= application_internal_api_navigation_index_path %>&server_id=${urlParams.get('server_id')}&section=${window.Navigation.currentSection}`)
+        .then(response => response.text())
+        .then(html => {
+          if (urlParams.get('server_id') !== 'solid_queue') {
+            console.log(urlParams.get('server_id'))
+            return;
+          }
+
+          const navigationSections = document.querySelector('#navigation-sections');
+          if (navigationSections) {
+            navigationSections.innerHTML = html;
+          }
+        })
+        .catch(error => console.error("Error fetching navigation update:", error));
+    }, 5000);
+  }
 </script>
