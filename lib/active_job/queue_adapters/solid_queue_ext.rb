@@ -118,14 +118,18 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         ActiveJob::ExecutionError.new \
           error_class: solid_queue_job.failed_execution.exception_class,
           message: solid_queue_job.failed_execution.message,
-          backtrace: solid_queue_job.failed_execution.backtrace
+          backtrace: solid_queue_job.failed_execution.backtrace || []
       end
     end
 
     def dispatch_immediately(job)
-      SolidQueue::Job.transaction do
-        job.dispatch_bypassing_concurrency_limits
-        job.blocked_execution.destroy!
+      if job.blocked?
+        SolidQueue::Job.transaction do
+          job.dispatch_bypassing_concurrency_limits
+          job.blocked_execution.destroy!
+        end
+      else
+        job.scheduled_execution.update!(scheduled_at: Time.now)
       end
     end
 

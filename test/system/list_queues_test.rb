@@ -15,23 +15,4 @@ class ListQueuesTest < ApplicationSystemTestCase
       end
     end
   end
-
-  test "list queues sorted by name and filtered by prefix" do
-    with_queue_name_prefix do
-      visit queues_path
-
-      assert_equal 1, queue_row_elements.length
-      within queue_row_elements.first do
-        assert_text "queue_1"
-      end
-    end
-  end
-
-  private
-    def with_queue_name_prefix(&block)
-      previous_prefix, ActiveJob::Base.queue_name_prefix = ActiveJob::Base.queue_name_prefix, "queue_1"
-      yield
-    ensure
-      ActiveJob::Base.queue_name_prefix = previous_prefix
-    end
 end

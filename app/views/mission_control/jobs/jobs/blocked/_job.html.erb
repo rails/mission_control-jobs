@@ -1,6 +1,7 @@
 <td><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></td>
-<td><div class="is-family-monospace is-size-7"><%= job.blocked_by %></div></td>
-<td><%= bidirectional_time_distance_in_words_with_title(job.blocked_until) %></td>
+<td><div class="is-family-monospace is-size-7"><%= job.blocked_by %></div>
+    <div class="has-text-grey is-size-7">Until <%= formatted_time(job.blocked_until) %></div>
+</td>
 <td class="pr-0">
   <%= render "mission_control/jobs/jobs/blocked/actions", job: job %>
 </td>

@@ -1,4 +1,5 @@
 <div class="buttons is-right">
+  <%= button_to "Run now", application_job_dispatch_path(@application, job.job_id), class: "button is-warning is-light mr-0" %>
   <%= button_to "Discard", application_job_discard_path(@application, job.job_id), class: "button is-danger is-light mr-0",
     form: { data: { turbo_confirm: "This will delete the job and can't be undone. Are you sure?" } } %>
 </div>

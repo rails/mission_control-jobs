@@ -158,7 +158,12 @@ class ActiveJob::JobsRelation
   end
 
   # Dispatch the provided job.
+  #
+  # This operation is only valid for blocked or scheduled jobs. It will
+  # raise an error +ActiveJob::Errors::InvalidOperation+ otherwise.
   def dispatch_job(job)
+    raise ActiveJob::Errors::InvalidOperation, "This operation can only be performed on blocked or scheduled jobs, but this job is #{job.status}" unless job.blocked? || job.scheduled?
+
     queue_adapter.dispatch_job(job, self)
   end
 

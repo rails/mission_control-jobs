@@ -24,6 +24,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get jobs and job details when there are multiple instances of the same job due to automatic retries" do
+    time = Time.now
     job = AutoRetryingJob.perform_later
 
     perform_enqueued_jobs_async
@@ -32,7 +33,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     assert_select "tr.job", 2
-    assert_select "tr.job", /AutoRetryingJob\s+Enqueued less than a minute ago\s+default/
+    assert_select "tr.job", /AutoRetryingJob\s+Enqueued #{time_pattern(time)}\s+default/
 
     get mission_control_jobs.application_job_url(@application, job.job_id)
     assert_response :ok
@@ -50,17 +51,16 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get scheduled jobs" do
+    time = Time.now
     DummyJob.set(wait: 3.minutes).perform_later
     DummyJob.set(wait: 1.minute).perform_later
-
-    travel_to 2.minutes.from_now
 
     get mission_control_jobs.application_jobs_url(@application, :scheduled)
     assert_response :ok
 
     assert_select "tr.job", 2
-    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+in 1 minute/
-    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+(1 minute ago|less than a minute ago)/
+    assert_select "tr.job", /DummyJob\s+Enqueued #{time_pattern(time)}\s+queue_1\s+#{time_pattern(time + 3.minute)}/
+    assert_select "tr.job", /DummyJob\s+Enqueued #{time_pattern(time)}\s+queue_1\s+#{time_pattern(time + 1.minute)}/
     assert_select "tr.job", /Discard/
   end
 
@@ -82,4 +82,9 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
       assert_select "div.tag", text: /delayed/, count: 1 # total of one delayed tag
     end
   end
+
+  private
+    def time_pattern(time)
+      /#{time.utc.strftime("%Y-%m-%d %H:%M")}:\d{2}\.\d{3} UTC/
+    end
 end

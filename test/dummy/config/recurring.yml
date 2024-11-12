@@ -1,0 +1,10 @@
+production:
+  periodic_cleanup:
+    class: DummyJob
+    queue: background
+    args: 1000
+    schedule: every hour
+  periodic_post:
+    command: "Post.create!(title: 'Hey')"
+    priority: 2
+    schedule: at 5am every day

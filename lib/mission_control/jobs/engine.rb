@@ -1,6 +1,3 @@
-require "mission_control/jobs/version"
-require "mission_control/jobs/engine"
-
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
@@ -15,6 +12,7 @@ module MissionControl
 
       config.before_initialize do
         config.mission_control.jobs.applications = MissionControl::Jobs::Applications.new
+        config.mission_control.jobs.backtrace_cleaner ||= Rails::BacktraceCleaner.new
 
         config.mission_control.jobs.each do |key, value|
           MissionControl::Jobs.public_send("#{key}=", value)
@@ -45,7 +43,7 @@ module MissionControl
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
 
-        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
+        ActiveJob::QueueAdapters::AsyncAdapter.include ActiveJob::QueueAdapters::AsyncExt
       end
 
       config.after_initialize do |app|
@@ -67,18 +65,14 @@ module MissionControl
 
       console do
         require "irb"
-        require "irb/context"
+
+        IRB::Command.register :connect_to, Console::ConnectTo
+        IRB::Command.register :jobs_help, Console::JobsHelp
 
         IRB::Context.prepend(MissionControl::Jobs::Console::Context)
-        Rails::ConsoleMethods.include(MissionControl::Jobs::Console::Helpers)
 
         MissionControl::Jobs.delay_between_bulk_operation_batches = 2
         MissionControl::Jobs.logger = ActiveSupport::Logger.new(STDOUT)
-
-        if MissionControl::Jobs.applications.one? && (application = MissionControl::Jobs.applications.first) && application.servers.one?
-          MissionControl::Jobs::Current.application = application
-          MissionControl::Jobs::Current.server = application.servers.first
-        end
 
         if MissionControl::Jobs.show_console_help
           puts "\n\nType 'jobs_help' to see how to connect to the available job servers to manage jobs\n\n"
@@ -90,9 +84,13 @@ module MissionControl
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
 
-      initializer "mission_control-jobs.importmap", before: "importmap" do |app|
-        app.config.importmap.paths << root.join("config/importmap.rb")
-        app.config.importmap.cache_sweepers << root.join("app/javascript")
+      initializer "mission_control-jobs.importmap", after: "importmap" do |app|
+        MissionControl::Jobs.importmap.draw(root.join("config/importmap.rb"))
+        MissionControl::Jobs.importmap.cache_sweeper(watches: root.join("app/javascript"))
+
+        ActiveSupport.on_load(:action_controller_base) do
+          before_action { MissionControl::Jobs.importmap.cache_sweeper.execute_if_updated }
+        end
       end
     end
   end

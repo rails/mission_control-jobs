@@ -60,6 +60,7 @@ class ActiveSupport::TestCase
     def delete_solid_queue_data
       SolidQueue::Job.find_each(&:destroy)
       SolidQueue::Process.find_each(&:destroy)
+      SolidQueue::RecurringTask.find_each(&:destroy)
     end
 
     def root_resque_redis
@@ -81,12 +82,12 @@ class ActionDispatch::IntegrationTest
     @worker = SolidQueue::Worker.new(queues: "*", threads: 2, polling_interval: 0.01)
 
     recurring_task = { periodic_pause_job: { class: "PauseJob", schedule: "every second" } }
-    @dispatcher = SolidQueue::Dispatcher.new(recurring_tasks: recurring_task)
+    @scheduler = SolidQueue::Scheduler.new(recurring_tasks: recurring_task)
   end
 
   teardown do
     @worker.stop
-    @dispatcher.stop
+    @scheduler.stop
   end
 
   private
@@ -95,7 +96,7 @@ class ActionDispatch::IntegrationTest
     end
 
     def register_workers(count: 1)
-      count.times { |i| SolidQueue::Process.register(kind: "Worker", pid: i) }
+      count.times { |i| SolidQueue::Process.register(kind: "Worker", pid: i, name: "worker-#{i}") }
     end
 
     def perform_enqueued_jobs_async(wait: 1.second)
@@ -106,11 +107,11 @@ class ActionDispatch::IntegrationTest
       @worker.stop
     end
 
-    def dispatch_jobs_async(wait: 1.second)
-      @dispatcher.start
+    def schedule_recurring_tasks_async(wait: 1.second)
+      @scheduler.start
       sleep(wait)
 
       yield if block_given?
-      @dispatcher.stop
+      @scheduler.stop
     end
 end

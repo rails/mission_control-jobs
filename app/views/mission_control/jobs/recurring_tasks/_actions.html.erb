@@ -1,0 +1,5 @@
+<div class="buttons is-right">
+  <% if recurring_task.runnable? %>
+    <%= button_to "Run now", application_recurring_task_path(@application, recurring_task.id), class: "button is-warning is-light mr-0", method: :put %>
+  <% end %>
+</div>
