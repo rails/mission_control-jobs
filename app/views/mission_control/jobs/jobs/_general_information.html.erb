@@ -34,6 +34,12 @@
       </td>
     </tr>
   <% end %>
+  <tr>
+    <th>Retries</th>
+    <td>
+      <%= job.respond_to?(:arguments) ? job.arguments.first["executions"] : 0 %>
+    </td>
+  </tr>
   <% if job.finished_at.present? %>
     <tr>
       <th>Finished at</th>

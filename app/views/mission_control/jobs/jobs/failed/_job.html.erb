@@ -2,6 +2,9 @@
   <%= link_to failed_job_error(job), application_job_path(@application, job.job_id, anchor: "error") %>
   <div class="has-text-grey"><%= formatted_time(job.failed_at) %></div>
 </td>
+<td>
+  <%= job.respond_to?(:arguments) ? job.arguments.first["executions"] : 0 %>
+</td>
 <td class="pr-0">
   <%= render "mission_control/jobs/jobs/failed/actions", job: job %>
 </td>
