@@ -1,5 +1,6 @@
 MissionControl::Jobs::Engine.routes.draw do
   resources :applications, only: [] do
+    resources :dashboard, only: [ :index ]
     resources :queues, only: [ :index, :show ] do
       scope module: :queues do
         resource :pause, only: [ :create, :destroy ]
@@ -15,6 +16,11 @@ MissionControl::Jobs::Engine.routes.draw do
         resource :bulk_retries, only: :create
         resource :bulk_discards, only: :create
       end
+    end
+
+    namespace :internal_api do
+      resources :dashboard, only: [ :index ]
+      resources :navigation, only: [ :index ]
     end
 
     resources :jobs, only: :index, path: ":status/jobs"

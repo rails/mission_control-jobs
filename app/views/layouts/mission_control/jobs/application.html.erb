@@ -8,19 +8,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="turbo-cache-control" content="no-cache">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <%= stylesheet_link_tag "mission_control/jobs/application", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags "application", importmap: MissionControl::Jobs.importmap  %>
 </head>
 <body>
-
-<section class="section">
-  <div class="container">
-    <%= render "layouts/mission_control/jobs/application_selection" %>
-    <%= render "layouts/mission_control/jobs/flash" %>
-    <%= render "layouts/mission_control/jobs/navigation" %>
-    <%= yield %>
-  </div>
-</section>
-
+  <section class="section">
+    <div class="container">
+      <%= render "layouts/mission_control/jobs/application_selection" %>
+      <%= render "layouts/mission_control/jobs/flash" %>
+      <%= render "layouts/mission_control/jobs/navigation" %>
+      <%= yield %>
+    </div>
+  </section>
 </body>
 </html>

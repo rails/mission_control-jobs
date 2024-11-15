@@ -2,7 +2,7 @@ module MissionControl::Jobs::AdapterFeatures
   extend ActiveSupport::Concern
 
   included do
-    helper_method :supported_job_statuses, :queue_pausing_supported?, :workers_exposed?, :recurring_tasks_supported?
+    helper_method :supported_job_statuses, :queue_pausing_supported?, :workers_exposed?, :supports_dashboard?, :recurring_tasks_supported?
   end
 
   private
@@ -20,5 +20,9 @@ module MissionControl::Jobs::AdapterFeatures
 
     def recurring_tasks_supported?
       MissionControl::Jobs::Current.server.queue_adapter.supports_recurring_tasks?
+    end
+
+    def supports_dashboard?
+      MissionControl::Jobs::Current.server.queue_adapter.supports_dashboard?
     end
 end
