@@ -7,6 +7,13 @@ module MissionControl
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
 
+      initializer "mission_control-jobs.middleware" do |app|
+        if app.config.api_only
+          app.middleware.use ActionDispatch::Flash
+          app.middleware.use ::Rack::MethodOverride
+        end
+      end
+
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
 
@@ -80,6 +87,7 @@ module MissionControl
       end
 
       initializer "mission_control-jobs.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end

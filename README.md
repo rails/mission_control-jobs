@@ -30,6 +30,20 @@ And that's it. With this alone, you should be able to access Mission Control Job
 
 ![Failed jobs tab in a simple app](docs/images/failed-jobs-simple.png)
 
+### API-only apps or apps using `vite_rails` and other asset pipelines outside Rails
+
+If you want to use this gem with an [API-only Rails app](https://guides.rubyonrails.org/api_app.html) or an app that's using `vite_ruby`/`vite_rails`, or some other custom asset pipeline different from Sprockets and Propshaft, you need just one more thing: configure an asset pipeline so you can serve the JavaScript and CSS included in this gem. We recommend to use [`Propshaft`](https://github.com/rails/propshaft). You simply need to add this line to your application's Gemfile:
+
+```ruby
+gem "propshaft"
+```
+
+Then execute
+```bash
+$ bundle install
+```
+
+And you should be ready to go.
 
 ### Authentication and base controller class
 

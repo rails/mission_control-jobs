@@ -1,7 +1,7 @@
 require_relative "boot"
 
 require "rails/all"
-require "sprockets/railtie"
+require "propshaft"
 
 require "resque"
 require "solid_queue"
