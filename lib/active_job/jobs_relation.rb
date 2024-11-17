@@ -58,9 +58,8 @@ class ActiveJob::JobsRelation
       queue_name: queue_name,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
-    }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
-
-    arguments.merge!(finished_at: finished_at) if finished_at.present? && !finished_at.to_s.match?(/^..$/)
+      finished_at: finished_at
+    }.compact
 
     clone_with **arguments
   end
@@ -277,6 +276,7 @@ class ActiveJob::JobsRelation
     end
 
     def filters
+      # @filetrs ||= queue_adapter.supported_job_filters(self).select { |property| public_send(property).present? && !queue_adapter.natively_supported_job_filters?(self, property) }
       @filters ||= FILTERS.select { |property| public_send(property).present? && !queue_adapter.supports_job_filter?(self, property) }
     end
 
