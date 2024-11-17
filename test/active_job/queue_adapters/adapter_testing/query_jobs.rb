@@ -112,7 +112,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     10.times { |index| WithPaginationDummyJob.perform_later(index) }
     4.times { |index| WithPaginationFailingJob.perform_later(index) }
 
-    jobs = ActiveJob.jobs.pending.where(queue_name: :default, job_class_name: WithPaginationDummyJob).to_a
+    jobs = ActiveJob.jobs.pending.where(queue_name: :default, job_class_name: 'WithPaginationDummyJob').to_a
     assert_equal 10, jobs.size
   end
 
