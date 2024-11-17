@@ -18,7 +18,8 @@ module MissionControl::Jobs::JobFilters
     end
 
     def date_with_time_zone(date)
-      return date if date.nil?
-      DateTime.parse(date).in_time_zone
+      if date.present?
+        DateTime.parse(date).in_time_zone
+      end
     end
 end
