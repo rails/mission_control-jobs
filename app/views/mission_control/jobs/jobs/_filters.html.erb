@@ -14,11 +14,11 @@
 
         <% if jobs_status == 'finished' %>
           <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at_start], class: "input", placeholder: "Finished from" %>
+            <%= form.datetime_field :finished_at_start, value: params.dig(:filter, :finished_at_start), class: "input", placeholder: "Finished from" %>
           </div>
 
           <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at_end], class: "input", placeholder: "Finished to" %>
+            <%= form.datetime_field :finished_at_end, value: params.dig(:filter, :finished_at_end), class: "input", placeholder: "Finished to" %>
           </div>
         <% end %>
 
@@ -39,7 +39,7 @@
     </div>
 
     <div class="control">
-      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil, finished_at_start: nil, finished_at_end: nil), class: "button" %>
+      <%= link_to "Clear", application_jobs_path(MissionControl::Jobs::Current.application, jobs_status, job_class_name: nil, queue_name: nil, finished_at: nil..nil), class: "button" %>
     </div>
   </div>
 </div>
