@@ -26,7 +26,7 @@ module MissionControl::Jobs::JobsHelper
   def attribute_names_for_job_status(status)
     case status.to_s
     when "failed"      then [ "Error", "Retries", "" ]
-    when "blocked"     then [ "Queue", "Blocked by", "Block expiry", "" ]
+    when "blocked"     then [ "Queue", "Blocked by", "" ]
     when "finished"    then [ "Queue", "Finished" ]
     when "scheduled"   then [ "Queue", "Scheduled", "" ]
     when "in_progress" then [ "Queue", "Run by", "Running since" ]
@@ -39,7 +39,6 @@ module MissionControl::Jobs::JobsHelper
   end
 
   private
-
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|
         as_renderable_argument(argument)
@@ -53,7 +52,7 @@ module MissionControl::Jobs::JobsHelper
       when Array
         as_renderable_array(argument)
       else
-        ActiveJob::Arguments.deserialize([ argument ])
+        ActiveJob::Arguments.deserialize([ argument ]).first
       end
     rescue ActiveJob::DeserializationError
       argument.to_s
@@ -65,12 +64,18 @@ module MissionControl::Jobs::JobsHelper
         argument["_aj_globalid"]
       elsif argument["_aj_serialized"] == "ActiveJob::Serializers::ModuleSerializer"
         argument["value"]
+      elsif argument["_aj_serialized"]
+        ActiveJob::Arguments.deserialize([ argument ]).first
       else
-        ActiveJob::Arguments.deserialize([ argument ])
+        argument.without("_aj_symbol_keys", "_aj_ruby2_keywords")
+          .transform_values { |v| as_renderable_argument(v) }
+          .map { |k, v| "#{k}: #{v}" }
+          .join(", ")
+          .then { |s| "{#{s}}" }
       end
     end
 
     def as_renderable_array(argument)
-      "(#{argument.collect { |part| as_renderable_argument(part) }.join(", ")})"
+      "[#{argument.collect { |part| as_renderable_argument(part) }.join(", ")}]"
     end
 end

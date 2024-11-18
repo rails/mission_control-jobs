@@ -25,7 +25,7 @@ table.jobs {
         width: 45%;
     }
     &.scheduled th.job-header {
-        width: 60%;
+        width: 40%;
     }
     &.finished th.job-header {
         width: 65%;

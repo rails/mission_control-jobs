@@ -20,6 +20,18 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
     end
   end
 
+  def enqueue_recurring_task(task_id)
+    if task = SolidQueue::RecurringTask.find_by(key: task_id)
+      task.enqueue(at: Time.now)
+    end
+  end
+
+  def can_enqueue_recurring_task?(task_id)
+    if task = SolidQueue::RecurringTask.find_by(key: task_id)
+      task.valid?
+    end
+  end
+
   private
     def recurring_task_attributes_from_solid_queue_recurring_task(task)
       {
@@ -28,6 +40,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::RecurringTasks
         command: task.command,
         arguments: task.arguments,
         schedule: task.schedule,
+        next_time: task.next_time,
         queue_name: task.queue_name,
         priority: task.priority
       }

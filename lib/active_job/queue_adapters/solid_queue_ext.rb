@@ -123,9 +123,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     end
 
     def dispatch_immediately(job)
-      SolidQueue::Job.transaction do
-        job.dispatch_bypassing_concurrency_limits
-        job.blocked_execution.destroy!
+      if job.blocked?
+        SolidQueue::Job.transaction do
+          job.dispatch_bypassing_concurrency_limits
+          job.blocked_execution.destroy!
+        end
+      else
+        job.scheduled_execution.update!(scheduled_at: Time.now)
       end
     end
 

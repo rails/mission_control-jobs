@@ -1,6 +1,3 @@
-require "mission_control/jobs/version"
-require "mission_control/jobs/engine"
-
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
@@ -9,6 +6,13 @@ module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
+
+      initializer "mission_control-jobs.middleware" do |app|
+        if app.config.api_only
+          app.middleware.use ActionDispatch::Flash
+          app.middleware.use ::Rack::MethodOverride
+        end
+      end
 
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
@@ -46,7 +50,7 @@ module MissionControl
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
 
-        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
+        ActiveJob::QueueAdapters::AsyncAdapter.include ActiveJob::QueueAdapters::AsyncExt
       end
 
       config.after_initialize do |app|
@@ -83,6 +87,7 @@ module MissionControl
       end
 
       initializer "mission_control-jobs.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end

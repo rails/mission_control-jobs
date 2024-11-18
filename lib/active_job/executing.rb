@@ -25,7 +25,7 @@ module ActiveJob::Executing
   end
 
   def dispatch
-    ActiveJob.jobs.blocked.dispatch_job(self)
+    ActiveJob.jobs.dispatch_job(self)
   end
 
   private

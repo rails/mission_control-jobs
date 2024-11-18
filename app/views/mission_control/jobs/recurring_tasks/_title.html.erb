@@ -3,5 +3,8 @@
     <div class="level-left">
       <%= recurring_task.id %>
     </div>
+    <div class="level-right">
+      <%= render "mission_control/jobs/recurring_tasks/actions", recurring_task: recurring_task %>
+    </div>
   </div>
 </h1>
