@@ -3,7 +3,7 @@
   <div class="has-text-grey"><%= formatted_time(job.failed_at) %></div>
 </td>
 <td>
-  <%= job.respond_to?(:arguments) ? job.arguments.first["executions"] : 0 %>
+  <%= job.retries %>
 </td>
 <td class="pr-0">
   <%= render "mission_control/jobs/jobs/failed/actions", job: job %>

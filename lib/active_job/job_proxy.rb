@@ -20,6 +20,10 @@ class ActiveJob::JobProxy < ActiveJob::Base
     end
   end
 
+  def retries
+    self.arguments.first["executions"] || 0
+  end
+
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end
