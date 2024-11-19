@@ -45,6 +45,8 @@ $ bundle install
 
 And you should be ready to go.
 
+*Note: Legacy CSS bundlers `sass-rails` and `sassc-rails` may fail to compile some of the CSS vendored into this library from [Bulma](https://github.com/jgthms/bulma), which was created in [Dart SASS](https://sass-lang.com/dart-sass/). You will therefore need to upgrade to `dartsass-rails` or some library that relies on it, like `cssbundling-rails`.*
+
 ### Authentication and base controller class
 
 By default, Mission Control's controllers will extend the host app's `ApplicationController`. If no authentication is enforced, `/jobs` will be available to everyone. You might want to implement some kind of authentication for this in your app. To make this easier, you can specify a different controller as the base class for Mission Control's controllers:
