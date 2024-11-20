@@ -23,9 +23,9 @@ class ActiveJob::JobsRelation
   include Enumerable
 
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
-  FILTERS = %i[ queue_name job_class_name ]
+  FILTERS = %i[ queue_name job_class_name finished_at scheduled_at enqueued_at ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at scheduled_at enqueued_at ]
   attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
@@ -51,15 +51,18 @@ class ActiveJob::JobsRelation
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
-  # * <tt>:finished_at</tt> - (Range) To only include the jobs finished between the provided range
-  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil)
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
       queue_name: queue_name&.to_s,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
-      finished_at: finished_at
-    }.compact
+      finished_at: finished_at,
+      scheduled_at: scheduled_at,
+      enqueued_at: enqueued_at
+    }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+
+    # TODO: is this collect needed? .collect { |key, value| [ key, value.to_s ] }.to_h
 
     clone_with **arguments
   end
@@ -271,8 +274,31 @@ class ActiveJob::JobsRelation
       jobs.filter { |job| satisfy_filter?(job) }
     end
 
+    def satisfy_date_filter?(filter_value, job_value)
+      return false if job_value.nil?
+
+      # Treat date ranges
+      if filter_value.include?("..")
+        start_date, end_date = filter_value.split("..").map { |date| Time.zone.parse(date) }
+        filter_range = (start_date..end_date)
+        return filter_range.cover?(job_value)
+      end
+
+      filter = Time.zone.parse(filter_value)
+      job_value >= filter
+    end
+
     def satisfy_filter?(job)
-      filters.all? { |property| public_send(property) == job.public_send(property) }
+      filters.all? do |property|
+        filter_value = public_send(property)
+        job_value = job.public_send(property)
+
+        is_date_filter?(property) ? satisfy_date_filter?(filter_value, job_value) : filter_value == job_value
+      end
+    end
+
+    def is_date_filter?(property)
+      [ :finished_at, :scheduled_at, :enqueued_at ].include?(property)
     end
 
     def filters
