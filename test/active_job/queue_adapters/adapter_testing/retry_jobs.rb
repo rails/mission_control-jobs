@@ -79,7 +79,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
 
     assert_equal 15, ActiveJob.jobs.failed.count
 
-    failed_jobs = ActiveJob.jobs.failed.where(queue_name: 'queue_2')
+    failed_jobs = ActiveJob.jobs.failed.where(queue_name: :queue_2)
     failed_jobs.retry_all
 
     assert_equal 10, ActiveJob.jobs.failed.count

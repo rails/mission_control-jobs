@@ -55,7 +55,7 @@ class ActiveJob::JobsRelation
   def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
-      queue_name: queue_name,
+      queue_name: queue_name&.to_s,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
       finished_at: finished_at
