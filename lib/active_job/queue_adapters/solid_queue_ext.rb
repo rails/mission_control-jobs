@@ -40,7 +40,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def supported_job_filters(*)
-    [ :queue_name, :job_class_name, :finished_at_start, :finished_at_end ]
+    [ :queue_name, :job_class_name, :finished_at ]
   end
 
   def jobs_count(jobs_relation)
