@@ -35,7 +35,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     assert_equal 8, ActiveJob.queues.sum(&:size)
     assert_equal 5, ActiveJob.jobs.pending.where(queue_name: "default").count
     assert_equal 3, ActiveJob.jobs.pending.where(queue_name: "other_queue").count
-    assert_equal 3, ActiveJob.jobs.pending.where(queue_name: "other_queue").count
+    assert_equal 3, ActiveJob.jobs.pending.where(queue_name: :other_queue).count
 
     assert_equal 5, ActiveJob.queues[:default].size
     assert_equal 3, ActiveJob.queues[:other_queue].size
