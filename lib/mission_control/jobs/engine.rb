@@ -9,8 +9,8 @@ module MissionControl
 
       initializer "mission_control-jobs.middleware" do |app|
         if app.config.api_only
-          app.middleware.use ActionDispatch::Flash
-          app.middleware.use ::Rack::MethodOverride
+          config.middleware.use ActionDispatch::Flash
+          config.middleware.use ::Rack::MethodOverride
         end
       end
 
