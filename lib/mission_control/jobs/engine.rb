@@ -30,6 +30,11 @@ module MissionControl
         end
       end
 
+      initializer "mission_control-jobs.http_auth" do |app|
+        config.mission_control.jobs.http_auth_user = app.credentials.dig(:mission_control, :http_auth_user),
+        config.mission_control.jobs.http_auth_password = app.credentials.dig(:mission_control, :http_auth_password)
+      end
+
       initializer "mission_control-jobs.active_job.extensions" do
         ActiveSupport.on_load :active_job do
           include ActiveJob::Querying
