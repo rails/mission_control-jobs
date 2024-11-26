@@ -30,9 +30,9 @@ module MissionControl
         end
       end
 
-      initializer "mission_control-jobs.http_auth" do |app|
-        config.mission_control.jobs.http_auth_user = app.credentials.dig(:mission_control, :http_auth_user),
-        config.mission_control.jobs.http_auth_password = app.credentials.dig(:mission_control, :http_auth_password)
+      initializer "mission_control-jobs.http_basic_auth" do |app|
+        config.mission_control.jobs.http_basic_auth_user = app.credentials.dig(:mission_control, :http_basic_auth_user),
+        config.mission_control.jobs.http_basic_auth_password = app.credentials.dig(:mission_control, :http_basic_auth_password)
       end
 
       initializer "mission_control-jobs.active_job.extensions" do

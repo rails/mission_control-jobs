@@ -26,8 +26,8 @@ module MissionControl
 
     mattr_accessor :importmap, default: Importmap::Map.new
 
-    mattr_accessor :http_auth_user
-    mattr_accessor :http_auth_password
-    mattr_accessor :http_auth_enabled, default: true
+    mattr_accessor :http_basic_auth_user
+    mattr_accessor :http_basic_auth_password
+    mattr_accessor :http_basic_auth_enabled, default: true
   end
 end
