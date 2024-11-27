@@ -14,11 +14,11 @@
 
         <% if jobs_status == "finished" %>
           <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at].begin, class: "input", placeholder: "Finished from" %>
+            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at]&.begin, class: "input", placeholder: "Finished from" %>
           </div>
 
           <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at].end, class: "input", placeholder: "Finished to" %>
+            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at]&.end, class: "input", placeholder: "Finished to" %>
           </div>
         <% end %>
 

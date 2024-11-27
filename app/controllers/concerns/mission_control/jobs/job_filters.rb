@@ -10,14 +10,20 @@ module MissionControl::Jobs::JobFilters
   private
     def set_filters
       @job_filters = { job_class_name: params.dig(:filter, :job_class_name).presence, queue_name: params.dig(:filter, :queue_name).presence,
-                       finished_at: date_with_time_zone(params.dig(:filter, :finished_at_start))..date_with_time_zone(params.dig(:filter, :finished_at_end)) }.compact
+                       finished_at: finished_at_range_params }.compact
     end
 
     def active_filters?
       @job_filters.any?
     end
 
-    # TODO: move to helpers ?
+    def finished_at_range_params
+      range_start, range_end = params.dig(:filter, :finished_at_start), params.dig(:filter, :finished_at_end)
+      if range_start || range_end
+        (parse_with_time_zone(range_start)..parse_with_time_zone(range_end))
+      end
+    end
+
     def date_with_time_zone(date)
       if date.present?
         DateTime.parse(date).in_time_zone
