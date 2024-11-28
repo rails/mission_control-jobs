@@ -2,6 +2,19 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   include MissionControl::Jobs::Adapter
   include RecurringTasks, Workers
 
+  def initialize(db_config_name = nil)
+    super()
+    @db_config_name = db_config_name
+  end
+
+  def activating(&block)
+    if db_config_name.present?
+      SolidQueue::Record.connected_to(shard: db_config_name.to_sym, &block)
+    else
+      yield
+    end
+  end
+
   def queues
     queues = SolidQueue::Queue.all
     pauses = SolidQueue::Pause.where(queue_name: queues.map(&:name)).index_by(&:queue_name)
@@ -80,6 +93,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   private
+    attr_reader :db_config_name
+
     def find_queue_by_name(queue_name)
       SolidQueue::Queue.find_by_name(queue_name)
     end

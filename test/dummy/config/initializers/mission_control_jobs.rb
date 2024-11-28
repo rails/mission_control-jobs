@@ -7,7 +7,7 @@ Resque.redis = Redis::Namespace.new "#{Rails.env}", redis: Redis.new(host: "loca
 
 SERVERS_BY_APP = {
   BC4: %w[ resque_ashburn resque_chicago ],
-  HEY: %w[ resque solid_queue ]
+  HEY: %w[ resque queue queue_alternative ]
 }
 
 def redis_connection_for(app, server)
@@ -20,7 +20,7 @@ SERVERS_BY_APP.each do |app, servers|
     queue_adapter = if server.start_with?("resque")
       ActiveJob::QueueAdapters::ResqueAdapter.new(redis_connection_for(app, server))
     else
-      ActiveJob::QueueAdapters::SolidQueueAdapter.new
+      ActiveJob::QueueAdapters::SolidQueueAdapter.new(server)
     end
 
     [ server, queue_adapter ]

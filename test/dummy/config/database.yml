@@ -15,8 +15,14 @@ development:
     database: db/development.sqlite3
   queue:
     <<: *default
+    pool: 10
     database: db/development_queue.sqlite3
     migrations_paths: db/queue_migrate
+  queue_alternative:
+    <<: *default
+    pool: 10
+    database: db/development_queue_alternative.sqlite3
+    migrations_paths: db/queue_alternative_migrate
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -31,6 +37,11 @@ test:
     pool: 10
     database: db/test_queue.sqlite3
     migrations_paths: db/queue_migrate
+  queue_alternative:
+    <<: *default
+    pool: 10
+    database: db/test_queue_alternative.sqlite3
+    migrations_paths: db/queue_alternative_migrate
 
 production:
   <<: *default
