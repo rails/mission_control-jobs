@@ -1,5 +1,9 @@
-class MissionControl::Jobs::AuthenticationGenerator < Rails::Generators::Base
-  def init
+class MissionControl::Jobs::Authentication < Rails::Command::Base
+  def self.configure
+    new.configure
+  end
+
+  def configure
     if credentials_accessible?
       if authentication_configured?
         say "HTTP Basic Authentication is already configured for `#{Rails.env}`. You can edit it using `credentials:edit`"
@@ -26,6 +30,8 @@ class MissionControl::Jobs::AuthenticationGenerator < Rails::Generators::Base
   end
 
   private
+    attr_reader :environment
+
     def credentials_accessible?
       credentials.read.present?
     end

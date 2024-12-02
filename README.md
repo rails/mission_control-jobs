@@ -68,12 +68,12 @@ mission_control:
 If no credentials are configured, Mission Control won't be accessible. To set these up, you can run the generator provided like this:
 
 ```
-bin/rails mission_control:jobs:authentication:init
+bin/rails mission_control:jobs:authentication:configure
 ```
 
 To set them up for different environments you can use the `RAILS_ENV` environment variable, like this:
 ```
-RAILS_ENV=production bin/rails mission_control:jobs:authentication:init
+RAILS_ENV=production bin/rails mission_control:jobs:authentication:configure
 ```
 
 #### Custom authentication
