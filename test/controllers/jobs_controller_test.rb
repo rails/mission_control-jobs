@@ -43,6 +43,27 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "div.is-danger", "failed"
   end
 
+  test "get finished jobs filtered by finished_at date" do
+    job = DummyJob.perform_later(42)
+    perform_enqueued_jobs_async
+
+    get mission_control_jobs.application_jobs_url(@application, :finished)
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.to_s })
+    assert_response :ok
+    assert_select "tr.job", 0
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.to_s, finished_at_end: 1.hour.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+  end
+
   test "redirect to queue when job doesn't exist" do
     job = DummyJob.perform_later(42)
 

@@ -38,6 +38,16 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert_equal "MyJob", jobs.job_class_name
   end
 
+  test "set finished_at range" do
+    jobs = @jobs.where(finished_at: (1.day.ago..))
+    assert 1.hour.ago.in? jobs.finished_at
+
+    # Supports concatenation without overriding exising properties
+    jobs = jobs.where(queue_name: "my_queue")
+    assert_equal "my_queue", jobs.queue_name
+    assert 1.hour.ago.in? jobs.finished_at
+  end
+
   test "caches the fetched set of jobs" do
     ActiveJob::Base.queue_adapter.expects(:fetch_jobs).twice.returns([ :job_1, :job_2 ], [])
     ActiveJob::Base.queue_adapter.expects(:supports_job_filter?).at_least_once.returns(true)
