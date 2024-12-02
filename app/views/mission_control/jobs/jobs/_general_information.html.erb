@@ -23,7 +23,7 @@
   <tr>
     <th>Enqueued</th>
     <td>
-      <%= time_ago_in_words_with_title(job.enqueued_at.to_datetime) %> ago
+      <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago
     </td>
   </tr>
   <% if job.scheduled? %>
@@ -41,7 +41,7 @@
     <tr>
       <th>Failed</th>
       <td>
-        <%= time_ago_in_words_with_title(job.failed_at) %> ago
+        <%= time_distance_in_words_with_title(job.failed_at) %> ago
       </td>
     </tr>
   <% end %>
@@ -49,7 +49,7 @@
     <tr>
       <th>Finished at</th>
       <td>
-        <%= time_ago_in_words_with_title(job.finished_at) %> ago
+        <%= time_distance_in_words_with_title(job.finished_at) %> ago
       </td>
     </tr>
   <% end %>
