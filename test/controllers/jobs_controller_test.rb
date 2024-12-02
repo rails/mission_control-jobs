@@ -32,7 +32,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     assert_select "tr.job", 2
-    assert_select "tr.job", /AutoRetryingJob\s+Enqueued less than a minute ago\s+default/
+    assert_select "tr.job", /AutoRetryingJob\s+Enqueued less than 5 seconds ago\s+default/
 
     get mission_control_jobs.application_job_url(@application, job.job_id)
     assert_response :ok
@@ -104,8 +104,8 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "get jobs and job details the default locale is set to another language than English" do
-    I18n.available_locales = %i[en nl]
+  test "get jobs and job details when the default locale is set to another language than English" do
+    previous_locales, I18n.available_locales = I18n.available_locales, %i[ en nl ]
 
     DummyJob.set(wait: 3.minutes).perform_later
 
@@ -113,7 +113,22 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
       get mission_control_jobs.application_jobs_url(@application, :scheduled)
       assert_response :ok
 
-      assert_select "tr.job", /DummyJob\s+Enqueued less than a minute ago\s+queue_1\s+in 3 minutes/
+      assert_select "tr.job", /DummyJob\s+Enqueued less than 5 seconds ago\s+queue_1\s+in 3 minutes/
     end
+  ensure
+    I18n.available_locales = previous_locales
+  end
+
+  test "get jobs and job details when English is not included among the locales" do
+    previous_locales, I18n.available_locales = I18n.available_locales, %i[ es nl ]
+
+    DummyJob.set(wait: 3.minutes).perform_later
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+
+    assert_select "tr.job", /DummyJob\s+Enqueued less than 5 seconds ago\s+queue_1\s+in 3 minutes/
+  ensure
+    I18n.available_locales = previous_locales
   end
 end
