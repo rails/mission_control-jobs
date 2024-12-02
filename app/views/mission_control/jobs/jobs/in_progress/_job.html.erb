@@ -6,4 +6,4 @@
     —
   <% end %>
 </td>
-<td><div class="has-text-grey"><%= job.started_at ? formatted_time(job.started_at) : "(Finished)" %></div></td>
+<td><div class="has-text-grey"><%= job.started_at ? time_distance_in_words_with_title(job.started_at) : "(Finished)" %></div></td>
