@@ -1,4 +1,7 @@
 <div class="buttons is-right">
+  <% if queue.size.positive? %>
+    <%= button_to "Discard all", application_queue_discard_path(@application, queue.name), method: :post, class: "button is-danger is-light mr-0", form: { data: { turbo_confirm: "This will delete #{queue.size} pending jobs in the queue and can't be undone. Are you sure?" } } %>
+  <% end %>
   <% if queue.active? %>
     <%= button_to "Pause", application_queue_pause_path(@application, queue.name), method: :post, class: "button is-success is-light mr-0" %>
   <% else %>
