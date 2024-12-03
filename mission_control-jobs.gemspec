@@ -12,6 +12,13 @@ Gem::Specification.new do |spec|
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/rails/mission_control-jobs"
 
+  spec.post_install_message = <<~MESSAGE
+    Upgrading to Mission Control – Jobs 1.0.0? HTTP Basic authentication has been added by default, and it needs
+    to be configured or disabled before you can access the dashboard.
+    --> Check https://github.com/rails/mission_control-jobs?tab=readme-ov-file#authentication
+    for more details and instructions.
+  MESSAGE
+
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end

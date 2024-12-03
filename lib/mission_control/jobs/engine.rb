@@ -7,6 +7,10 @@ module MissionControl
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
 
+      rake_tasks do
+        load "mission_control/jobs/tasks.rb"
+      end
+
       initializer "mission_control-jobs.middleware" do |app|
         if app.config.api_only
           config.middleware.use ActionDispatch::Flash
@@ -28,6 +32,11 @@ module MissionControl
         if MissionControl::Jobs.adapters.empty?
           MissionControl::Jobs.adapters << (config.active_job.queue_adapter || :async)
         end
+      end
+
+      initializer "mission_control-jobs.http_basic_auth" do |app|
+        MissionControl::Jobs.http_basic_auth_user = app.credentials.dig(:mission_control, :http_basic_auth_user)
+        MissionControl::Jobs.http_basic_auth_password = app.credentials.dig(:mission_control, :http_basic_auth_password)
       end
 
       initializer "mission_control-jobs.active_job.extensions" do

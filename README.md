@@ -56,9 +56,29 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 *Note: Legacy CSS bundlers `sass-rails` and `sassc-rails` may fail to compile some of the CSS vendored into this library from [Bulma](https://github.com/jgthms/bulma), which was created in [Dart SASS](https://sass-lang.com/dart-sass/). You will therefore need to upgrade to `dartsass-rails` or some library that relies on it, like `cssbundling-rails`.*
 
-### Authentication and base controller class
+### Authentication
 
-By default, Mission Control's controllers will extend the host app's `ApplicationController`. If no authentication is enforced, `/jobs` will be available to everyone. You might want to implement some kind of authentication for this in your app. To make this easier, you can specify a different controller as the base class for Mission Control's controllers:
+Mission Control comes with **HTTP basic authentication enabled and closed** by default. Credentials are stored in [Rails's credentials](https://edgeguides.rubyonrails.org/security.html#custom-credentials) like this:
+```yml
+mission_control:
+  http_basic_auth_user: dev
+  http_basic_auth_password: secret
+```
+
+If no credentials are configured, Mission Control won't be accessible. To set these up, you can run the generator provided like this:
+
+```
+bin/rails mission_control:jobs:authentication:configure
+```
+
+To set them up for different environments you can use the `RAILS_ENV` environment variable, like this:
+```
+RAILS_ENV=production bin/rails mission_control:jobs:authentication:configure
+```
+
+#### Custom authentication
+
+You can provide your own authentication mechanism, for example, if you have a certain type of admin user in your app that can access Mission Control. To make this easier, you can specify a different controller as the base class for Mission Control's controllers. By default, Mission Control's controllers will extend the host app's `ApplicationController`, but you can change this easily:
 
 ```ruby
 Rails.application.configure do
@@ -69,7 +89,11 @@ end
 Or, in your environment config or `application.rb`:
 ```ruby
 config.mission_control.jobs.base_controller_class = "AdminController"
+```
 
+If you do this, you can disable the default HTTP Basic Authentication using the following option:
+```ruby
+config.mission_control.jobs.http_basic_auth_enabled = false
 ```
 
 ### Other configuration settings
