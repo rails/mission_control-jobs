@@ -29,7 +29,7 @@ module MissionControl::Jobs::JobsHelper
     when "blocked"     then [ "Queue", "Blocked by", "" ]
     when "finished"    then [ "Queue", "Finished" ]
     when "scheduled"   then [ "Queue", "Scheduled", "" ]
-    when "in_progress" then [ "Queue", "Run by", "Running since" ]
+    when "in_progress" then [ "Queue", "Run by", "Running for" ]
     else               []
     end
   end
