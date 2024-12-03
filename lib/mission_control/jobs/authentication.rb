@@ -1,3 +1,5 @@
+require "rails/command"
+
 class MissionControl::Jobs::Authentication < Rails::Command::Base
   def self.configure
     new.configure
