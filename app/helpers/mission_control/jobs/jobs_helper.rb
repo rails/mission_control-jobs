@@ -25,7 +25,7 @@ module MissionControl::Jobs::JobsHelper
 
   def attribute_names_for_job_status(status)
     case status.to_s
-    when "failed"      then [ "Error", "" ]
+    when "failed"      then [ "Error", "Retries", "" ]
     when "blocked"     then [ "Queue", "Blocked by", "" ]
     when "finished"    then [ "Queue", "Finished" ]
     when "scheduled"   then [ "Queue", "Scheduled", "" ]
