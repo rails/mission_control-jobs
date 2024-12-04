@@ -21,7 +21,7 @@ class ActiveJob::JobProxy < ActiveJob::Base
   end
 
   def retries
-    self.arguments.first["executions"] || 0
+    arguments.first["executions"] || 0
   end
 
   def perform_now
