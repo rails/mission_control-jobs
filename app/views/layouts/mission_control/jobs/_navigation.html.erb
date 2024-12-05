@@ -1,10 +1,25 @@
 <div class="tabs is-boxed" id="navigation-sections">
   <ul>
-    <% navigation_sections.each do |key, (label, url)| %>
-      <li class="<%= "is-active" if key == current_section %>">
-        <%= link_to label, url %>
-      </li>
-    <% end %>
+    <li class="is-active">
+      <a href="#">
+        <span class="is-skeleton">Loading...</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="is-skeleton">Loading...</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="is-skeleton">Loading...</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="is-skeleton">Loading...</span>
+      </a>
+    </li>
   </ul>
 </div>
 
@@ -23,6 +38,7 @@
         }
       };
 
+      updateNavbarData();
       startNavigationInterval();
     } else {
       window.Navigation.currentSection = "<%= @current_section %>";
@@ -34,22 +50,32 @@
     startNavigationInterval();
   });
 
-  function startNavigationInterval() {
-    let urlParams = new URLSearchParams(window.location.search);
+  document.addEventListener('click', function (event) {
+    if (event.target.matches('[data-action="changeNavtab"]')) {
+      const newSection = event.target.dataset.newsection;
+      updateNavbarData(newSection);
+    }
+  });
 
-    navigationInterval = setInterval(() => {
-      urlParams = new URLSearchParams(window.location.search);
-      fetch(`<%= internal_api_navigation_index_path %>&server_id=${urlParams.get('server_id')}&section=${window.Navigation.currentSection}`)
-        .then(response => response.text())
-        .then(html => {
-          console.log("updated navbar")
-          
-          const navigationSections = document.querySelector('#navigation-sections');
-          if (navigationSections) {
-            navigationSections.innerHTML = html;
-          }
-        })
-        .catch(error => console.error("Error fetching navigation update:", error));
-    }, 5000);
+  function startNavigationInterval() {
+    if (navigationInterval != null)
+      clearInterval(navigationInterval);
+
+    navigationInterval = setInterval(updateNavbarData, 2000);
+  }
+
+  function updateNavbarData(forcedSection) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const newSection = forcedSection == null ? window.Navigation.currentSection : forcedSection;
+
+    fetch(`<%= internal_api_navigation_index_path %>&server_id=${urlParams.get('server_id')}&section=${newSection}`)
+      .then(response => response.text())
+      .then(html => {
+        const navigationSections = document.querySelector('#navigation-sections');
+        if (navigationSections) {
+          navigationSections.innerHTML = html;
+        }
+      })
+      .catch(error => console.error("Error fetching navigation update:", error));
   }
 </script>

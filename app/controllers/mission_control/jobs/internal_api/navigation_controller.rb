@@ -2,7 +2,6 @@ class MissionControl::Jobs::InternalApi::NavigationController < MissionControl::
   include ActionView::Helpers::NumberHelper
   include MissionControl::Jobs::NavigationHelper
 
-
   def index
     @navigation_sections = navigation_sections
 

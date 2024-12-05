@@ -1,7 +1,7 @@
 <ul>
   <% @navigation_sections.each do |key, (label, url)| %>
     <li class="<%= "is-active" if key == section %>">
-      <%= link_to label, url %>
+      <%= link_to label, url, data: { action: "changeNavtab", newSection: key } %>
     </li>
   <% end %>
 </ul>
