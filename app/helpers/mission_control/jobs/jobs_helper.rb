@@ -38,6 +38,10 @@ module MissionControl::Jobs::JobsHelper
     job.scheduled_at.before?(MissionControl::Jobs.scheduled_job_delay_threshold.ago)
   end
 
+  def job_reexecution(job)
+    (job.executions + 1).ordinalize if job.executions > 1
+  end
+
   private
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|
