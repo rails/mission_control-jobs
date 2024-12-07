@@ -1,6 +1,9 @@
 <tr class="job">
   <td>
-    <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
+    <div>
+      <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
+      <span class="is-family-monospace ml-2 has-text-grey"><%= job.job_id[0...8] %>…</span>
+    </div>
 
     <% if job.serialized_arguments.present? %>
       <div class="is-family-monospace"><%= job_arguments(job) %></div>
