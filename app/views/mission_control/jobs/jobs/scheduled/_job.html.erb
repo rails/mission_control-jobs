@@ -1,6 +1,11 @@
 <td><%= link_to job.queue_name, application_queue_path(@application, job.queue) %></td>
 <td>
   <%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %>
+  <% if job.executions > 0 %>
+    <div class="is-warning tag ml-4">
+    <%= (job.executions + 1).ordinalize %> reexecution
+    </div>
+  <% end %>
   <% if job_delayed?(job) %>
     <div class="is-danger tag ml-4">delayed</div>
   <% end %>
