@@ -23,8 +23,34 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
       get mission_control_jobs.application_workers_url(@application)
       assert_response :ok
 
-      assert_select "tr.worker", 2
-      assert_select "nav[aria-label=\"pagination\"]", /1 \/ 3/
+      assert_select "nav.pagination[role=\"navigation\"][aria-label=\"pagination\"]" do
+        assert_select "ul.pagination-list" do
+          assert_select "li a.pagination-link", text: "1", count: 1
+          assert_select "li a.pagination-link", text: "2", count: 1
+          assert_select "li a.pagination-link", text: "3", count: 1
+        end
+
+        assert_select "li span.pagination-ellipsis", text: "…", count: 1
+      end
+    end
+  end
+
+  test "paginate workers with multiple pages" do
+    register_workers(count: 20)
+
+    stub_const(MissionControl::Jobs::Page, :DEFAULT_PAGE_SIZE, 2) do
+      get mission_control_jobs.application_workers_url(@application)
+      assert_response :ok
+
+      assert_select "nav.pagination[role=\"navigation\"][aria-label=\"pagination\"]" do
+        assert_select "ul.pagination-list" do
+          assert_select "li a.pagination-link", text: "1", count: 1
+          assert_select "li a.pagination-link", text: "2", count: 1
+          assert_select "li a.pagination-link", text: "10", count: 1
+        end
+
+        assert_select "li span.pagination-ellipsis", text: "…", count: 1
+      end
     end
   end
 
