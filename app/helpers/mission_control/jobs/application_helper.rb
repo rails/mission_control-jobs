@@ -4,5 +4,6 @@ module MissionControl::Jobs
     #
     # We can't rely on +config.action_controller.include_all_helpers = true+ in the host app.
     include DatesHelper, JobsHelper, NavigationHelper, InterfaceHelper
+    include MissionControl::Jobs::Engine.routes.url_helpers
   end
 end
