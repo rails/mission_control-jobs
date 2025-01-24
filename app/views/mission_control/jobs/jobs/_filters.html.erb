@@ -5,11 +5,11 @@
         data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
 
         <div class="select is-rounded">
-          <%= form.text_field :job_class_name, value: @job_filters[:job_class_name], class: "input", list: "job-classes", placeholder: "Filter by job class..." %>
+          <%= form.text_field :job_class_name, value: @job_filters[:job_class_name], class: "input", list: "job-classes", placeholder: "Filter by job class...", autocomplete: "off" %>
         </div>
 
         <div class="select is-rounded">
-          <%= form.text_field :queue_name, value: @job_filters[:queue_name], class: "input", list: "queue-names", placeholder: "Filter by queue name..." %>
+          <%= form.text_field :queue_name, value: @job_filters[:queue_name], class: "input", list: "queue-names", placeholder: "Filter by queue name...", autocomplete: "off" %>
         </div>
 
         <% if jobs_status == "finished" %>
