@@ -63,13 +63,6 @@ module MissionControl
       end
 
       config.after_initialize do |app|
-        unless app.config.eager_load
-          # When loading classes lazily (development), we want to make sure
-          # the base host +ApplicationController+ class is loaded when loading the
-          # Engine's +ApplicationController+, or it will fail to load the class.
-          MissionControl::Jobs.base_controller_class.constantize
-        end
-
         if MissionControl::Jobs.applications.empty?
           queue_adapters_by_name = MissionControl::Jobs.adapters.each_with_object({}) do |adapter, hsh|
             hsh[adapter] = ActiveJob::QueueAdapters.lookup(adapter).new
