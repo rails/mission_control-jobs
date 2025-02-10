@@ -15,7 +15,7 @@ GIT
 PATH
   remote: .
   specs:
-    mission_control-jobs (1.0.1)
+    mission_control-jobs (1.0.2)
       actioncable (>= 7.1)
       actionpack (>= 7.1)
       activejob (>= 7.1)
