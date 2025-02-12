@@ -76,6 +76,15 @@ To set them up for different environments you can use the `RAILS_ENV` environmen
 RAILS_ENV=production bin/rails mission_control:jobs:authentication:configure
 ```
 
+User and password can also be configured by hand like this:
+
+```ruby
+Rails.application.configure do
+  MissionControl::Jobs.http_basic_auth_user = "dev"
+  MissionControl::Jobs.http_basic_auth_password = "secret"
+end
+```
+
 #### Custom authentication
 
 You can provide your own authentication mechanism, for example, if you have a certain type of admin user in your app that can access Mission Control. To make this easier, you can specify a different controller as the base class for Mission Control's controllers. By default, Mission Control's controllers will extend the host app's `ApplicationController`, but you can change this easily:
@@ -158,19 +167,19 @@ SERVERS_BY_APP.each do |app, servers|
     end
 
     # Default:
-    # 
+    #
     # @return Array<String, ActiveJob::QueueAdapters::Base)
     # An array where:
     # * the String represents the symbolic name for this server within the UI
     # * ActiveJob::QueueAdapters::Base adapter instance used to access this Application Server/Service
-    [ server, queue_adapter ] 
-    
+    [ server, queue_adapter ]
+
     # Optional return formats:
-    # 
+    #
     # @return Array<String, Array<ActiveJob::QueueAdapters::Base>>
-    # * This is equivalent, and behaves identically to, the format the default format above. 
+    # * This is equivalent, and behaves identically to, the format the default format above.
     # [ server, [ queue_adapter ]]  # without optional backtrace cleaner
-    # 
+    #
     # @return Array<String, Array<ActiveJob::QueueAdapters::Base, ActiveSupport::BacktraceCleaner>>
     # * This format adds an optional ActiveSupport::BacktraceCleaner to override the system wide
     #   backtrace cleaner for *this* Application Server/Service.
