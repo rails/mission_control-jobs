@@ -253,7 +253,7 @@ Available job servers:
 
 And then:
 ```
->> connect_to "hey:solid_queue"
+>> connect_to hey:solid_queue
 Connected to hey:solid_queue
 ```
 
