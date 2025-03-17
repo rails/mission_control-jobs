@@ -1,4 +1,7 @@
 MissionControl::Jobs::Engine.routes.draw do
+  # post "retry_jobs", to: "jobs#retry_multiple", as: "retry_jobs"
+  # delete "delete_jobs", to: "jobs#destroy_multiple", as: "delete_jobs"
+
   resources :applications, only: [] do
     resources :queues, only: [ :index, :show ] do
       scope module: :queues do
@@ -18,6 +21,9 @@ MissionControl::Jobs::Engine.routes.draw do
     end
 
     resources :jobs, only: :index, path: ":status/jobs"
+    resources :grouped_jobs, only: :index, path: "failed/grouped_jobs"
+
+
 
     resources :workers, only: [ :index, :show ]
     resources :recurring_tasks, only: [ :index, :show, :update ]

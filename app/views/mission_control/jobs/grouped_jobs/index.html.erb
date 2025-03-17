@@ -1,0 +1,18 @@
+<% navigation(title: "Grouped jobs", section: :grouped_jobs) %>
+
+<% if @grouped_jobs.empty? && !active_filters? %>
+  <%= blank_status_notice "There are no grouped jobs #{blank_status_emoji(:grouped_jobs)}" %>
+<% else %>
+  <div class="level is-flex-wrap-wrap">
+    <%# <%= render "mission_control/jobs/jobs/filters", job_class_names: @job_class_names, queue_names: @queue_names %> %>
+    <%# <%= render "mission_control/jobs/jobs/toolbar", jobs_count: @jobs_count %> %>
+  </div>
+
+  <% if @grouped_jobs.empty? %>
+    <%= blank_status_notice "No grouped jobs found with the given filters" %>
+  <% else %>
+    <%= render "mission_control/jobs/grouped_jobs/grouped_jobs_page", grouped_jobs: @grouped_jobs %>
+
+    <%# <%= render "mission_control/jobs/shared/pagination_toolbar", page: @grouped_jobs_page, filter_param: grouped_jobs_filter_param %> %>
+  <% end %>
+<% end %>
