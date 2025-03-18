@@ -1,5 +1,6 @@
 <tr class="job">
   <td>
+    <input form="many_job_operations" type="checkbox" name="job_ids[]" value="<%= job.job_id %>" class="job-checkbox">
     <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
 
     <% if job.serialized_arguments.present? %>

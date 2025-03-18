@@ -8,6 +8,15 @@
   <% if jobs_status.failed? %>
     <% target = active_filters? ? "selection" : "all" %>
 
+    <form method="post" id="many_job_operations">
+      <button type="submit" class="button is-danger is-light"
+      formaction="<%= application_many_discards_path(@application) %>">
+        Discard selected
+      </button>
+      formaction="<%= application_many_retries_path(@application) %>">
+        Retry selected
+      </button>
+    </form>
     <%= button_to "Discard #{target}", application_bulk_discards_path(@application, **jobs_filter_param),
       method: :post, disabled: jobs_count == 0, class: "button is-danger is-light",
       form: { data: { turbo_confirm: "This will delete #{jobs_count} jobs and can't be undone. Are you sure?" } } %>
