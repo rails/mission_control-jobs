@@ -3,13 +3,10 @@ module MissionControl::Jobs::NavigationHelper
 
   def navigation_sections
     { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
-      sections[:grouped_failed_jobs] = [ "Grouped Failed jobs (#{jobs_count_with_status(:failed)})", application_grouped_jobs_path(@application, :failed) ]
       supported_job_statuses.without(:pending).each do |status|
          sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
       end
 
-      # ActiveJob.jobs.with_status(:failed).where(job_class_name: "DummyJob").count
-      # SolidQueue::FailedExecution.joins(:job).group(:class_name).count
       sections[:workers] = [ "Workers", application_workers_path(@application) ] if workers_exposed?
       sections[:recurring_tasks] = [ "Recurring tasks", application_recurring_tasks_path(@application) ] if recurring_tasks_supported?
     end
