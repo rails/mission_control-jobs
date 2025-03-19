@@ -1,0 +1,11 @@
+<% navigation(title: "Grouped jobs", section: :grouped_jobs) %>
+
+<% if @grouped_jobs.empty? && !active_filters? %>
+  <%= blank_status_notice "There are no grouped jobs #{blank_status_emoji(:grouped_jobs)}" %>
+<% else %>
+  <% if @grouped_jobs.empty? %>
+    <%= blank_status_notice "No grouped jobs found with the given filters" %>
+  <% else %>
+    <%= render "mission_control/jobs/grouped_jobs/grouped_jobs_page", grouped_jobs: @grouped_jobs %>
+  <% end %>
+<% end %>

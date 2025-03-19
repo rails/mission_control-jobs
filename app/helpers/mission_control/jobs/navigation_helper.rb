@@ -3,6 +3,7 @@ module MissionControl::Jobs::NavigationHelper
 
   def navigation_sections
     { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
+      sections[:grouped_failed_jobs] = [ "Grouped Failed jobs (#{jobs_count_with_status(:failed)})", application_grouped_jobs_path(@application, :failed) ]
       supported_job_statuses.without(:pending).each do |status|
          sections[navigation_section_for_status(status)] = [ "#{status.to_s.titleize} jobs (#{jobs_count_with_status(status)})", application_jobs_path(@application, status) ]
       end
