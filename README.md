@@ -159,7 +159,7 @@ SERVERS_BY_APP.each do |app, servers|
 
     # Default:
     # 
-    # @return Array<String, ActiveJob::QueueAdapters::Base)
+    # @return Array<String, ActiveJob::QueueAdapters::Base>
     # An array where:
     # * the String represents the symbolic name for this server within the UI
     # * ActiveJob::QueueAdapters::Base adapter instance used to access this Application Server/Service
