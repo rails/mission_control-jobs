@@ -10,9 +10,9 @@
 
 
     <%= form_with url: '#', method: :post, id: 'many_job_operations' do |f| %>
-      <%= f.submit "Discard selected", formaction: application_many_discards_path(@application),
+      <%= f.button "Discard selected", formaction: application_many_discards_path(@application),
         class: "button is-danger is-light is-hidden", data: { "jobs-target": "discardSelectedButton" } %>
-      <%= f.submit "Retry selected", formaction: application_many_retries_path(@application),
+      <%= f.button "Retry selected", formaction: application_many_retries_path(@application),
         class: "button is-warning is-light is-hidden", data: { "jobs-target": "retrySelectedButton" } %>
       <%= f.button "Discard #{target}", formaction: application_bulk_discards_path(@application, **jobs_filter_param),
         class: "button is-danger is-light", disabled: jobs_count == 0,
