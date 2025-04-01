@@ -40,7 +40,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def supported_job_filters(*)
-    [ :queue_name, :job_class_name, :finished_at ]
+    [ :queue_name, :job_class_name, :finished_at, :error ]
   end
 
   def jobs_count(jobs_relation)
@@ -173,15 +173,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         attr_reader :jobs_relation
 
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
-          :default_page_size, :worker_id, :recurring_task_id, :finished_at, to: :jobs_relation
+          :default_page_size, :worker_id, :recurring_task_id, :finished_at, :error, to: :jobs_relation
 
         def executions
+      # binding.b
           execution_class_by_status
             .then { |executions| include_execution_association(executions) }
             .then { |executions| filter_executions_by_queue(executions) }
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
             .then { |executions| filter_executions_by_task_key(executions) }
+            .then { |executions| filter_executions_by_error(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -274,6 +276,19 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_jobs_by_finished_at(jobs)
           finished_at.present? ? jobs.where(finished_at: finished_at) : jobs
+        end
+
+        def filter_executions_by_error(executions)
+          return executions unless error.present?
+
+          # Check if we need to add the join or if it's already present
+          if executions.to_sql.include?("solid_queue_failed_executions")
+            executions.where("solid_queue_failed_executions.error ILIKE ?", "%#{error}%")
+          else
+            executions
+              .joins("INNER JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
+              .where("solid_queue_failed_executions.error ILIKE ?", "%#{error}%")
+          end
         end
 
         def limit(executions_or_jobs)

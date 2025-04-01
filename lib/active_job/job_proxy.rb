@@ -20,6 +20,10 @@ class ActiveJob::JobProxy < ActiveJob::Base
     end
   end
 
+  def error
+    @last_execution_error.to_s
+  end
+
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end

@@ -38,6 +38,11 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert_equal "MyJob", jobs.job_class_name
   end
 
+  test "set error" do
+    jobs = @jobs.where(error: "Some error")
+    assert_equal "Some error", jobs.error
+  end
+
   test "set finished_at range" do
     jobs = @jobs.where(finished_at: (1.day.ago..))
     assert 1.hour.ago.in? jobs.finished_at

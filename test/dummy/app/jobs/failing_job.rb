@@ -1,5 +1,5 @@
 class FailingJob < ApplicationJob
-  def perform(value = nil)
-    raise "This always fails!"
+  def perform(value = "This always fails!", error = RuntimeError)
+    raise error, value
   end
 end
