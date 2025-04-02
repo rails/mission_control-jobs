@@ -14,6 +14,8 @@ MissionControl::Jobs::Engine.routes.draw do
       collection do
         resource :bulk_retries, only: :create
         resource :bulk_discards, only: :create
+        resource :many_retries, only: :create
+        resource :many_discards, only: :create
       end
     end
 

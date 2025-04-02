@@ -1,13 +1,31 @@
-<tr class="job">
-  <td>
-    <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
+<% if jobs_status.failed? %>
+  <tr class="job" data-action="click->jobs#toggleJob" data-job-id="<%= job.job_id %>">
+    <td>
+      <%= check_box_tag 'job_ids[]', job.job_id, false, form: 'many_job_operations', class: 'job-checkbox',
+        data: { "jobs-target" => "checkbox" } %>
+      <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
 
-    <% if job.serialized_arguments.present? %>
-      <div class="is-family-monospace"><%= job_arguments(job) %></div>
-    <% end %>
+      <% if job.serialized_arguments.present? %>
+        <div class="is-family-monospace"><%= job_arguments(job) %></div>
+      <% end %>
 
-    <div class="has-text-grey is-size-7">Enqueued <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
-  </td>
+      <div class="has-text-grey is-size-7">Enqueued <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+    </td>
 
-  <%= render "mission_control/jobs/jobs/#{jobs_status}/job", job: job %>
-</tr>
+    <%= render "mission_control/jobs/jobs/#{jobs_status}/job", job: job %>
+  </tr>
+<% else %>
+  <tr class="job">
+    <td>
+      <%= link_to job_title(job), application_job_path(@application, job.job_id) %>
+
+      <% if job.serialized_arguments.present? %>
+        <div class="is-family-monospace"><%= job_arguments(job) %></div>
+      <% end %>
+
+      <div class="has-text-grey is-size-7">Enqueued <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago</div>
+    </td>
+
+    <%= render "mission_control/jobs/jobs/#{jobs_status}/job", job: job %>
+  </tr>
+<% end %>

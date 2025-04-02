@@ -10,3 +10,4 @@
 /test/dummy/tmp/
 .DS_Store
 .ruby-gemset
+.idea
