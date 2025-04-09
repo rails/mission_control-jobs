@@ -10,6 +10,20 @@ module MissionControl::Jobs::InterfaceHelper
     end
   end
 
+  def jobs_count_for(status)
+    count = ActiveJob.jobs.with_status(status).count
+
+    number_to_human(count,
+                    format: "%n%u",
+                    units: {
+                      thousand: "K",
+                      million: "M",
+                      billion: "B",
+                      trillion: "T",
+                      quadrillion: "Q"
+                    })
+  end
+
   def modifier_for_status(status)
     case status.to_s
     when "failed"      then "is-danger"
