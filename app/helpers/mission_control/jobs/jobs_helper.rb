@@ -1,10 +1,12 @@
 module MissionControl::Jobs::JobsHelper
+  MAX_ARGUMENTS_LENGTH = 500
+
   def job_title(job)
     job.job_class_name
   end
 
   def job_arguments(job)
-    renderable_job_arguments_for(job).join(", ")
+    serialized_arguments = renderable_job_arguments_for(job).join(", ").truncate(MAX_ARGUMENTS_LENGTH)
   end
 
   def failed_job_error(job)
