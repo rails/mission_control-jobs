@@ -125,6 +125,22 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal 3, ActiveJob.jobs.pending.where(queue_name: "queue_1").to_a.length
     assert_equal 5, ActiveJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
+  
+  test "filter failed jobs by error message" do
+    FailingJob.perform_later("First specific error")
+    FailingJob.perform_later("Second specific error")
+    FailingJob.perform_later("Different error message")
+    perform_enqueued_jobs
+    
+    # Filter should only return jobs with matching error text
+    filtered_jobs = ActiveJob.jobs.failed.where(error: "specific").to_a
+    assert_equal 2, filtered_jobs.length
+    
+    # Verify the correct jobs were found
+    assert filtered_jobs.any? { |j| j.error.include?("First specific error") }
+    assert filtered_jobs.any? { |j| j.error.include?("Second specific error") }
+    assert filtered_jobs.none? { |j| j.error.include?("Different error message") }
+  end
 
   test "fetch job classes in the first jobs" do
     3.times { DummyJob.perform_later }

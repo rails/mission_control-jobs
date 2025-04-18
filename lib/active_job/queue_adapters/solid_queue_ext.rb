@@ -281,13 +281,29 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         def filter_executions_by_error(executions)
           return executions unless error.present?
 
+          # Use a database-agnostic approach for case-insensitive search
+          # SQLite uses LIKE with LOWER(), Postgres uses ILIKE
+          case ActiveRecord::Base.connection.adapter_name.downcase
+          when "postgresql"
+            like_operator = "ILIKE"
+          else
+            like_operator = "LIKE"
+            error_pattern = "%#{error.downcase}%"
+          end
+
+          error_pattern ||= "%#{error}%"
+          where_clause = "solid_queue_failed_executions.error #{like_operator} ?"
+          
+          # For non-PostgreSQL, use LOWER() for case-insensitive search
+          where_clause = "LOWER(solid_queue_failed_executions.error) #{like_operator} ?" unless like_operator == "ILIKE"
+
           # Check if we need to add the join or if it's already present
           if executions.to_sql.include?("solid_queue_failed_executions")
-            executions.where("solid_queue_failed_executions.error ILIKE ?", "%#{error}%")
+            executions.where(where_clause, error_pattern)
           else
             executions
               .joins("INNER JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
-              .where("solid_queue_failed_executions.error ILIKE ?", "%#{error}%")
+              .where(where_clause, error_pattern)
           end
         end
 

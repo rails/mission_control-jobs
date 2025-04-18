@@ -32,4 +32,18 @@ class ListFailedJobsTest < ApplicationSystemTestCase
       end
     end
   end
+
+  test "filter by error message should handle jobs with nil errors" do
+    # Create a custom failing job that might result in nil error
+    # This test ensures that the system doesn't crash when filtering jobs that might have nil errors
+    # First create some regular jobs with errors
+    2.times { FailingJob.perform_later("Regular Error") }
+    perform_enqueued_jobs
+    
+    # Now visit with a filter that won't match any jobs
+    visit jobs_path(:failed, filter: { error: "NonexistentErrorText" })
+    
+    # Page should load without errors, even if some jobs have nil errors
+    assert_text "No jobs found"
+  end
 end
