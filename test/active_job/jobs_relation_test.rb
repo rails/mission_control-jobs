@@ -38,6 +38,26 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     assert_equal "MyJob", jobs.job_class_name
   end
 
+  test "set error" do
+    jobs = @jobs.where(error: "Some error")
+    assert_equal "Some error", jobs.error
+  end
+
+  test "handle nil errors in satisfy_filter?" do
+    # Mock a job with nil error
+    job = mock
+    job.stubs(:error).returns(nil)
+    job.stubs(:job_class_name).returns("NilErrorJob")
+    
+    # Force filtering to be done in memory
+    @jobs.stubs(:filters).returns([:error])
+    @jobs.stubs(:error).returns("something")
+    
+    # This should not raise a NoMethodError
+    result = @jobs.send(:satisfy_filter?, job)
+    assert_equal false, result
+  end
+
   test "set finished_at range" do
     jobs = @jobs.where(finished_at: (1.day.ago..))
     assert 1.hour.ago.in? jobs.finished_at

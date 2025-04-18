@@ -12,6 +12,10 @@
           <%= form.text_field :queue_name, value: @job_filters[:queue_name], class: "input", list: "queue-names", placeholder: "Filter by queue name...", autocomplete: "off" %>
         </div>
 
+        <div class="text is-rounded">
+          <%= form.text_field :error, value: @job_filters[:error], class: "input", placeholder: "Search by error...", autocomplete: "off" %>
+        </div>
+
         <% if jobs_status == "finished" %>
           <div class="select is-rounded">
             <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at]&.begin, class: "input", placeholder: "Finished from" %>
