@@ -24,6 +24,10 @@ class ActiveJob::JobProxy < ActiveJob::Base
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
   end
 
+  def duration
+    finished_at - scheduled_at
+  end
+
   ActiveJob::JobsRelation::STATUSES.each do |status|
     define_method "#{status}?" do
       self.status == status

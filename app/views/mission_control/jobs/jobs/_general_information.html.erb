@@ -47,9 +47,15 @@
   <% end %>
   <% if job.finished_at.present? %>
     <tr>
-      <th>Finished at</th>
+      <th>Finished</th>
       <td>
         <%= time_distance_in_words_with_title(job.finished_at) %> ago
+      </td>
+    </tr>
+    <tr>
+      <th>Duration</th>
+      <td>
+        <%= job.duration.round(3) %> seconds
       </td>
     </tr>
   <% end %>
