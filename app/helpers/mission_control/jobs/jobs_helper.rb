@@ -3,8 +3,13 @@ module MissionControl::Jobs::JobsHelper
     job.job_class_name
   end
 
-  def job_arguments(job)
-    renderable_job_arguments_for(job).join(", ")
+  def job_arguments(job, truncate: false)
+    args = renderable_job_arguments_for(job).join(", ")
+    if truncate && args.length > 800
+      "#{args[0..800]}..."
+    else
+      args
+    end
   end
 
   def failed_job_error(job)
