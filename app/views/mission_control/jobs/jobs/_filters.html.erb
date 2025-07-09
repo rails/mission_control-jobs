@@ -13,14 +13,63 @@
         </div>
 
         <% if jobs_status == "finished" %>
-          <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at]&.begin, class: "input", placeholder: "Finished from" %>
+          <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+            <label class="has-text-grey is-size-7">
+              Finished from:
+            </label>
+            <div class="select is-rounded">
+              <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at]&.begin, class: "input", placeholder: "Finished from" %>
+            </div>
           </div>
 
-          <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at]&.end, class: "input", placeholder: "Finished to" %>
+          <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+            <label class="has-text-grey is-size-7">
+              Finished to:
+            </label>
+            <div class="select is-rounded">
+              <%# TODO: add max date of today? %>
+              <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at]&.end, class: "input", placeholder: "Finished to" %>
+            </div>
           </div>
         <% end %>
+
+        <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+          <label class="has-text-grey is-size-7">
+            Enqueued from:
+          </label>
+          <div class="select is-rounded">
+            <%= form.datetime_field :enqueued_at_start, value: @job_filters[:enqueued_at]&.begin, class: "input", placeholder: "Enqueued from" %>
+          </div>
+        </div>
+
+        <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+          <label class="has-text-grey is-size-7">
+            Enqueued to:
+          </label>
+          <div class="select is-rounded">
+            <%# TODO: add max date of today? %>
+            <%= form.datetime_field :enqueued_at_end, value: @job_filters[:enqueued_at]&.end, class: "input", placeholder: "Enqueued to" %>
+          </div>
+        </div>
+
+        <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+          <label class="has-text-grey is-size-7">
+            Scheduled from:
+          </label>
+          <div class="select is-rounded">
+            <%= form.datetime_field :scheduled_at_start, value: @job_filters[:scheduled_at]&.begin, class: "input", placeholder: "Scheduled from" %>
+          </div>
+        </div>
+
+        <div class="field is-flex is-flex-direction-column is-align-items-flex-start">
+          <label class="has-text-grey is-size-7">
+            Scheduled to:
+          </label>
+          <div class="select is-rounded">
+            <%# TODO: add max date of today? %>
+            <%= form.datetime_field :scheduled_at_end, value: @job_filters[:scheduled_at]&.end, class: "input", placeholder: "Scheduled to" %>
+          </div>
+        </div>
 
         <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
 

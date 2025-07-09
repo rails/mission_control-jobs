@@ -51,6 +51,9 @@ class ActiveJob::JobsRelation
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
+  # * <tt>:finished_at</tt> - (Range) To only include the jobs finished between the provided range
+  # * <tt>:scheduled_at</tt> - (Range) To only include the jobs scheduled between the provided range
+  # * <tt>:enqueued_at</tt> - (Range) To only include the jobs enqueued between the provided range
   def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
@@ -60,7 +63,7 @@ class ActiveJob::JobsRelation
       finished_at: finished_at,
       scheduled_at: scheduled_at,
       enqueued_at: enqueued_at
-    }.compact.collect { |key, value| [ key, value.to_s ] }.to_h
+    }.compact
 
     # TODO: is this collect needed? .collect { |key, value| [ key, value.to_s ] }.to_h
 
@@ -271,34 +274,22 @@ class ActiveJob::JobsRelation
 
     # Filtering for not natively supported filters is performed in memory
     def filter(jobs)
-      jobs.filter { |job| satisfy_filter?(job) }
+      jobs.filter { |job| satisfies_filters?(job) }
     end
 
-    def satisfy_date_filter?(filter_value, job_value)
-      return false if job_value.nil?
+    def satisfies_filter?(filter_value, job_value)
+      return filter_value.cover?(job_value) if filter_value.is_a?(Range) # TODO: needed? && job_value.is_a?(ActiveSupport::TimeWithZone)
 
-      # Treat date ranges
-      if filter_value.include?("..")
-        start_date, end_date = filter_value.split("..").map { |date| Time.zone.parse(date) }
-        filter_range = (start_date..end_date)
-        return filter_range.cover?(job_value)
-      end
-
-      filter = Time.zone.parse(filter_value)
-      job_value >= filter
+      filter_value == job_value
     end
 
-    def satisfy_filter?(job)
+    def satisfies_filters?(job)
       filters.all? do |property|
         filter_value = public_send(property)
         job_value = job.public_send(property)
 
-        is_date_filter?(property) ? satisfy_date_filter?(filter_value, job_value) : filter_value == job_value
+        satisfies_filter?(filter_value, job_value)
       end
-    end
-
-    def is_date_filter?(property)
-      [ :finished_at, :scheduled_at, :enqueued_at ].include?(property)
     end
 
     def filters

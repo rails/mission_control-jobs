@@ -63,6 +63,48 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tr.job", 1
   end
 
+  test "get pending jobs filtered by enqueued_at date" do
+    job = DummyJob.perform_later(42)
+
+    get mission_control_jobs.application_jobs_url(@application, :pending)
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :pending, filter: { enqueued_at_start: 1.hour.from_now.to_s })
+    assert_response :ok
+    assert_select "tr.job", 0
+
+    get mission_control_jobs.application_jobs_url(@application, :pending, filter: { enqueued_at_start: 1.hour.ago.to_s, enqueued_at_end: 1.hour.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :pending, filter: { enqueued_at_end: 1.hour.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+  end
+
+  test "get scheduled jobs filtered by scheduled_at date" do
+    job = DummyJob.set(wait: 30.minutes).perform_later(42)
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled, filter: { scheduled_at_start: 1.hour.from_now.to_s })
+    assert_response :ok
+    assert_select "tr.job", 0
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled, filter: { scheduled_at_start: 15.minutes.from_now.to_s, scheduled_at_end: 45.minutes.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled, filter: { scheduled_at_end: 45.minutes.from_now })
+    assert_response :ok
+    assert_select "tr.job", 1
+  end
+
+  # TODO: hitting clear on the date input should refresh the list?
+
   test "redirect to queue when job doesn't exist" do
     job = DummyJob.perform_later(42)
 
