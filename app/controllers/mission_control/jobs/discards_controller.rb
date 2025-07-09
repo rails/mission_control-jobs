@@ -3,7 +3,10 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
 
   def create
     @job.discard
-    redirect_to redirect_location, notice: "Discarded job with id #{@job.job_id}"
+    respond_to do |format|
+      format.html { redirect_to redirect_location, notice: "Discarded job with id #{@job.job_id}" }
+      format.turbo_stream { render turbo_stream: turbo_stream.remove("job_#{@job.job_id}") }
+    end
   end
 
   private
