@@ -11,6 +11,6 @@ class MissionControl::Jobs::QueuesController < MissionControl::Jobs::Application
 
   private
     def set_queue
-      @queue = ActiveJob.queues[params[:id]]
+      @queue = ActiveJob.queues[params[:id]] || ActiveJob.queues.find { |q| q.id == params[:id] }
     end
 end
