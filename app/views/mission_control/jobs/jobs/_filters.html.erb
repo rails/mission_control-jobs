@@ -1,8 +1,8 @@
-<div class="filter level-left">
+<div class="filter level-left" style="max-width: 100%">
   <%= form_for :filter, url: application_jobs_path(MissionControl::Jobs::Current.application, jobs_status), method: :get,
     data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
 
-    <div class="field is-grouped">
+    <div class="field is-grouped is-grouped-multiline">
       <div class="control">
         <%= form.label :job_class_name, class: "label" %>
         <div class="select is-rounded">
