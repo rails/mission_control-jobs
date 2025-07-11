@@ -18,6 +18,16 @@ class ActiveJob::QueuesTest < ActiveSupport::TestCase
     assert_equal queue_2, queues["queue_2"]
   end
 
+  test "direct access by name with special characters parameterized" do
+    queue = ActiveJob::Queue.new("My-Queue_With.Special@Chars! and spaces")
+    queues = ActiveJob::Queues.new([ queue ])
+
+    # Look-up queue by original name
+    assert_equal queue, queues["My-Queue_With.Special@Chars! and spaces"]
+    # Look-up queue by parameterized, URL-friendly name
+    assert_equal queue, queues["my-queue_with-special-chars-and-spaces"]
+  end
+
   test "convert to hash" do
     queue_1 = create_queue "queue_1"
     queue_2 = create_queue "queue_2"
