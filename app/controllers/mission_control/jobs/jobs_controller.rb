@@ -1,5 +1,5 @@
 class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationController
-  include MissionControl::Jobs::JobScoped, MissionControl::Jobs::JobFilters
+  include MissionControl::Jobs::JobScoped
 
   skip_before_action :set_job, only: :index
 

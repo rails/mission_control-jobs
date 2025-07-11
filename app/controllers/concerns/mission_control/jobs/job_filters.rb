@@ -4,7 +4,7 @@ module MissionControl::Jobs::JobFilters
   included do
     before_action :set_filters
 
-    helper_method :active_filters?
+    helper_method :active_filters?, :jobs_filter_param
   end
 
   private
@@ -18,6 +18,14 @@ module MissionControl::Jobs::JobFilters
 
     def active_filters?
       @job_filters.any?
+    end
+
+    def jobs_filter_param
+      if @job_filters&.any?
+        { filter: @job_filters }
+      else
+        {}
+      end
     end
 
     def finished_at_range_params

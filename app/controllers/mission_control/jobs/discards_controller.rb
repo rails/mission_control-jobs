@@ -13,6 +13,6 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
 
     def redirect_location
       status = @job.status.presence_in(supported_job_statuses) || :failed
-      application_jobs_url(@application, status)
+      application_jobs_url(@application, status, **jobs_filter_param)
     end
 end
