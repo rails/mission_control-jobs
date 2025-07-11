@@ -59,4 +59,4 @@ class BlockedJobsTest < ApplicationSystemTestCase
       assert_equal 1, job_row_elements.length
     end
   end
-end 
+end
