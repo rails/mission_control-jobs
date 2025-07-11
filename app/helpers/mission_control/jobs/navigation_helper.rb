@@ -37,14 +37,6 @@ module MissionControl::Jobs::NavigationHelper
     MissionControl::Jobs::Current.server.name == server.name
   end
 
-  def jobs_filter_param
-    if @job_filters&.any?
-      { filter: @job_filters }
-    else
-      {}
-    end
-  end
-
   def jobs_count_with_status(status)
     count = ActiveJob.jobs.with_status(status).count
     if count.infinite?
