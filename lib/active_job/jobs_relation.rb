@@ -23,9 +23,9 @@ class ActiveJob::JobsRelation
   include Enumerable
 
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
-  FILTERS = %i[ queue_name job_class_name ]
+  FILTERS = %i[ queue_name job_class_name finished_at scheduled_at enqueued_at ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at scheduled_at enqueued_at ]
   attr_reader *PROPERTIES, :default_page_size
 
   delegate :last, :[], :reverse, to: :to_a
@@ -52,14 +52,20 @@ class ActiveJob::JobsRelation
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
   # * <tt>:finished_at</tt> - (Range) To only include the jobs finished between the provided range
-  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil)
+  # * <tt>:scheduled_at</tt> - (Range) To only include the jobs scheduled between the provided range
+  # * <tt>:enqueued_at</tt> - (Range) To only include the jobs enqueued between the provided range
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
       queue_name: queue_name&.to_s,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
-      finished_at: finished_at
+      finished_at: finished_at,
+      scheduled_at: scheduled_at,
+      enqueued_at: enqueued_at
     }.compact
+
+    # TODO: is this collect needed? .collect { |key, value| [ key, value.to_s ] }.to_h
 
     clone_with **arguments
   end
@@ -268,11 +274,22 @@ class ActiveJob::JobsRelation
 
     # Filtering for not natively supported filters is performed in memory
     def filter(jobs)
-      jobs.filter { |job| satisfy_filter?(job) }
+      jobs.filter { |job| satisfies_filters?(job) }
     end
 
-    def satisfy_filter?(job)
-      filters.all? { |property| public_send(property) == job.public_send(property) }
+    def satisfies_filter?(filter_value, job_value)
+      return filter_value.cover?(job_value) if filter_value.is_a?(Range) # TODO: needed? && job_value.is_a?(ActiveSupport::TimeWithZone)
+
+      filter_value == job_value
+    end
+
+    def satisfies_filters?(job)
+      filters.all? do |property|
+        filter_value = public_send(property)
+        job_value = job.public_send(property)
+
+        satisfies_filter?(filter_value, job_value)
+      end
     end
 
     def filters

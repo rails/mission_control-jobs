@@ -1,3 +1,7 @@
+.filter {
+    max-width: 100%;
+}
+
 .filter input {
     width: 15rem;
 }
