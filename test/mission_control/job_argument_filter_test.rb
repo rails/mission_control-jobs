@@ -1,6 +1,6 @@
 require "test_helper"
 
-class ActiveJob::JobArgumentFilterTest < ActiveSupport::TestCase
+class MissionControl::JobArgumentFilterTest < ActiveSupport::TestCase
   test "filter_arguments" do
     arguments = [
       "deliver",
@@ -12,7 +12,7 @@ class ActiveJob::JobArgumentFilterTest < ActiveSupport::TestCase
     ]
     @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %w[ email_address message ]
 
-    filtered = ActiveJob::JobArgumentFilter.filter_arguments(arguments)
+    filtered = MissionControl::JobArgumentFilter.filter_arguments(arguments)
 
     assert_equal "deliver", filtered[0]
     assert_equal({ email_address: "[FILTERED]", profile: { name: "Jorge Manrubia" }, message: "[FILTERED]" }, filtered[1])
@@ -27,7 +27,7 @@ class ActiveJob::JobArgumentFilterTest < ActiveSupport::TestCase
     }
     @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %w[ message ]
 
-    filtered = ActiveJob::JobArgumentFilter.filter_argument_hash(argument)
+    filtered = MissionControl::JobArgumentFilter.filter_argument_hash(argument)
 
     assert_equal({ email_address: "jorge@37signals.com", message: "[FILTERED]" }, filtered)
   ensure

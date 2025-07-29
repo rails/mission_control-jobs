@@ -1,4 +1,4 @@
-class ActiveJob::JobArgumentFilter
+class MissionControl::JobArgumentFilter
   FILTERED = "[FILTERED]"
 
   class << self

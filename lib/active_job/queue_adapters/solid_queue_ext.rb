@@ -111,7 +111,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
     def filter_raw_data_arguments(raw_data)
       arguments = raw_data.dig("arguments", "arguments")
-      ActiveJob::JobArgumentFilter.filter_arguments(arguments)
+      MissionControl::JobArgumentFilter.filter_arguments(arguments)
       raw_data
     end
 
