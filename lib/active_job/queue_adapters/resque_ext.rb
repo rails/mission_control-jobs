@@ -186,6 +186,8 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def deserialize_resque_job(resque_job_hash, index)
           args_hash = resque_job_hash.dig("payload", "args") || resque_job_hash.dig("args")
+          ActiveJob::JobArgumentFilter.filter_arguments(args_hash) if args_hash
+
           ActiveJob::JobProxy.new(args_hash&.first).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash

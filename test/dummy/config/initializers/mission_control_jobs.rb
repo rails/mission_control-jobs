@@ -26,5 +26,7 @@ SERVERS_BY_APP.each do |app, servers|
     [ server, queue_adapter ]
   end.to_h
 
-  MissionControl::Jobs.applications.add(app, queue_adapters_by_name)
+  filter_arguments = %i[ author ]
+
+  MissionControl::Jobs.applications.add(app, queue_adapters_by_name, filter_arguments)
 end

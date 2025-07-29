@@ -67,7 +67,8 @@ module MissionControl::Jobs::JobsHelper
       elsif argument["_aj_serialized"]
         ActiveJob::Arguments.deserialize([ argument ]).first
       else
-        argument.without("_aj_symbol_keys", "_aj_ruby2_keywords")
+        ActiveJob::JobArgumentFilter.filter_argument_hash(argument)
+          .without("_aj_symbol_keys", "_aj_ruby2_keywords")
           .transform_values { |v| as_renderable_argument(v) }
           .map { |k, v| "#{k}: #{v}" }
           .join(", ")

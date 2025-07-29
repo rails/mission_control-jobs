@@ -2,11 +2,12 @@
 class MissionControl::Jobs::Application
   include MissionControl::Jobs::IdentifiedByName
 
-  attr_reader :servers
+  attr_reader :servers, :filter_arguments
 
   def initialize(name:)
     super
     @servers = MissionControl::Jobs::IdentifiedElements.new
+    @filter_arguments = []
   end
 
   def add_servers(queue_adapters_by_name)
@@ -16,5 +17,9 @@ class MissionControl::Jobs::Application
       servers << MissionControl::Jobs::Server.new(name: name.to_s, queue_adapter: adapter,
         backtrace_cleaner: cleaner, application: self)
     end
+  end
+
+  def filter_arguments=(arguments)
+    @filter_arguments = Array(arguments).map(&:to_s)
   end
 end

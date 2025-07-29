@@ -16,6 +16,22 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
     assert_text /failing_job.rb/
   end
 
+  test "filtered arguments are hidden" do
+    ActiveJob.jobs.failed.discard_all
+    FailingPostJob.perform_later(Post.create(title: "hello_world"), 1.year.ago, author: "Jorge")
+    perform_enqueued_jobs
+    @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %i[ author ]
+
+    visit jobs_path(:failed)
+    click_on "FailingPostJob"
+
+    assert_text /dummy\/post/i
+    assert_text /\[FILTERED\]/
+    assert_no_text /Jorge/
+  ensure
+    MissionControl::Jobs.filter_arguments = @previous_filter_arguments
+  end
+
   test "click on a failed job error to see its error information" do
     within_job_row /FailingJob\s*2/ do
       click_on "RuntimeError: This always fails!"
