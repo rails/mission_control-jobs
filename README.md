@@ -115,7 +115,6 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
 - `backtrace_cleaner`: a backtrace cleaner used for optionally filtering backtraces on the Failed Jobs detail page. Defaults to `Rails::BacktraceCleaner.new`. See the [Advanced configuration](#advanced-configuration) section for how to configure/override this setting on a per application/server basis.
 - `filter_arguments`: an array of job argument keys that you want to filter out in the UI. This is useful for hiding sensitive user data. You can also override this option for each application. Currently, only root-level hash keys are supported. See the [Advanced configuration](#advanced-configuration) section for an example.
-```ruby
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
