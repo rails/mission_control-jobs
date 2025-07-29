@@ -20,7 +20,7 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
     ActiveJob.jobs.failed.discard_all
     FailingPostJob.perform_later(Post.create(title: "hello_world"), 1.year.ago, author: "Jorge")
     perform_enqueued_jobs
-    @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %i[ author ]
+    @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %w[ author ]
 
     visit jobs_path(:failed)
     click_on "FailingPostJob"

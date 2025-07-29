@@ -15,6 +15,9 @@ def redis_connection_for(app, server)
   Resque::DataStore.new redis_namespace
 end
 
+# Filter sensitive arguments from the UI.
+MissionControl::Jobs.filter_arguments = %w[ author ]
+
 SERVERS_BY_APP.each do |app, servers|
   queue_adapters_by_name = servers.collect do |server|
     queue_adapter = if server.start_with?("resque")
@@ -26,7 +29,5 @@ SERVERS_BY_APP.each do |app, servers|
     [ server, queue_adapter ]
   end.to_h
 
-  filter_arguments = %i[ author ]
-
-  MissionControl::Jobs.applications.add(app, queue_adapters_by_name, filter_arguments)
+  MissionControl::Jobs.applications.add(app, queue_adapters_by_name)
 end

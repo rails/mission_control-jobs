@@ -114,7 +114,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `scheduled_job_delay_threshold`: the time duration before a scheduled job is considered delayed. Defaults to `1.minute` (a job is considered delayed if it hasn't transitioned from the `scheduled` status 1 minute after the scheduled time).
 - `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
 - `backtrace_cleaner`: a backtrace cleaner used for optionally filtering backtraces on the Failed Jobs detail page. Defaults to `Rails::BacktraceCleaner.new`. See the [Advanced configuration](#advanced-configuration) section for how to configure/override this setting on a per application/server basis.
-- `filter_arguments`: an array of job argument keys that you want to filter out in the UI. This is useful for hiding sensitive user data. You can also override this option for each application. Currently, only root-level hash keys are supported. See the [Advanced configuration](#advanced-configuration) section for an example.
+- `filter_arguments`: an array of job argument keys that you want to filter out in the UI. This is useful for hiding sensitive user data. Currently, only root-level hash keys are supported.
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
@@ -185,9 +185,7 @@ SERVERS_BY_APP.each do |app, servers|
     # [ server, [ queue_adapter, BacktraceCleaner.new ]]  # with optional backtrace cleaner
   end.to_h
 
-  filter_arguments = %i[ author ]
-
-  MissionControl::Jobs.applications.add(app, queue_adapters_by_name, filter_arguments)
+  MissionControl::Jobs.applications.add(app, queue_adapters_by_name)
 end
 ```
 

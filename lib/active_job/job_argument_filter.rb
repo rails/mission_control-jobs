@@ -11,18 +11,13 @@ class ActiveJob::JobArgumentFilter
     end
 
     def filter_argument_hash(argument)
-      return argument if filters.blank?
+      return argument if MissionControl::Jobs.filter_arguments.blank?
 
       argument.each do |key, value|
-        if filters.include?(key.to_s)
+        if MissionControl::Jobs.filter_arguments.include?(key.to_s)
           argument[key] = FILTERED
         end
       end
     end
-
-    private
-      def filters
-        MissionControl::Jobs::Current.application&.filter_arguments
-      end
   end
 end
