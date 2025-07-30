@@ -185,8 +185,8 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def deserialize_resque_job(resque_job_hash, index)
-          args_arr = extract_args_arr(resque_job_hash)
-          ActiveJob::JobProxy.new(args_arr&.first).tap do |job|
+          args_hash = extract_args_hash(resque_job_hash)
+          ActiveJob::JobProxy.new(args_hash).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash
             job.filtered_raw_data = filter_raw_data_arguments(resque_job_hash)
@@ -198,14 +198,14 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def filter_raw_data_arguments(raw_data)
           raw_data.deep_dup.tap do |filtered_data|
-            if args_hash = extract_args_arr(filtered_data)&.first
+            if args_hash = extract_args_hash(filtered_data)
               args_hash["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(args_hash["arguments"])
             end
           end
         end
 
-        def extract_args_arr(raw_data)
-          raw_data.dig("payload", "args") || raw_data.dig("args")
+        def extract_args_hash(raw_data)
+          (raw_data.dig("payload", "args") || raw_data.dig("args"))&.first
         end
 
         def execution_error_from_resque_job(resque_job_hash)
