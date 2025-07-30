@@ -12,7 +12,7 @@ class MissionControl::Jobs::ArgumentsFilter
       arguments.map { |a| apply_to(a) }
     when Hash
       arguments.map do |k, v|
-        [k, filter.include?(k.to_s) ? FILTERED : v]
+        [ k, filter.include?(k.to_s) ? FILTERED : v ]
       end.to_h
     else
       arguments
