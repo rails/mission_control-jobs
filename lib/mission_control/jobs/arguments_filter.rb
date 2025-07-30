@@ -1,3 +1,4 @@
+# Replaces argument values with [FILTERED] for any keys that match a filter.
 class MissionControl::Jobs::ArgumentsFilter
   FILTERED = "[FILTERED]"
 
