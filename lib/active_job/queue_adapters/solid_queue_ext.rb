@@ -112,9 +112,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
     def filter_raw_data_arguments(raw_data)
       raw_data.deep_dup.tap do |filtered_raw_data|
-        if arguments = filtered_raw_data.dig("arguments", "arguments")
-          filtered_raw_data["arguments"]["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(arguments)
-        end
+        filtered_raw_data["arguments"]["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(filtered_raw_data.dig("arguments", "arguments"))
       end
     end
 
