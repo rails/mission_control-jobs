@@ -117,7 +117,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     end
   end
 
-  test "retry a single failed job with filtered arguments preserves the original arguments" do
+  test "retrying a single job with filtered arguments preserves the original arguments" do
     @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %w[ author ]
     arguments = [ Post.create(title: "hello_world"), 1.year.ago, { author: "Jorge", price: 10 } ]
     FailingPostJob.perform_later(arguments)
