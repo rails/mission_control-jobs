@@ -199,8 +199,8 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def filter_raw_data_arguments(raw_data)
           raw_data.deep_dup.tap do |filtered_data|
-            if args_hash = extract_args_hash(filtered_data)
-              args_hash.first["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(args_hash.first["arguments"])
+            if args_hash = extract_args_hash(filtered_data)&.first
+              args_hash["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(args_hash["arguments"])
             end
           end
         end
