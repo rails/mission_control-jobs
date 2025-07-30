@@ -26,12 +26,17 @@ module MissionControl
     mattr_accessor :show_console_help, default: true
     mattr_accessor :backtrace_cleaner
 
-    mattr_accessor :filter_arguments, default: []
 
     mattr_accessor :importmap, default: Importmap::Map.new
 
     mattr_accessor :http_basic_auth_user
     mattr_accessor :http_basic_auth_password
     mattr_accessor :http_basic_auth_enabled, default: true
+
+    mattr_accessor :filter_arguments, default: []
+
+    def self.job_arguments_filter
+      @job_arguments_filter ||= MissionControl::Jobs::ArgumentsFilter.new(filter_arguments)
+    end
   end
 end
