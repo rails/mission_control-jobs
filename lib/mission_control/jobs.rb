@@ -35,7 +35,7 @@ module MissionControl
     mattr_accessor :filter_arguments, default: []
 
     def self.job_arguments_filter
-      @job_arguments_filter ||= MissionControl::Jobs::ArgumentsFilter.new(filter_arguments)
+      MissionControl::Jobs::ArgumentsFilter.new(filter_arguments)
     end
   end
 end
