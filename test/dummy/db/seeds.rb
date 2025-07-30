@@ -46,7 +46,7 @@ class JobsLoader
 
     def load_failed_jobs
       puts "Generating #{failed_jobs_count} failed jobs for #{application} - #{server}..."
-      failed_jobs_count.times { |index| enqueue_one_of FailingJob => index, FailingReloadedJob => index, FailingPostJob => [ Post.last, 1.year.ago ] }
+      failed_jobs_count.times { |index| enqueue_one_of FailingJob => index, FailingReloadedJob => index, FailingPostJob => [ Post.last, 1.year.ago, author: "Jorge" ] }
       perform_jobs
     end
 

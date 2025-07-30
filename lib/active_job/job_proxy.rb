@@ -7,6 +7,8 @@ class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 
   attr_reader :job_class_name
+  # Raw data with the sensitive user data filtered out.
+  attr_accessor :filtered_raw_data
 
   def initialize(job_data)
     super
