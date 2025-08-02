@@ -43,7 +43,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get finished jobs filtered by finished_at date" do
-    ["UTC", "International Date Line West"].each do |timezone|
+    [ "UTC", "International Date Line West" ].each do |timezone|
       Time.use_zone(timezone) do
         job = DummyJob.perform_later(42)
         perform_enqueued_jobs_async
