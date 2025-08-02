@@ -36,6 +36,6 @@ module MissionControl::Jobs::JobFilters
     end
 
     def parse_with_time_zone(date)
-      DateTime.parse(date).in_time_zone if date.present?
+      Time.zone.parse(date) if date.present?
     end
 end
