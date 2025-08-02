@@ -43,24 +43,28 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get finished jobs filtered by finished_at date" do
-    job = DummyJob.perform_later(42)
-    perform_enqueued_jobs_async
+    ["UTC", "International Date Line West"].each do |timezone|
+      Time.use_zone(timezone) do
+        job = DummyJob.perform_later(42)
+        perform_enqueued_jobs_async
 
-    get mission_control_jobs.application_jobs_url(@application, :finished)
-    assert_response :ok
-    assert_select "tr.job", 1
+        get mission_control_jobs.application_jobs_url(@application, :finished)
+        assert_response :ok
+        assert_select "tr.job", 1
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
-    assert_response :ok
-    assert_select "tr.job", 0
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 0
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.strftime("%Y-%m-%dT%H:%M"), finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
-    assert_response :ok
-    assert_select "tr.job", 1
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.strftime("%Y-%m-%dT%H:%M"), finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 1
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
-    assert_response :ok
-    assert_select "tr.job", 1
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 1
+      end
+    end
   end
 
   test "redirect to queue when job doesn't exist" do
