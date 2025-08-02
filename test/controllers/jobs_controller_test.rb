@@ -50,15 +50,15 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_select "tr.job", 1
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.to_s })
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
     assert_response :ok
     assert_select "tr.job", 0
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.to_s, finished_at_end: 1.hour.from_now })
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.strftime("%Y-%m-%dT%H:%M"), finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
     assert_response :ok
     assert_select "tr.job", 1
 
-    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now })
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
     assert_response :ok
     assert_select "tr.job", 1
   end
