@@ -1,5 +1,7 @@
 <nav class="buttons is-right" role="navigation" aria-label="pagination">
   <span class="mr-3"><%= page.index %> / <%= page.pages_count || "..." %></span>
+  <%= link_to "↞", url_for(page: 1, **filter_param), class: "pagination-previous", disabled: page.first? %>
   <%= link_to "Previous page", url_for(page: page.previous_index, **filter_param), class: "pagination-previous", disabled: page.first? %>
   <%= link_to "Next page", url_for(page: page.next_index, **filter_param), class: "pagination-next", disabled: page.last? %>
+  <%= link_to "↠", url_for(page: page.pages_count, **filter_param), class: "pagination-next", disabled: page.last? %>
 </nav>
