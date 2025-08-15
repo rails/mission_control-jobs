@@ -12,16 +12,12 @@ module MissionControl::Jobs::InterfaceHelper
 
   def jobs_count_for(status)
     count = ActiveJob.jobs.with_status(status).count
+    value = count.infinite? ? MissionControl::Jobs.count_limit : count
+    suffix = count.infinite? ? "+" : ""
 
-    number_to_human(count,
-                    format: "%n%u",
-                    units: {
-                      thousand: "K",
-                      million: "M",
-                      billion: "B",
-                      trillion: "T",
-                      quadrillion: "Q"
-                    })
+    units = { thousand: "K", million: "M", billion: "B", trillion: "T", quadrillion: "Q" }
+
+    number_to_human(value, format: "%n%u", units: units) + suffix
   end
 
   def modifier_for_status(status)
