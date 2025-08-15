@@ -28,7 +28,8 @@ class ActiveJob::JobsRelation
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at ]
   attr_reader *PROPERTIES, :default_page_size
 
-  delegate :last, :[], :reverse, to: :to_a
+  # delegate :last, :[], :reverse, to: :to_a
+  # No delegation to :to_a until we define it below.
   delegate :logger, to: MissionControl::Jobs
 
   ALL_JOBS_LIMIT = 100_000_000 # When no limit value it defaults to "all jobs"
@@ -121,9 +122,32 @@ class ActiveJob::JobsRelation
 
   alias inspect to_s
 
+  # Enumerates over the jobs. If the relation has been materialized previously
+  # (via +to_a+ or explicit caching) we reuse the cached collection. Otherwise
+  # we stream the jobs without retaining them, reducing memory consumption.
   def each(&block)
-    loaded_jobs&.each(&block) || load_jobs(&block)
+    if loaded?
+      loaded_jobs.each(&block)
+    else
+      perform_each(&block)
+    end
   end
+
+  # Materializes the relation into an Array **and** caches the result so later
+  # calls don't need to hit the adapter again. This maintains backwards
+  # compatibility with existing code that relied on this caching behaviour.
+  def to_a
+    return loaded_jobs if loaded?
+
+    @loaded_jobs = []
+    perform_each { |job| @loaded_jobs << job }
+    @loaded_jobs
+  end
+
+  # With the custom #to_a we can now safely delegate additional Enumerable
+  # methods that rely on materialization without affecting memory when not
+  # needed.
+  delegate :last, :[], :reverse, to: :to_a
 
   # Retry all the jobs in the queue.
   #
@@ -239,10 +263,11 @@ class ActiveJob::JobsRelation
     end
 
     def load_jobs
+      # Cache the jobs only when an explicit materialization is requested (e.g. via to_a)
       @loaded_jobs = []
       perform_each do |job|
         @loaded_jobs << job
-        yield job
+        yield job if block_given?
       end
     end
 
