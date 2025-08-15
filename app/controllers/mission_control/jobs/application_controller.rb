@@ -12,6 +12,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
   include MissionControl::Jobs::BasicAuthentication
   include MissionControl::Jobs::ApplicationScoped, MissionControl::Jobs::NotFoundRedirections
   include MissionControl::Jobs::AdapterFeatures
+  include MissionControl::Jobs::JobFilters
 
   around_action :set_current_locale
 

@@ -1,6 +1,6 @@
 <tr class="queue">
   <td>
-    <%= link_to queue.name, application_queue_path(@application, queue.name) %>
+    <%= link_to queue.name, application_queue_path(@application, queue) %>
     <% if queue.paused? %>
       <span class="ml-4 tag is-warning">Paused</span>
     <% end %>

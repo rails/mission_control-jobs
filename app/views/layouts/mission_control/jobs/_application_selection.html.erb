@@ -1,6 +1,9 @@
 <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="navbar-menu is-active mb-4">
     <div class="navbar-start">
+      <% if defined?(main_app.root_path) %>
+        <%= link_to "Back to main app", main_app.root_path %>
+      <% end %>
     </div>
 
     <div class="navbar-end">

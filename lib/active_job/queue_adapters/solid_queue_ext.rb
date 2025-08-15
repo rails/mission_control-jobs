@@ -99,6 +99,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.status = job_status
         job.last_execution_error = execution_error_from_solid_queue_job(solid_queue_job) if job_status == :failed
         job.raw_data = solid_queue_job.as_json
+        job.filtered_raw_data = filter_raw_data_arguments(job.raw_data)
         job.failed_at = solid_queue_job&.failed_execution&.created_at if job_status == :failed
         job.finished_at = solid_queue_job.finished_at
         job.blocked_by = solid_queue_job.concurrency_key
@@ -106,6 +107,12 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.worker_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
         job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
         job.scheduled_at = solid_queue_job.scheduled_at
+      end
+    end
+
+    def filter_raw_data_arguments(raw_data)
+      raw_data.deep_dup.tap do |filtered_raw_data|
+        filtered_raw_data["arguments"]["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(filtered_raw_data.dig("arguments", "arguments"))
       end
     end
 

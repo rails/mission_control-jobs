@@ -4,7 +4,7 @@ module MissionControl::Jobs::JobFilters
   included do
     before_action :set_filters
 
-    helper_method :active_filters?
+    helper_method :active_filters?, :jobs_filter_param
   end
 
   private
@@ -20,6 +20,14 @@ module MissionControl::Jobs::JobFilters
       @job_filters.any?
     end
 
+    def jobs_filter_param
+      if @job_filters&.any?
+        { filter: @job_filters }
+      else
+        {}
+      end
+    end
+
     def finished_at_range_params
       range_start, range_end = params.dig(:filter, :finished_at_start), params.dig(:filter, :finished_at_end)
       if range_start || range_end
@@ -28,6 +36,6 @@ module MissionControl::Jobs::JobFilters
     end
 
     def parse_with_time_zone(date)
-      DateTime.parse(date).in_time_zone if date.present?
+      Time.zone.parse(date) if date.present?
     end
 end

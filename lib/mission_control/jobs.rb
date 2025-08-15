@@ -31,5 +31,11 @@ module MissionControl
     mattr_accessor :http_basic_auth_user
     mattr_accessor :http_basic_auth_password
     mattr_accessor :http_basic_auth_enabled, default: true
+
+    mattr_accessor :filter_arguments, default: []
+
+    def self.job_arguments_filter
+      MissionControl::Jobs::ArgumentsFilter.new(filter_arguments)
+    end
   end
 end
