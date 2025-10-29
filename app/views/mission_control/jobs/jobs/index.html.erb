@@ -11,9 +11,9 @@
   <% if @jobs_page.empty? %>
     <%= blank_status_notice "No #{jobs_status.dasherize} jobs found with the given filters" %>
   <% else %>
+    <%= "Total #{jobs_status.titleize} jobs: #{jobs_count_for(jobs_status)}" %>
     <%= render "mission_control/jobs/jobs/jobs_page", jobs_page: @jobs_page %>
 
     <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: jobs_filter_param %>
   <% end %>
 <% end %>
-
