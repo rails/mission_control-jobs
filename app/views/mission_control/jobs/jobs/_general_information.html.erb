@@ -45,6 +45,12 @@
       </td>
     </tr>
   <% end %>
+  <tr>
+    <th>Retries</th>
+    <td>
+      <%= job.retries %>
+    </td>
+  </tr>
   <% if job.finished_at.present? %>
     <tr>
       <th>Finished</th>
