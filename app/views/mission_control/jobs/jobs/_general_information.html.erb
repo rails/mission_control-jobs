@@ -55,7 +55,7 @@
     <tr>
       <th>Duration</th>
       <td>
-        <%= job.duration.round(3) %> seconds
+        <%= job.duration&.round(3) %> seconds
       </td>
     </tr>
   <% end %>
