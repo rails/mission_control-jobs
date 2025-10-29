@@ -14,7 +14,9 @@ class RetryJobsTest < ApplicationSystemTestCase
   test "retry all failed jobs" do
     assert_equal 9, job_row_elements.length
 
-    click_on "Retry all"
+    accept_confirm do
+      click_on "Retry all"
+    end
 
     assert_text "Retried 9 jobs"
     assert_empty job_row_elements
@@ -25,7 +27,9 @@ class RetryJobsTest < ApplicationSystemTestCase
     expected_job_id = ActiveJob.jobs.failed[2].job_id
 
     within_job_row "failing-arg-2" do
-      click_on "Retry"
+      accept_confirm do
+        click_on "Retry"
+      end
     end
 
     assert_text "Retried job with id #{expected_job_id}"
@@ -39,7 +43,10 @@ class RetryJobsTest < ApplicationSystemTestCase
     fill_in "filter[job_class_name]", with: "FailingJob"
     assert_text /6 jobs found/i
 
-    click_on "Retry selection"
+    accept_confirm do
+      click_on "Retry selection"
+    end
+
     assert_text /retried 6 jobs/i
     assert_equal 3, job_row_elements.length
   end
@@ -50,7 +57,10 @@ class RetryJobsTest < ApplicationSystemTestCase
     fill_in "filter[queue_name]", with: "queue_1"
     assert_text /4 jobs found/i
 
-    click_on "Retry selection"
+    accept_confirm do
+      click_on "Retry selection"
+    end
+
     assert_text /retried 4 jobs/i
     assert_equal 5, job_row_elements.length
   end
@@ -60,7 +70,9 @@ class RetryJobsTest < ApplicationSystemTestCase
     failed_job = ActiveJob.jobs.failed[2]
     visit job_path(failed_job.job_id)
 
-    click_on "Retry"
+    accept_confirm do
+      click_on "Retry"
+    end
 
     assert_text "Retried job with id #{failed_job.job_id}"
     assert_equal 8, job_row_elements.length
