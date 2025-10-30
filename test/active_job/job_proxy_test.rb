@@ -11,6 +11,8 @@ class ActiveJob::JobProxyTest < ActiveSupport::TestCase
     job = DummyJob.new(123)
     job_proxy = ActiveJob::JobProxy.new(job.serialize)
     job_proxy.finished_at = job_proxy.enqueued_at + 5.seconds
+
+    assert_nil job_proxy.scheduled_at
     assert_equal 5.seconds, job_proxy.duration
   end
 end
