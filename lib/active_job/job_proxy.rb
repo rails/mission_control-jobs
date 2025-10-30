@@ -27,7 +27,7 @@ class ActiveJob::JobProxy < ActiveJob::Base
   end
 
   def duration
-    finished_at - scheduled_at
+    finished_at - (scheduled_at || enqueued_at)
   end
 
   ActiveJob::JobsRelation::STATUSES.each do |status|
