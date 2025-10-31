@@ -1,7 +1,34 @@
-<nav class="buttons is-right" role="navigation" aria-label="pagination">
-  <span class="mr-3"><%= page.index %> / <%= page.pages_count || "..." %></span>
-  <%= link_to "↞", url_for(page: 1, **filter_param), class: "pagination-previous", disabled: page.first? %>
-  <%= link_to "Previous page", url_for(page: page.previous_index, **filter_param), class: "pagination-previous", disabled: page.first? %>
-  <%= link_to "Next page", url_for(page: page.next_index, **filter_param), class: "pagination-next", disabled: page.last? %>
-  <%= link_to "↠", url_for(page: page.pages_count, **filter_param), class: "pagination-next", disabled: page.last? %>
+<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">
+  <ul class="pagination-list">
+    <% unless page.first? %>
+      <li>
+        <%= link_to "1", url_for(page: 1, **filter_param), class: 'pagination-link', disabled: page.first? %>
+      </li>
+      <% unless (page.index - 1) == 1 %>
+        <li><span class="pagination-ellipsis">&hellip;</span></li>
+        <li>
+          <%= link_to page.previous_index, url_for(page: page.previous_index, **filter_param), class: 'pagination-link', disabled: page.first? %>
+        </li>
+      <% end
+    end %>
+    <li>
+      <a
+        class="pagination-link is-current"
+        aria-label="Page <%= page.index %>"
+        aria-current="page"
+        ><%= page.index %></a
+      >
+    </li>
+    <% unless page.last? %>
+    <li>
+      <%= link_to page.next_index, url_for(page: page.next_index, **filter_param), class: 'pagination-link', disabled: page.last? %>
+    </li>
+      <% unless (page.index + 1) == page.pages_count %>
+        <li><span class="pagination-ellipsis">&hellip;</span></li>
+        <li>
+          <%= link_to page.pages_count, url_for(page: page.pages_count, **filter_param), class: 'pagination-link', disabled: page.last? %>
+        </li>
+      <% end
+    end %>
+  </ul>
 </nav>
