@@ -185,14 +185,27 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def deserialize_resque_job(resque_job_hash, index)
-          args_hash = resque_job_hash.dig("payload", "args") || resque_job_hash.dig("args")
-          ActiveJob::JobProxy.new(args_hash&.first).tap do |job|
+          args_hash = extract_args_hash(resque_job_hash)
+          ActiveJob::JobProxy.new(args_hash).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash
+            job.filtered_raw_data = filter_raw_data_arguments(resque_job_hash)
             job.position = jobs_relation.offset_value + index
-            job.failed_at = resque_job_hash["failed_at"]&.to_datetime
+            job.failed_at = resque_job_hash["failed_at"]&.to_datetime&.utc
             job.status = job.failed_at.present? ? :failed : :pending
           end
+        end
+
+        def filter_raw_data_arguments(raw_data)
+          raw_data.deep_dup.tap do |filtered_data|
+            if args_hash = extract_args_hash(filtered_data)
+              args_hash["arguments"] = MissionControl::Jobs.job_arguments_filter.apply_to(args_hash["arguments"])
+            end
+          end
+        end
+
+        def extract_args_hash(raw_data)
+          (raw_data.dig("payload", "args") || raw_data.dig("args"))&.first
         end
 
         def execution_error_from_resque_job(resque_job_hash)
@@ -263,7 +276,7 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def requeue(job)
           resque_job = job.raw_data
-          resque_job["retried_at"] = Time.now.strftime("%Y/%m/%d %H:%M:%S")
+          resque_job["retried_at"] = Time.now.utc.strftime("%Y/%m/%d %H:%M:%S")
 
           redis.lset(queue_redis_key, job.position, Resque.encode(resque_job))
           Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])

@@ -13,7 +13,7 @@ class MissionControl::ErbInlineStylesTest < ActiveSupport::TestCase
   Dir[ERB_GLOB].each do |filename|
     pathname = Pathname.new(filename).relative_path_from(Rails.root)
 
-    test "No inline styles in /#{pathname.relative_path_from('../..')}" do
+    test "no inline styles in /#{pathname.relative_path_from('../..')}" do
       buffer = Parser::Source::Buffer.new("")
       buffer.source = File.read(filename)
       parser = BetterHtml::Parser.new(buffer)

@@ -23,22 +23,39 @@
   <tr>
     <th>Enqueued</th>
     <td>
-      <%= formatted_time(job.enqueued_at.to_datetime) %>
+      <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago
     </td>
   </tr>
+  <% if job.scheduled? %>
+    <tr>
+      <th>Scheduled</th>
+      <td>
+        <%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %>
+        <% if job_delayed?(job) %>
+          <div class="is-danger tag ml-4">delayed</div>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
   <% if job.failed? %>
     <tr>
       <th>Failed</th>
       <td>
-        <%= formatted_time(job.failed_at) %>
+        <%= time_distance_in_words_with_title(job.failed_at) %> ago
       </td>
     </tr>
   <% end %>
   <% if job.finished_at.present? %>
     <tr>
-      <th>Finished at</th>
+      <th>Finished</th>
       <td>
-        <%= formatted_time(job.finished_at) %>
+        <%= time_distance_in_words_with_title(job.finished_at) %> ago
+      </td>
+    </tr>
+    <tr>
+      <th>Duration</th>
+      <td>
+        <%= job.duration.round(3) %> seconds
       </td>
     </tr>
   <% end %>

@@ -1,5 +1,5 @@
 module MissionControl
   module Jobs
-    VERSION = "0.3.3"
+    VERSION = "1.1.0"
   end
 end

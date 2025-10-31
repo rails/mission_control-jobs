@@ -24,7 +24,6 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get jobs and job details when there are multiple instances of the same job due to automatic retries" do
-    time = Time.now
     job = AutoRetryingJob.perform_later
 
     perform_enqueued_jobs_async
@@ -33,7 +32,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     assert_select "tr.job", 2
-    assert_select "tr.job", /AutoRetryingJob\s+Enqueued #{time_pattern(time)}\s+default/
+    assert_select "tr.job", /AutoRetryingJob\s+Enqueued less than 5 seconds ago\s+default/
 
     get mission_control_jobs.application_job_url(@application, job.job_id)
     assert_response :ok
@@ -41,6 +40,31 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", /AutoRetryingJob\s+failed\s+/
     assert_includes response.body, job.job_id
     assert_select "div.is-danger", "failed"
+  end
+
+  test "get finished jobs filtered by finished_at date" do
+    [ "UTC", "International Date Line West" ].each do |timezone|
+      Time.use_zone(timezone) do
+        job = DummyJob.perform_later(42)
+        perform_enqueued_jobs_async
+
+        get mission_control_jobs.application_jobs_url(@application, :finished)
+        assert_response :ok
+        assert_select "tr.job", 1
+
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 0
+
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: 1.hour.ago.strftime("%Y-%m-%dT%H:%M"), finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 1
+
+        get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
+        assert_response :ok
+        assert_select "tr.job", 1
+      end
+    end
   end
 
   test "redirect to queue when job doesn't exist" do
@@ -51,16 +75,17 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "get scheduled jobs" do
-    time = Time.now
     DummyJob.set(wait: 3.minutes).perform_later
     DummyJob.set(wait: 1.minute).perform_later
+
+    travel_to 2.minutes.from_now
 
     get mission_control_jobs.application_jobs_url(@application, :scheduled)
     assert_response :ok
 
     assert_select "tr.job", 2
-    assert_select "tr.job", /DummyJob\s+Enqueued #{time_pattern(time)}\s+queue_1\s+#{time_pattern(time + 3.minute)}/
-    assert_select "tr.job", /DummyJob\s+Enqueued #{time_pattern(time)}\s+queue_1\s+#{time_pattern(time + 1.minute)}/
+    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+in 1 minute/
+    assert_select "tr.job", /DummyJob\s+Enqueued 2 minutes ago\s+queue_1\s+(1 minute ago|less than a minute ago)/
     assert_select "tr.job", /Discard/
   end
 
@@ -83,8 +108,31 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  private
-    def time_pattern(time)
-      /#{time.utc.strftime("%Y-%m-%d %H:%M")}:\d{2}\.\d{3}/
+  test "get jobs and job details when the default locale is set to another language than English" do
+    previous_locales, I18n.available_locales = I18n.available_locales, %i[ en nl ]
+
+    DummyJob.set(wait: 3.minutes).perform_later
+
+    I18n.with_locale(:nl) do
+      get mission_control_jobs.application_jobs_url(@application, :scheduled)
+      assert_response :ok
+
+      assert_select "tr.job", /DummyJob\s+Enqueued less than 5 seconds ago\s+queue_1\s+in 3 minutes/
     end
+  ensure
+    I18n.available_locales = previous_locales
+  end
+
+  test "get jobs and job details when English is not included among the locales" do
+    previous_locales, I18n.available_locales = I18n.available_locales, %i[ es nl ]
+
+    DummyJob.set(wait: 3.minutes).perform_later
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+
+    assert_select "tr.job", /DummyJob\s+Enqueued less than 5 seconds ago\s+queue_1\s+in 3 minutes/
+  ensure
+    I18n.available_locales = previous_locales
+  end
 end

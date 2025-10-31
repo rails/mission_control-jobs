@@ -1,4 +1,4 @@
 <h2 class="subtitle">Raw data</h2>
 <pre>
-  <%= JSON.pretty_generate(job.raw_data.without("backtrace")) %>
+  <%= JSON.pretty_generate(job.filtered_raw_data.without("backtrace")) %>
 </pre>

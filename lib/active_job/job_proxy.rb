@@ -7,6 +7,8 @@ class ActiveJob::JobProxy < ActiveJob::Base
   class UnsupportedError < StandardError; end
 
   attr_reader :job_class_name
+  # Raw data with the sensitive user data filtered out.
+  attr_accessor :filtered_raw_data
 
   def initialize(job_data)
     super
@@ -22,6 +24,10 @@ class ActiveJob::JobProxy < ActiveJob::Base
 
   def perform_now
     raise UnsupportedError, "A JobProxy doesn't support immediate execution, only enqueuing."
+  end
+
+  def duration
+    finished_at - scheduled_at
   end
 
   ActiveJob::JobsRelation::STATUSES.each do |status|

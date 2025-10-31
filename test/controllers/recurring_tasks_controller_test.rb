@@ -13,32 +13,27 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
   end
 
   test "get recurring task list" do
-    travel_to Time.parse("2024-10-30 19:07:10 UTC") do
-      schedule_recurring_tasks_async(wait: 2.seconds) do
-        get mission_control_jobs.application_recurring_tasks_url(@application)
-        assert_response :ok
+    schedule_recurring_tasks_async(wait: 2.seconds) do
+      get mission_control_jobs.application_recurring_tasks_url(@application)
+      assert_response :ok
 
-        assert_select "tr.recurring_task", 1
-        assert_select "td a", "periodic_pause_job"
-        assert_select "td", "PauseJob"
-        assert_select "td", "every second"
-        assert_select "td", /2024-10-30 19:07:1\d\.\d{3}/
-      end
+      assert_select "tr.recurring_task", 1
+      assert_select "td a", "periodic_pause_job"
+      assert_select "td", "PauseJob"
+      assert_select "td", "every second"
+      assert_select "td", /less than \d+ seconds ago/
     end
   end
 
   test "get recurring task details and job list" do
-    travel_to Time.parse("2024-10-30 19:07:10 UTC") do
-      schedule_recurring_tasks_async(wait: 1.seconds) do
-        get mission_control_jobs.application_recurring_task_url(@application, "periodic_pause_job")
-        assert_response :ok
-
-        assert_select "h1", /periodic_pause_job/
-        assert_select "h2", "1 job"
-        assert_select "tr.job", 1
-        assert_select "td a", "PauseJob"
-        assert_select "td", /2024-10-30 19:07:1\d\.\d{3}/
-      end
+    schedule_recurring_tasks_async(wait: 1.seconds) do
+      get mission_control_jobs.application_recurring_task_url(@application, "periodic_pause_job")
+      assert_response :ok
+      assert_select "h1", /periodic_pause_job/
+      assert_select "h2", "1 job"
+      assert_select "tr.job", 1
+      assert_select "td a", "PauseJob"
+      assert_select "td", /less than \d+ seconds ago/
     end
   end
 

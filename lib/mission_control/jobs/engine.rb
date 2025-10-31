@@ -1,6 +1,3 @@
-require "mission_control/jobs/version"
-require "mission_control/jobs/engine"
-
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
@@ -9,6 +6,17 @@ module MissionControl
   module Jobs
     class Engine < ::Rails::Engine
       isolate_namespace MissionControl::Jobs
+
+      rake_tasks do
+        load "mission_control/jobs/tasks.rb"
+      end
+
+      initializer "mission_control-jobs.middleware" do |app|
+        if app.config.api_only
+          config.middleware.use ActionDispatch::Flash
+          config.middleware.use ::Rack::MethodOverride
+        end
+      end
 
       config.mission_control = ActiveSupport::OrderedOptions.new unless config.try(:mission_control)
       config.mission_control.jobs = ActiveSupport::OrderedOptions.new
@@ -24,6 +32,11 @@ module MissionControl
         if MissionControl::Jobs.adapters.empty?
           MissionControl::Jobs.adapters << (config.active_job.queue_adapter || :async)
         end
+      end
+
+      initializer "mission_control-jobs.http_basic_auth" do |app|
+        MissionControl::Jobs.http_basic_auth_user ||= app.credentials.dig(:mission_control, :http_basic_auth_user)
+        MissionControl::Jobs.http_basic_auth_password ||= app.credentials.dig(:mission_control, :http_basic_auth_password)
       end
 
       initializer "mission_control-jobs.active_job.extensions" do
@@ -46,17 +59,10 @@ module MissionControl
           ActiveJob::QueueAdapters::SolidQueueAdapter.prepend ActiveJob::QueueAdapters::SolidQueueExt
         end
 
-        ActiveJob::QueueAdapters::AsyncAdapter.include MissionControl::Jobs::Adapter
+        ActiveJob::QueueAdapters::AsyncAdapter.include ActiveJob::QueueAdapters::AsyncExt
       end
 
       config.after_initialize do |app|
-        unless app.config.eager_load
-          # When loading classes lazily (development), we want to make sure
-          # the base host +ApplicationController+ class is loaded when loading the
-          # Engine's +ApplicationController+, or it will fail to load the class.
-          MissionControl::Jobs.base_controller_class.constantize
-        end
-
         if MissionControl::Jobs.applications.empty?
           queue_adapters_by_name = MissionControl::Jobs.adapters.each_with_object({}) do |adapter, hsh|
             hsh[adapter] = ActiveJob::QueueAdapters.lookup(adapter).new
@@ -83,16 +89,19 @@ module MissionControl
       end
 
       initializer "mission_control-jobs.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
         app.config.assets.precompile += %w[ mission_control_jobs_manifest ]
       end
 
       initializer "mission_control-jobs.importmap", after: "importmap" do |app|
         MissionControl::Jobs.importmap.draw(root.join("config/importmap.rb"))
-        MissionControl::Jobs.importmap.cache_sweeper(watches: root.join("app/javascript"))
+        if app.config.importmap.sweep_cache && app.config.reloading_enabled?
+          MissionControl::Jobs.importmap.cache_sweeper(watches: root.join("app/javascript"))
 
-        ActiveSupport.on_load(:action_controller_base) do
-          before_action { MissionControl::Jobs.importmap.cache_sweeper.execute_if_updated }
+          ActiveSupport.on_load(:action_controller_base) do
+            before_action { MissionControl::Jobs.importmap.cache_sweeper.execute_if_updated }
+          end
         end
       end
     end
