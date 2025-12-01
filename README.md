@@ -24,7 +24,7 @@ Rails.application.routes.draw do
   mount MissionControl::Jobs::Engine, at: "/jobs"
 ```
 
-Once you set up [#authentication](Authentication), you should be able to access Mission Control Job's UI, where you can browse the existing queues, jobs pending in these queues, jobs in different statuses, and discard and retry failed jobs:
+Once you set up [Authentication](#authentication), you should be able to access Mission Control Job's UI, where you can browse the existing queues, jobs pending in these queues, jobs in different statuses, and discard and retry failed jobs:
 
 ![Queues tab in a simple app](docs/images/queues-simple.png)
 
