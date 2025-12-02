@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
@@ -29,21 +29,24 @@ jobs:
           bundle exec rubocop --parallel
 
   test:
-    name: Tests
+    name: Tests (Ruby ${{ matrix.ruby-version }}, ${{ matrix.gemfile }})
     runs-on: ubuntu-latest
     env:
       CI: true
       BUNDLE_GITHUB__COM: x-access-token:${{ secrets.GH_TOKEN }}
+      BUNDLE_GEMFILE: gemfiles/${{ matrix.gemfile }}.gemfile
     strategy:
+      fail-fast: false
       matrix:
-        ruby-version: ['3.2', '3.3']
+        ruby-version: ['3.2', '3.3', '3.4']
+        gemfile: [rails_7_1, rails_7_2, rails_8_0, rails_8_1, rails_main]
     services:
       redis:
         image: redis:4.0-alpine
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
