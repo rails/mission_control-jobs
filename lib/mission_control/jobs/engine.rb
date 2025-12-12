@@ -39,7 +39,7 @@ module MissionControl
         MissionControl::Jobs.http_basic_auth_password ||= app.credentials.dig(:mission_control, :http_basic_auth_password)
       end
 
-      initializer "mission_control-jobs.active_job.extensions" do
+      initializer "mission_control-jobs.active_job.extensions", before: "active_job.set_configs" do
         ActiveSupport.on_load :active_job do
           include ActiveJob::Querying
           include ActiveJob::Executing
