@@ -10,8 +10,8 @@ module MissionControl::Jobs::JobFilters
   private
     def set_filters
       @job_filters = {
-        job_class_name: params.dig(:filter, :job_class_name).presence,
-        queue_name: params.dig(:filter, :queue_name).presence,
+        job_class_name: params.dig(:filter, :job_class_name).to_s.strip.presence,
+        queue_name: params.dig(:filter, :queue_name).to_s.strip.presence,
         finished_at: finished_at_range_params
       }.compact
     end
