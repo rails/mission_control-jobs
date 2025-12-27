@@ -1,6 +1,17 @@
 <% navigation(title: "Workers", section: :workers)  %>
 
-<%= render "mission_control/jobs/workers/workers_page", workers_page: @workers_page %>
+<% if @workers_page.empty? && !active_filters? %>
+  <%= blank_status_notice "There are no active workers" %>
+<% else %>
+  <div class="level is-flex-wrap-wrap">
+    <%= render "mission_control/jobs/workers/filters" %>
+  </div>
 
-<%= render "mission_control/jobs/shared/pagination_toolbar", page: @workers_page, filter_param: {} %>
+  <% if @workers_page.empty? %>
+    <%= blank_status_notice "No workers found with the given filters" %>
+  <% else %>
+    <%= render "mission_control/jobs/workers/workers_page", workers_page: @workers_page %>
 
+    <%= render "mission_control/jobs/shared/pagination_toolbar", page: @workers_page, filter_param: workers_filter_param %>
+  <% end %>
+<% end %>
