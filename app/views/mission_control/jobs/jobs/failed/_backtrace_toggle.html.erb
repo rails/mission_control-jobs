@@ -1,14 +1,12 @@
-<%# locals: (application:, job:) %>
-
 <div class="is-flex is-justify-content-flex-end mb-2 mr-2 backtrace-toggle-selector">
   <div class="tabs is-toggle is-toggle-rounded is-small">
     <ul>
-      <li class="<%= class_names('backtrace-clean-link', 'is-active' => clean_backtrace?) %>">
-        <%= link_to "Clean", application_job_path(application, job.job_id, clean_backtrace: true) %>
-      </li>
-      <li class="<%= class_names('backtrace-full-link', 'is-active' => !clean_backtrace?) %>">
-        <%= link_to "Full", application_job_path(application, job.job_id, clean_backtrace: false) %>
-      </li>
+      <%= tag.li class: [ "backtrace-clean-link", "is-active": clean_backtrace? ] do %>
+        <%= link_to "Clean", application_job_path(application, job.job_id, clean_backtrace: true), aria: { current: ("page" if clean_backtrace?) } %>
+      <% end %>
+      <%= tag.li class: [ "backtrace-full-link", "is-active": !clean_backtrace? ] do %>
+        <%= link_to "Full", application_job_path(application, job.job_id, clean_backtrace: false), aria: { current: ("page" unless clean_backtrace?) } %>
+      <% end %>
     </ul>
   </div>
 </div>

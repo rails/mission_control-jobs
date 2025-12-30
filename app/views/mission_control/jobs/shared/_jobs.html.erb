@@ -1,14 +1,12 @@
 <table class="jobs table is-hoverable is-fullwidth">
-  <tbody>
   <thead>
-  <tr>
-    <th class="job-header">Job</th>
-    <th></th>
-    <th class="duration-header"></th>
-  </tr>
+    <tr>
+      <th class="job-header">Job</th>
+      <th></th>
+      <th class="duration-header"></th>
+    </tr>
   </thead>
-
-  <%= render partial: "mission_control/jobs/shared/job", collection: jobs %>
-
+  <tbody>
+    <%= render partial: "mission_control/jobs/shared/job", collection: jobs %>
   </tbody>
 </table>

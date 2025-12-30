@@ -10,18 +10,20 @@
 
   <%= stylesheet_link_tag "mission_control/jobs/bulma.min" %>
   <%= stylesheet_link_tag "mission_control/jobs/application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags "application", importmap: MissionControl::Jobs.importmap  %>
+  <%= javascript_importmap_tags "application", importmap: MissionControl::Jobs.importmap %>
 </head>
 <body>
-
-<section class="section">
-  <div class="container">
-    <%= render "layouts/mission_control/jobs/application_selection" %>
-    <%= render "layouts/mission_control/jobs/flash" %>
-    <%= render "layouts/mission_control/jobs/navigation" %>
-    <%= yield %>
+  <div class="section">
+    <div class="container">
+      <header>
+        <%= render "layouts/mission_control/jobs/application_selection" %>
+        <%= render "layouts/mission_control/jobs/flash" %>
+        <%= render "layouts/mission_control/jobs/navigation" %>
+      </header>
+      <main>
+        <%= yield %>
+      </main>
+    </div>
   </div>
-</section>
-
 </body>
 </html>

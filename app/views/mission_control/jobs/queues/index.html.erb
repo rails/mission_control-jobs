@@ -1,16 +1,14 @@
-<% navigation(title: "Queues", section: :queues)  %>
+<% navigation(title: "Queues", section: :queues) %>
 
 <table class="queues table is-hoverable is-fullwidth">
-  <tbody>
   <thead>
-  <tr>
-    <th>Queue</th>
-    <th>Pending jobs</th>
-    <th></th>
-  </tr>
+    <tr>
+      <th>Queue</th>
+      <th>Pending jobs</th>
+      <th></th>
+    </tr>
   </thead>
-
-  <%= render partial: "mission_control/jobs/queues/queue", collection: @queues %>
-
+  <tbody>
+    <%= render partial: "mission_control/jobs/queues/queue", collection: @queues %>
   </tbody>
 </table>

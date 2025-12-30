@@ -1,71 +1,71 @@
 <table class="table">
   <tbody>
-  <tr>
-    <th>Arguments</th>
-    <td>
-      <div class="is-family-monospace">
-        <%= job_arguments(job) %>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th>Job id</th>
-    <td><%= job.job_id %></td>
-  </tr>
-  <tr>
-    <th>Queue</th>
-    <td>
-      <div class="tag">
-        <%= link_to job.queue_name, application_queue_path(@application, job.queue) %>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th>Enqueued</th>
-    <td>
-      <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago
-    </td>
-  </tr>
-  <% if job.scheduled? %>
     <tr>
-      <th>Scheduled</th>
+      <th scope="row">Arguments</th>
       <td>
-        <%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %>
-        <% if job_delayed?(job) %>
-          <div class="is-danger tag ml-4">delayed</div>
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
-  <% if job.failed? %>
-    <tr>
-      <th>Failed</th>
-      <td>
-        <%= time_distance_in_words_with_title(job.failed_at) %> ago
-      </td>
-    </tr>
-  <% end %>
-  <% if job.finished_at.present? %>
-    <tr>
-      <th>Finished</th>
-      <td>
-        <%= time_distance_in_words_with_title(job.finished_at) %> ago
+        <div class="is-family-monospace">
+          <%= job_arguments(job) %>
+        </div>
       </td>
     </tr>
     <tr>
-      <th>Duration</th>
-      <td>
-        <%= job.duration.round(3) %> seconds
-      </td>
+      <th scope="row">Job id</th>
+      <td><%= job.job_id %></td>
     </tr>
-  <% end %>
-  <% if job.worker_id.present? %>
     <tr>
-      <th>Processed by</th>
+      <th scope="row">Queue</th>
       <td>
-        <%= link_to "worker #{job.worker_id}", application_worker_path(@application, job.worker_id) %>
+        <div class="tag">
+          <%= link_to job.queue_name, application_queue_path(@application, job.queue) %>
+        </div>
       </td>
     </tr>
-  <% end %>
+    <tr>
+      <th scope="row">Enqueued</th>
+      <td>
+        <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago
+      </td>
+    </tr>
+    <% if job.scheduled? %>
+      <tr>
+        <th scope="row">Scheduled</th>
+        <td>
+          <%= bidirectional_time_distance_in_words_with_title(job.scheduled_at) %>
+          <% if job_delayed?(job) %>
+            <div class="is-danger tag ml-4">delayed</div>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+    <% if job.failed? %>
+      <tr>
+        <th scope="row">Failed</th>
+        <td>
+          <%= time_distance_in_words_with_title(job.failed_at) %> ago
+        </td>
+      </tr>
+    <% end %>
+    <% if job.finished_at.present? %>
+      <tr>
+        <th scope="row">Finished</th>
+        <td>
+          <%= time_distance_in_words_with_title(job.finished_at) %> ago
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Duration</th>
+        <td>
+          <%= job.duration.round(3) %> seconds
+        </td>
+      </tr>
+    <% end %>
+    <% if job.worker_id.present? %>
+      <tr>
+        <th scope="row">Processed by</th>
+        <td>
+          <%= link_to "worker #{job.worker_id}", application_worker_path(@application, job.worker_id) %>
+        </td>
+      </tr>
+    <% end %>
   </tbody>
 </table>

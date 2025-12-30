@@ -1,15 +1,13 @@
 <table class="workers table jobs is-hoverable is-fullwidth">
-  <tbody>
   <thead>
-  <tr>
-    <th>Worker</th>
-    <th>Hostname</th>
-    <th class="job-header">Jobs</th>
-    <th>Last heartbeat</th>
-  </tr>
+    <tr>
+      <th>Worker</th>
+      <th>Hostname</th>
+      <th class="job-header">Jobs</th>
+      <th>Last heartbeat</th>
+    </tr>
   </thead>
-
-  <%= render partial: "mission_control/jobs/workers/worker", collection: workers_page.records %>
-
+  <tbody>
+    <%= render partial: "mission_control/jobs/workers/worker", collection: workers_page.records %>
   </tbody>
 </table>
