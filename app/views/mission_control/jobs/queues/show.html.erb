@@ -6,20 +6,16 @@
   <%= blank_status_notice "The queue is empty" %>
 <% else %>
   <table class="jobs table queues is-hoverable is-fullwidth">
-    <tbody>
     <thead>
-    <tr>
-      <th class="job-header">Job</th>
-      <th></th>
-    </tr>
+      <tr>
+        <th class="job-header">Job</th>
+        <th></th>
+      </tr>
     </thead>
-
-    <%= render partial: "mission_control/jobs/queues/job", collection: @jobs_page.records %>
-
+    <tbody>
+      <%= render partial: "mission_control/jobs/queues/job", collection: @jobs_page.records %>
     </tbody>
   </table>
 
   <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: {} %>
 <% end %>
-
-

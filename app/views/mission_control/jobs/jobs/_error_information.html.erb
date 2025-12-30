@@ -3,14 +3,14 @@
 
   <table class="table">
     <tbody>
-    <tr>
-      <th>Type</th>
-      <td> <%= job.last_execution_error.error_class %> </td>
-    </tr>
-    <tr>
-      <th>Message</th>
-      <td> <%= job.last_execution_error.try(:message) || job.last_execution_error.inspect %> </td>
-    </tr>
+      <tr>
+        <th scope="row">Type</th>
+        <td> <%= job.last_execution_error.error_class %> </td>
+      </tr>
+      <tr>
+        <th scope="row">Message</th>
+        <td> <%= job.last_execution_error.try(:message) || job.last_execution_error.inspect %> </td>
+      </tr>
     </tbody>
   </table>
 

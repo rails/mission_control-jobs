@@ -1,18 +1,17 @@
-<% navigation(title: "Recurring tasks", section: :recurring_tasks)  %>
+<% navigation(title: "Recurring tasks", section: :recurring_tasks) %>
 
 <table class="recurring-tasks table jobs is-hoverable is-fullwidth">
-  <tbody>
   <thead>
-  <tr>
-    <th></th>
-    <th>Job</th>
-    <th>Schedule</th>
-    <th>Last enqueued</th>
-    <th>Next</th>
-    <th></th>
-  </tr>
+    <tr>
+      <th></th>
+      <th>Job</th>
+      <th>Schedule</th>
+      <th>Last enqueued</th>
+      <th>Next</th>
+      <th></th>
+    </tr>
   </thead>
-
-  <%= render partial: "mission_control/jobs/recurring_tasks/recurring_task", collection: @recurring_tasks %>
+  <tbody>
+    <%= render partial: "mission_control/jobs/recurring_tasks/recurring_task", collection: @recurring_tasks %>
   </tbody>
 </table>

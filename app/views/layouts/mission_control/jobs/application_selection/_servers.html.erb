@@ -3,11 +3,12 @@
     <div class="tabs is-toggle is-toggle-rounded is-small">
       <ul>
         <% application.servers.each do |server| %>
-          <li class="<%= "is-active" if selected_server?(server) %>">
-            <%= link_to application_queues_path(application, server_id: server) do %>
+          <% selected = selected_server?(server) %>
+          <%= tag.li class: [ "is-active": selected ] do %>
+            <%= link_to application_queues_path(application, server_id: server), aria: { current: ("page" if selected) } do %>
               <span><%= server.name %></span>
             <% end %>
-          </li>
+          <% end %>
         <% end %>
       </ul>
     </div>
