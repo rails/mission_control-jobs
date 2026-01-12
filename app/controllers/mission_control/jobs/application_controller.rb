@@ -18,7 +18,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
 
   private
     def default_url_options
-      { server_id: MissionControl::Jobs::Current.server }
+      super.merge(server_id: MissionControl::Jobs::Current.server)
     end
 
     def set_current_locale(&block)
