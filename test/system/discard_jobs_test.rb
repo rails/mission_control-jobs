@@ -40,6 +40,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[job_class_name]", with: "FailingReloadedJob"
+    send_keys :tab
     assert_text /3 jobs found/i
 
     accept_confirm do
@@ -54,6 +55,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[queue_name]", with: "queue_2"
+    send_keys :tab
     assert_text /5 jobs found/i
 
     accept_confirm do
