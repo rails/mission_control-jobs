@@ -37,6 +37,7 @@ class RetryJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[job_class_name]", with: "FailingJob"
+    send_keys :tab
     assert_text /6 jobs found/i
 
     click_on "Retry selection"
@@ -48,6 +49,7 @@ class RetryJobsTest < ApplicationSystemTestCase
     assert_equal 9, job_row_elements.length
 
     fill_in "filter[queue_name]", with: "queue_1"
+    send_keys :tab
     assert_text /4 jobs found/i
 
     click_on "Retry selection"

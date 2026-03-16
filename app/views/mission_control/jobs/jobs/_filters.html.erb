@@ -1,6 +1,6 @@
 <div class="filter level-left">
   <%= form_for :filter, url: application_jobs_path(MissionControl::Jobs::Current.application, jobs_status), method: :get,
-    data: { controller: "form", action: "input->form#debouncedSubmit" } do |form| %>
+    data: { controller: "form", action: "change->form#submit" } do |form| %>
 
     <div class="field is-grouped">
       <div class="control">
