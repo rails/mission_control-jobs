@@ -10,6 +10,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       {
         name: queue.name,
         size: queue.size,
+        latency: queue.latency,
         active: pauses[queue.name].nil?
       }
     end
@@ -17,6 +18,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
   def queue_size(queue_name)
     find_queue_by_name(queue_name).size
+  end
+
+  def queue_latency(queue_name)
+    find_queue_by_name(queue_name).latency
   end
 
   def clear_queue(queue_name)
