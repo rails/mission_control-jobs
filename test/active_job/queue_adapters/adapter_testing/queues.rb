@@ -45,6 +45,13 @@ module ActiveJob::QueueAdapters::AdapterTesting::Queues
     assert_equal 3, queue.length
   end
 
+  test "queue latency" do
+    3.times { DynamicQueueJob("queue_1").perform_later }
+
+    queue = ActiveJob.queues[:queue_1]
+    assert_kind_of Numeric, queue.latency
+  end
+
   test "queue sizes for multiple queues" do
     3.times { DynamicQueueJob("queue_1").perform_later }
     5.times { DynamicQueueJob("queue_2").perform_later }

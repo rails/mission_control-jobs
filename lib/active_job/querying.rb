@@ -22,7 +22,7 @@ module ActiveJob::Querying
     private
       def fetch_queues
         queue_adapter.queues.collect do |queue|
-          ActiveJob::Queue.new(queue[:name], size: queue[:size], active: queue[:active], queue_adapter: queue_adapter)
+          ActiveJob::Queue.new(queue[:name], size: queue[:size], active: queue[:active], latency: queue[:latency], queue_adapter: queue_adapter)
         end
       end
   end

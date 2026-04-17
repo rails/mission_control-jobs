@@ -2,12 +2,13 @@
 class ActiveJob::Queue
   attr_reader :name
 
-  def initialize(name, size: nil, active: nil, queue_adapter: ActiveJob::Base.queue_adapter)
+  def initialize(name, size: nil, active: nil, latency: nil, queue_adapter: ActiveJob::Base.queue_adapter)
     @name = name
     @queue_adapter = queue_adapter
 
     @size = size
     @active = active
+    @latency = latency
   end
 
   def size
@@ -15,6 +16,10 @@ class ActiveJob::Queue
   end
 
   alias length size
+
+  def latency
+    @latency ||= queue_adapter.queue_latency(name)
+  end
 
   def clear
     queue_adapter.clear_queue(name)
@@ -47,7 +52,7 @@ class ActiveJob::Queue
   end
 
   def reload
-    @active = @size = nil
+    @active = @size = @latency = nil
     self
   end
 
