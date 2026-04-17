@@ -95,6 +95,10 @@ module MissionControl::Jobs::Adapter
     raise_incompatible_adapter_error_from :queue_size
   end
 
+  def queue_latency(queue_name)
+    raise_incompatible_adapter_error_from :queue_latency
+  end
+
   def clear_queue(queue_name)
     raise_incompatible_adapter_error_from :clear_queue
   end
