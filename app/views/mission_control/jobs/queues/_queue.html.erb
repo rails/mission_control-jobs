@@ -8,6 +8,9 @@
   <td>
     <%= queue.size %>
   </td>
+  <td>
+    <%= ActiveSupport::Duration.build(queue.latency).inspect %>
+  </td>
   <td class="pr-0">
     <% if queue_pausing_supported? %>
       <%= render "mission_control/jobs/queues/actions", queue: queue %>
