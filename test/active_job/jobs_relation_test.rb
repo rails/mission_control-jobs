@@ -59,6 +59,12 @@ class ActiveJob::JobsRelationTest < ActiveSupport::TestCase
     end
   end
 
+  test "source file parses without warnings in verbose mode" do
+    source_path = Object.const_source_location("ActiveJob::JobsRelation").first
+    output = `#{Gem.ruby} -wc "#{source_path}" 2>&1`
+    assert_equal "Syntax OK", output.strip
+  end
+
   test "caches the count of jobs" do
     ActiveJob::Base.queue_adapter.expects(:jobs_count).once.returns(2)
     ActiveJob::Base.queue_adapter.expects(:supports_job_filter?).at_least_once.returns(true)
