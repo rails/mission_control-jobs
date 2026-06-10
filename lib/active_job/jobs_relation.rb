@@ -26,7 +26,7 @@ class ActiveJob::JobsRelation
   FILTERS = %i[ queue_name job_class_name ]
 
   PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at ]
-  attr_reader *PROPERTIES, :default_page_size
+  attr_reader(*PROPERTIES, :default_page_size)
 
   delegate :last, :[], :reverse, to: :to_a
   delegate :logger, to: MissionControl::Jobs
@@ -61,7 +61,7 @@ class ActiveJob::JobsRelation
       finished_at: finished_at
     }.compact
 
-    clone_with **arguments
+    clone_with(**arguments)
   end
 
   def with_status(status)
@@ -219,7 +219,7 @@ class ActiveJob::JobsRelation
 
   private
     attr_reader :queue_adapter, :loaded_jobs
-    attr_writer *PROPERTIES
+    attr_writer(*PROPERTIES)
 
     def set_defaults
       self.offset_value = 0
