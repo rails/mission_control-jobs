@@ -127,6 +127,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           message: solid_queue_job.failed_execution.message,
           backtrace: solid_queue_job.failed_execution.backtrace || []
       end
+    rescue JSON::ParserError
+      ActiveJob::ExecutionError.new \
+        error_class: "",
+        message: solid_queue_job.failed_execution.error_before_type_cast,
+        backtrace: []
     end
 
     def dispatch_immediately(job)

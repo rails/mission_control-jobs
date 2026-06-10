@@ -8,6 +8,19 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     SolidQueue.logger = ActiveSupport::Logger.new(nil)
   end
 
+  test "expose the raw error when the failed execution error can't be parsed" do
+    FailingJob.perform_later
+    perform_enqueued_jobs
+
+    SolidQueue::FailedExecution.update_all("error = 'RuntimeError: This always fails!'")
+
+    execution_error = ActiveJob.jobs.failed.last.last_execution_error
+
+    assert_equal "", execution_error.error_class
+    assert_equal "RuntimeError: This always fails!", execution_error.message
+    assert_empty execution_error.backtrace
+  end
+
   private
     def queue_adapter
       :solid_queue
