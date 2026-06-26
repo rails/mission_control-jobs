@@ -4,12 +4,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
   def queues
     queues = SolidQueue::Queue.all
-    pauses = SolidQueue::Pause.where(queue_name: queues.map(&:name)).index_by(&:queue_name)
+    queue_names = queues.map(&:name)
+    pauses = SolidQueue::Pause.where(queue_name: queue_names).index_by(&:queue_name)
+    sizes = SolidQueue::ReadyExecution.where(queue_name: queue_names).group(:queue_name).count
 
     queues.collect do |queue|
       {
         name: queue.name,
-        size: queue.size,
+        size: sizes[queue.name] || 0,
         active: pauses[queue.name].nil?
       }
     end
