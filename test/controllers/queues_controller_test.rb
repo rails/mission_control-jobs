@@ -8,4 +8,17 @@ class MissionControl::Jobs::QueuesControllerTest < ActionDispatch::IntegrationTe
 
     assert_select "article.is-danger", /Queue 'missing_queue' not found/
   end
+
+  test "get queues" do
+    job = DummyJob.perform_later(42)
+
+    get mission_control_jobs.application_queues_url(@application)
+
+    assert_select "thead th", "Queue"
+    assert_select "thead th", "Pending jobs"
+
+    assert_select "tbody tr", 1
+    assert_select "tbody td", "default"
+    assert_select "tbody td", "1"
+  end
 end
