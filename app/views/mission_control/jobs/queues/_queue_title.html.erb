@@ -6,11 +6,9 @@
         <span class="ml-4 tag is-warning">Paused</span>
       <% end %>
     </div>
-    <% if queue_pausing_supported? %>
-      <div class="level-right">
-        <%= render "mission_control/jobs/queues/actions", queue: queue %>
-      </div>
-    <% end %>
+    <div class="level-right">
+      <%= render "mission_control/jobs/queues/actions", queue: queue %>
+    </div>
   </div>
 </h1>
 
