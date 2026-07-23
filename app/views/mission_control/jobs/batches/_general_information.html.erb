@@ -4,7 +4,18 @@
     <th>Progress</th>
     <td>
       <progress class="progress <%= batch.failed? ? "is-danger" : "is-success" %>" value="<%= batch.progress_percentage %>" max="100"><%= number_to_percentage batch.progress_percentage, precision: 0 %></progress>
-      <%= batch.completed_jobs %> completed, <%= batch.failed_jobs %> failed, <%= batch.pending_jobs %> pending of <%= batch.total_jobs %> total
+      <%= link_to "#{batch.completed_jobs} completed", application_batch_path(@application, batch.id, jobs_status: :finished) %>,
+      <% if batch.failed_jobs > 0 %>
+        <%= link_to "#{batch.failed_jobs} failed", application_batch_path(@application, batch.id, jobs_status: :failed), class: "has-text-danger" %>,
+      <% else %>
+        0 failed,
+      <% end %>
+      <% if batch.pending_jobs > 0 %>
+        <%= link_to "#{batch.pending_jobs} pending", application_batch_path(@application, batch.id, jobs_status: :pending) %>
+      <% else %>
+        0 pending
+      <% end %>
+      of <%= batch.total_jobs %> total
     </td>
   </tr>
   <tr>

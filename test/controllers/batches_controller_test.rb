@@ -41,13 +41,46 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
   test "batch progress reflects finished jobs" do
     batch = create_batch(jobs: 4)
     @server.activating do
-      SolidQueue::Job.where(batch_id: batch.id).order(:id).first.finished!
+      finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
     end
 
     get mission_control_jobs.application_batch_url(@application, batch.id)
     assert_response :ok
 
-    assert_select "td", /1 completed, 0 failed, 3 pending of 4 total/
+    assert_select "td a", "1 completed"
+    assert_select "td a", "3 pending"
+    assert_select "td", /of 4 total/
+  end
+
+  test "failed batch shows its failed jobs with error details" do
+    batch = create_batch(description: "Doomed", jobs: 2)
+    @server.activating do
+      jobs = SolidQueue::Job.where(batch_id: batch.id).order(:id).to_a
+      fail_job jobs.first, RuntimeError.new("boom went the job")
+      finish jobs.second
+    end
+
+    get mission_control_jobs.application_batch_url(@application, batch.id)
+    assert_response :ok
+
+    assert_select "span.tag", "failed"
+    assert_select "h2", "1 failed job"
+    assert_select "tr.job", 1
+    assert_select "td", /boom went the job/
+    assert_select "td a", "1 failed"
+  end
+
+  test "jobs_status param switches the job list" do
+    batch = create_batch(jobs: 3)
+    @server.activating do
+      finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
+    end
+
+    get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
+    assert_response :ok
+
+    assert_select "h2", "1 finished job"
+    assert_select "tr.job", 1
   end
 
   test "redirect to batches list when batch doesn't exist" do
@@ -66,5 +99,16 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
           jobs.times { |i| BatchedJob.perform_later(i) }
         end
       end
+    end
+
+    # Mirror the real worker flow: the execution is claimed away before the job resolves
+    def finish(job)
+      SolidQueue::ReadyExecution.where(job_id: job.id).destroy_all
+      job.finished!
+    end
+
+    def fail_job(job, error)
+      SolidQueue::ReadyExecution.where(job_id: job.id).destroy_all
+      job.failed_with(error)
     end
 end
