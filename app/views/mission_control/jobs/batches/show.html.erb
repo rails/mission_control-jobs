@@ -1,0 +1,14 @@
+<% navigation(title: "Batch #{@batch.id}", section: :batches) %>
+
+<%= render "mission_control/jobs/batches/title", batch: @batch %>
+<%= render "mission_control/jobs/batches/general_information", batch: @batch %>
+
+<% if @jobs_page.empty? %>
+  <%= blank_status_notice "No #{@jobs_status} jobs found for this batch" %>
+<% else %>
+  <h2 class="subtitle"><%= pluralize @jobs_page.total_count, "#{@jobs_status} job" %></h2>
+
+  <%= render "mission_control/jobs/shared/jobs", jobs: @jobs_page.records %>
+
+  <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: jobs_filter_param %>
+<% end %>

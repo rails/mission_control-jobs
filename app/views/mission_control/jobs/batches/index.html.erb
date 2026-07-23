@@ -1,0 +1,18 @@
+<% navigation(title: "Batches", section: :batches)  %>
+
+<table class="batches table jobs is-hoverable is-fullwidth">
+  <tbody>
+  <thead>
+  <tr>
+    <th></th>
+    <th>Description</th>
+    <th>Status</th>
+    <th>Progress</th>
+    <th>Jobs</th>
+    <th>Enqueued</th>
+  </tr>
+  </thead>
+
+  <%= render partial: "mission_control/jobs/batches/batch", collection: @batches %>
+  </tbody>
+</table>

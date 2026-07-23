@@ -5,3 +5,4 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 gemspec
 
 gem "capybara", github: "teamcapybara/capybara"
+gem "solid_queue", path: "../solid_queue"

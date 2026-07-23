@@ -1,0 +1,27 @@
+<table class="table">
+  <tbody>
+  <tr>
+    <th>Progress</th>
+    <td>
+      <progress class="progress <%= batch.failed? ? "is-danger" : "is-success" %>" value="<%= batch.progress_percentage %>" max="100"><%= number_to_percentage batch.progress_percentage, precision: 0 %></progress>
+      <%= batch.completed_jobs %> completed, <%= batch.failed_jobs %> failed, <%= batch.pending_jobs %> pending of <%= batch.total_jobs %> total
+    </td>
+  </tr>
+  <tr>
+    <th>Enqueued</th>
+    <td><%= batch.enqueued_at ? bidirectional_time_distance_in_words_with_title(batch.enqueued_at) : "Not started" %></td>
+  </tr>
+  <% if batch.finished_at.present? %>
+    <tr>
+      <th>Finished</th>
+      <td><%= bidirectional_time_distance_in_words_with_title(batch.finished_at) %></td>
+    </tr>
+  <% end %>
+  <% if batch.metadata.present? %>
+    <tr>
+      <th>Metadata</th>
+      <td><div class="is-family-monospace"><%= batch.metadata %></div></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

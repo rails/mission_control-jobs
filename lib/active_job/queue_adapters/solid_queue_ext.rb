@@ -1,6 +1,6 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
   include MissionControl::Jobs::Adapter
-  include RecurringTasks, Workers
+  include RecurringTasks, Workers, Batches
 
   def queues
     queues = SolidQueue::Queue.all
@@ -180,7 +180,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         attr_reader :jobs_relation
 
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
-          :default_page_size, :worker_id, :recurring_task_id, :finished_at, to: :jobs_relation
+          :default_page_size, :worker_id, :recurring_task_id, :batch_id, :finished_at, to: :jobs_relation
 
         def executions
           execution_class_by_status
@@ -189,6 +189,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
             .then { |executions| filter_executions_by_task_key(executions) }
+            .then { |executions| filter_executions_by_batch(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -197,6 +198,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           SolidQueue::Job.finished
             .then { |jobs| filter_jobs_by_queue(jobs) }
             .then { |jobs| filter_jobs_by_class(jobs) }
+            .then { |jobs| filter_jobs_by_batch(jobs) }
             .then { |jobs| filter_jobs_by_finished_at(jobs) }
             .then { |jobs| limit(jobs) }
             .then { |jobs| offset(jobs) }
@@ -273,6 +275,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_executions_by_task_key(executions)
           recurring_task_id.present? ? executions.where(task_key: recurring_task_id) : executions
+        end
+
+        def filter_executions_by_batch(executions)
+          batch_id.present? ? executions.where(job: { batch_id: batch_id }) : executions
+        end
+
+        def filter_jobs_by_batch(jobs)
+          batch_id.present? ? jobs.where(batch_id: batch_id) : jobs
         end
 
         def filter_jobs_by_class(jobs)
