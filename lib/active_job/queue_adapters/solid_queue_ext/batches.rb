@@ -19,14 +19,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     false
   end
 
-  def batches(offset: 0, limit: BATCHES_LIMIT)
-    solid_queue_batches.order(id: :desc).offset(offset).limit(limit).collect do |batch|
+  def batches(status: nil, offset: 0, limit: BATCHES_LIMIT)
+    solid_queue_batches.merge(batches_scope(status)).order(id: :desc).offset(offset).limit(limit).collect do |batch|
       batch_attributes_from_solid_queue_batch(batch)
     end
   end
 
-  def batches_count
-    SolidQueue::Batch.count
+  def batches_count(status: nil)
+    batches_scope(status).count
   end
 
   def find_batch(batch_id)
@@ -36,6 +36,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
   end
 
   private
+    def batches_scope(status)
+      case status
+      when :finished   then SolidQueue::Batch.finished
+      when :unfinished then SolidQueue::Batch.unfinished
+      else SolidQueue::Batch.all
+      end
+    end
+
     def batch_attributes_from_solid_queue_batch(batch)
       job_counts = job_counts_from_solid_queue_batch(batch)
       unfinished_jobs = batch_count(batch, :unfinished)

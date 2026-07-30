@@ -1,6 +1,6 @@
 module MissionControl::Jobs::Server::Batches
-  def batches
-    MissionControl::Jobs::BatchesRelation.new(queue_adapter: queue_adapter)
+  def batches(status: nil)
+    MissionControl::Jobs::BatchesRelation.new(queue_adapter: queue_adapter, status: status)
   end
 
   def find_batch(batch_id)

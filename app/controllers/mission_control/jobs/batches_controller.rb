@@ -2,10 +2,11 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
   before_action :ensure_supported_batches
   before_action :set_batch, only: :show
 
-  helper_method :jobs_status
+  helper_method :jobs_status, :batches_status, :batches_filter_param
 
   def index
-    @batches_page = MissionControl::Jobs::Page.new(MissionControl::Jobs::Current.server.batches, page: params[:page].to_i)
+    batches = MissionControl::Jobs::Current.server.batches(status: batches_status&.to_sym)
+    @batches_page = MissionControl::Jobs::Page.new(batches, page: params[:page].to_i)
   end
 
   def show
@@ -15,6 +16,15 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
   private
     JOB_STATUSES = %w[ pending failed in_progress blocked scheduled finished ]
     UNFINISHED_JOB_STATUSES = %i[ pending in_progress blocked scheduled ]
+    BATCHES_STATUSES = %w[ finished unfinished ]
+
+    def batches_status
+      @batches_status ||= params[:batches_status].presence_in(BATCHES_STATUSES)
+    end
+
+    def batches_filter_param
+      { batches_status: batches_status }.compact
+    end
 
     def ensure_supported_batches
       unless batches_supported?

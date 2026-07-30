@@ -40,6 +40,45 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.batch", 2
   end
 
+  test "batch list filters by finished and unfinished" do
+    create_batch(description: "Still going")
+    finished = create_batch(description: "All done")
+    @server.activating do
+      SolidQueue::Job.where(batch_id: finished.id).each { |job| finish(job) }
+    end
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
+    assert_response :ok
+    assert_select "tr.batch", 1
+    assert_select "td", "All done"
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
+    assert_response :ok
+    assert_select "tr.batch", 1
+    assert_select "td", "Still going"
+
+    get mission_control_jobs.application_batches_url(@application)
+    assert_select "tr.batch", 2
+  end
+
+  test "batch list pagination preserves the status filter" do
+    12.times { create_batch }
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
+    assert_response :ok
+    assert_select "tr.batch", 10
+    assert_select "nav[aria-label=pagination] a[href*=?]", "batches_status=unfinished"
+  end
+
+  test "batch list shows an empty notice for a status filter without matches" do
+    create_batch(description: "Still going")
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
+    assert_response :ok
+    assert_select "tr.batch", 0
+    assert_select "div", text: "No finished batches found"
+  end
+
   test "batch list shows an empty notice when there are no batches" do
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
