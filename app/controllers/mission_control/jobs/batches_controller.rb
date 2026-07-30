@@ -5,7 +5,7 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
   helper_method :jobs_status
 
   def index
-    @batches = MissionControl::Jobs::Current.server.batches
+    @batches_page = MissionControl::Jobs::Page.new(MissionControl::Jobs::Current.server.batches, page: params[:page].to_i)
   end
 
   def show
@@ -13,7 +13,8 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
   end
 
   private
-    JOB_STATUSES = %w[ pending failed finished ]
+    JOB_STATUSES = %w[ pending failed in_progress blocked scheduled finished ]
+    UNFINISHED_JOB_STATUSES = %i[ pending in_progress blocked scheduled ]
 
     def ensure_supported_batches
       unless batches_supported?
@@ -33,7 +34,11 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
       elsif @batch.finished?
         "finished"
       else
-        "pending"
+        default_unfinished_jobs_status
       end
+    end
+
+    def default_unfinished_jobs_status
+      UNFINISHED_JOB_STATUSES.find { |status| @batch.public_send("#{status}_jobs").positive? }&.to_s || "pending"
     end
 end

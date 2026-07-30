@@ -59,8 +59,8 @@ module MissionControl::Jobs::Adapter
     false
   end
 
-  # Returns an array with the list of batches. Each batch is represented as a hash
-  # with these attributes:
+  # Returns an array with the requested page of batches, newest first, honoring
+  # +offset+ and +limit+. Each batch is represented as a hash with these attributes:
   #   {
   #     id: 123,
   #     description: "Nightly imports",
@@ -68,15 +68,25 @@ module MissionControl::Jobs::Adapter
   #     total_jobs: 100,
   #     completed_jobs: 60,
   #     failed_jobs: 2,
-  #     pending_jobs: 38,
+  #     pending_jobs: 20,
+  #     in_progress_jobs: 10,
+  #     blocked_jobs: 5,
+  #     scheduled_jobs: 3,
   #     progress_percentage: 62.0,
   #     metadata: { user_id: 123 },
   #     enqueued_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
   #     finished_at: nil
   #   }
-  def batches
+  def batches(offset: 0, limit: nil)
     if supports_batches?
       raise_incompatible_adapter_error_from :batches
+    end
+  end
+
+  # Returns the total number of batches
+  def batches_count
+    if supports_batches?
+      raise_incompatible_adapter_error_from :batches_count
     end
   end
 

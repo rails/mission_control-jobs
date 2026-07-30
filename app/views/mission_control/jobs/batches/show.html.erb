@@ -14,5 +14,5 @@
     <%= render "mission_control/jobs/jobs/jobs_page", jobs_page: @jobs_page %>
   <% end %>
 
-  <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: jobs_filter_param %>
+  <%= render "mission_control/jobs/shared/pagination_toolbar", page: @jobs_page, filter_param: jobs_filter_param.merge(jobs_status: jobs_status) %>
 <% end %>

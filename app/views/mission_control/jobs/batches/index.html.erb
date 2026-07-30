@@ -1,18 +1,24 @@
 <% navigation(title: "Batches", section: :batches)  %>
 
-<table class="batches table jobs is-hoverable is-fullwidth">
-  <tbody>
-  <thead>
-  <tr>
-    <th></th>
-    <th>Description</th>
-    <th>Status</th>
-    <th>Progress</th>
-    <th>Jobs</th>
-    <th>Enqueued</th>
-  </tr>
-  </thead>
+<% if @batches_page.empty? %>
+  <%= blank_status_notice "There are no batches" %>
+<% else %>
+  <table class="batches table jobs is-hoverable is-fullwidth">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Progress</th>
+      <th>Jobs</th>
+      <th>Enqueued</th>
+    </tr>
+    </thead>
 
-  <%= render partial: "mission_control/jobs/batches/batch", collection: @batches %>
-  </tbody>
-</table>
+    <tbody>
+      <%= render partial: "mission_control/jobs/batches/batch", collection: @batches_page.records %>
+    </tbody>
+  </table>
+
+  <%= render "mission_control/jobs/shared/pagination_toolbar", page: @batches_page, filter_param: {} %>
+<% end %>

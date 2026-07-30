@@ -73,8 +73,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     dispatch_immediately find_solid_queue_job!(job.job_id, jobs_relation)
   end
 
-  def find_job(job_id, *)
-    if job = SolidQueue::Job.where(active_job_id: job_id).order(:id).last
+  def find_job(job_id, jobs_relation)
+    if job = find_solid_queue_job(job_id, jobs_relation)
       deserialize_and_proxy_solid_queue_job job
     end
   end
@@ -218,7 +218,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def matches_relation_filters?(job)
-          matches_status?(job) && matches_queue_name?(job)
+          matches_status?(job) && matches_queue_name?(job) && matches_batch?(job)
         end
 
         def direct_count
@@ -307,6 +307,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def matches_queue_name?(job)
           queue_name.blank? || job.queue_name == queue_name
+        end
+
+        def matches_batch?(job)
+          batch_id.blank? || job.batch_id.to_s == batch_id.to_s
         end
 
         def solid_queue_status
