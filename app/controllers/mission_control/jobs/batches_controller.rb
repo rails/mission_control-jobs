@@ -18,8 +18,15 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
     UNFINISHED_JOB_STATUSES = %i[ pending in_progress blocked scheduled ]
     BATCHES_STATUSES = %w[ finished unfinished failed ]
 
+    # Default to unfinished: finished/all populations can be multi-million-row,
+    # and only unfinished batches are actionable.
     def batches_status
-      @batches_status ||= params[:batches_status].presence_in(BATCHES_STATUSES)
+      @batches_status ||= begin
+        requested = params.fetch(:batches_status, "unfinished")
+        return if requested == "all"
+
+        requested.presence_in(BATCHES_STATUSES)
+      end
     end
 
     def batches_filter_param

@@ -48,6 +48,44 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_equal 1, queries.size, queries.join("\n\n")
   end
 
+  test "lists finished batches without live job-count subqueries" do
+    batch, = create_batch
+    batch.update!(finished_at: Time.current, completed_jobs: 1, failed_jobs: 0)
+
+    queries = capture_select_queries do
+      batches = ActiveJob::Base.queue_adapter.batches(status: :finished)
+      assert_equal [ batch.id ], batches.pluck(:id)
+      assert_equal [ 0 ], batches.pluck(:pending_jobs)
+      assert_equal [ 1 ], batches.pluck(:completed_jobs)
+    end
+
+    assert_equal 1, queries.size, queries.join("\n\n")
+    assert_no_match(/solid_queue_batch_executions|solid_queue_ready_executions|solid_queue_failed_executions/, queries.first)
+  end
+
+  test "caps batches count like job counts" do
+    3.times { create_batch }
+
+    original_limit = MissionControl::Jobs.internal_query_count_limit
+    MissionControl::Jobs.internal_query_count_limit = 2
+
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.batches_count
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.batches_count(status: :unfinished)
+  ensure
+    MissionControl::Jobs.internal_query_count_limit = original_limit
+  end
+
+  test "returns an exact batches count below the internal limit" do
+    2.times { create_batch }
+
+    original_limit = MissionControl::Jobs.internal_query_count_limit
+    MissionControl::Jobs.internal_query_count_limit = 5
+
+    assert_equal 2, ActiveJob::Base.queue_adapter.batches_count(status: :unfinished)
+  ensure
+    MissionControl::Jobs.internal_query_count_limit = original_limit
+  end
+
   private
     def create_batch
       job = nil

@@ -20,13 +20,15 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
   end
 
   def batches(status: nil, offset: 0, limit: BATCHES_LIMIT)
-    solid_queue_batches.merge(batches_scope(status)).order(id: :desc).offset(offset).limit(limit).collect do |batch|
+    batches_relation(status).merge(batches_scope(status)).order(id: :desc).offset(offset).limit(limit).collect do |batch|
       batch_attributes_from_solid_queue_batch(batch)
     end
   end
 
   def batches_count(status: nil)
-    batches_scope(status).count
+    count_limit = MissionControl::Jobs.internal_query_count_limit + 1
+    limited_count = batches_scope(status).limit(count_limit).count
+    (limited_count == count_limit) ? Float::INFINITY : limited_count
   end
 
   def find_batch(batch_id)
@@ -42,6 +44,15 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       when :unfinished then SolidQueue::Batch.unfinished
       when :failed     then SolidQueue::Batch.failed
       else SolidQueue::Batch.all
+      end
+    end
+
+    # Finished/failed batches already store counters on the row. Skip live job-count
+    # subqueries there so listing millions of historical batches stays cheap.
+    def batches_relation(status)
+      case status
+      when :finished, :failed then SolidQueue::Batch.all
+      else solid_queue_batches
       end
     end
 
@@ -96,13 +107,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       SolidQueue::Batch.select(*selects)
     end
 
+    # CASE keeps Postgres from evaluating the correlated COUNT for finished rows
+    # when an "all" listing mixes finished and unfinished batches.
     def unfinished_jobs_count_select
       batch_executions_table = SolidQueue::BatchExecution.quoted_table_name
       batches_table = SolidQueue::Batch.quoted_table_name
       batch_id = quote_column_name("batch_id")
       id = quote_column_name("id")
+      finished_at = quote_column_name("finished_at")
+      live_count = "SELECT COUNT(*) FROM #{batch_executions_table} WHERE #{batch_executions_table}.#{batch_id} = #{batches_table}.#{id}"
 
-      "(SELECT COUNT(*) FROM #{batch_executions_table} WHERE #{batch_executions_table}.#{batch_id} = #{batches_table}.#{id}) AS #{quote_column_name(batch_count_attribute(:unfinished))}"
+      "(CASE WHEN #{batches_table}.#{finished_at} IS NOT NULL THEN 0 ELSE (#{live_count}) END) AS #{quote_column_name(batch_count_attribute(:unfinished))}"
     end
 
     def job_count_select(status, execution_model)
@@ -112,8 +127,11 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       job_id = quote_column_name("job_id")
       batch_id = quote_column_name("batch_id")
       id = quote_column_name("id")
+      finished_at = quote_column_name("finished_at")
+      finished_value = status == :failed ? "#{batches_table}.#{quote_column_name("failed_jobs")}" : "0"
+      live_count = "SELECT COUNT(*) FROM #{executions_table} INNER JOIN #{jobs_table} ON #{jobs_table}.#{id} = #{executions_table}.#{job_id} WHERE #{jobs_table}.#{batch_id} = #{batches_table}.#{id}"
 
-      "(SELECT COUNT(*) FROM #{executions_table} INNER JOIN #{jobs_table} ON #{jobs_table}.#{id} = #{executions_table}.#{job_id} WHERE #{jobs_table}.#{batch_id} = #{batches_table}.#{id}) AS #{quote_column_name(batch_count_attribute(status))}"
+      "(CASE WHEN #{batches_table}.#{finished_at} IS NOT NULL THEN #{finished_value} ELSE (#{live_count}) END) AS #{quote_column_name(batch_count_attribute(status))}"
     end
 
     def job_counts_from_solid_queue_batch(batch)

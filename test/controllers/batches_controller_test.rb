@@ -25,6 +25,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.batch", 1
     assert_select "td", "Nightly imports"
     assert_select "span.tag", "enqueued"
+    assert_select "li.is-active a", "Unfinished"
   end
 
   test "batch list is paginated" do
@@ -64,6 +65,10 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "td", "Went wrong"
 
     get mission_control_jobs.application_batches_url(@application)
+    assert_select "tr.batch", 1
+    assert_select "td", "Still going"
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "all")
     assert_select "tr.batch", 3
   end
 
@@ -85,8 +90,17 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "div", text: "No finished batches found"
   end
 
-  test "batch list shows an empty notice when there are no batches" do
+  test "batch list defaults to unfinished and shows an empty notice when there are none" do
     get mission_control_jobs.application_batches_url(@application)
+    assert_response :ok
+
+    assert_select "tr.batch", 0
+    assert_select "li.is-active a", "Unfinished"
+    assert_select "div", text: "No unfinished batches found"
+  end
+
+  test "batch list shows an empty notice when there are no batches on the all tab" do
+    get mission_control_jobs.application_batches_url(@application, batches_status: "all")
     assert_response :ok
 
     assert_select "tr.batch", 0
