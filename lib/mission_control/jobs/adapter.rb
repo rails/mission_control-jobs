@@ -60,8 +60,9 @@ module MissionControl::Jobs::Adapter
   end
 
   # Returns an array with the requested page of batches, newest first, honoring
-  # +offset+ and +limit+. +status+ narrows the list to +:finished+ or +:unfinished+
-  # batches when present. Each batch is represented as a hash with these attributes:
+  # +offset+ and +limit+. +status+ narrows the list to +:finished+, +:unfinished+,
+  # or +:failed+ batches when present. Each batch is represented as a hash with
+  # these attributes:
   #   {
   #     id: 123,
   #     description: "Nightly imports",

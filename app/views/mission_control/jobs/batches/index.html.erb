@@ -8,6 +8,7 @@
       <li class="<%= "is-active" if batches_status.nil? %>"><%= link_to "All", application_batches_path(@application) %></li>
       <li class="<%= "is-active" if batches_status == "unfinished" %>"><%= link_to "Unfinished", application_batches_path(@application, batches_status: "unfinished") %></li>
       <li class="<%= "is-active" if batches_status == "finished" %>"><%= link_to "Finished", application_batches_path(@application, batches_status: "finished") %></li>
+      <li class="<%= "is-active" if batches_status == "failed" %>"><%= link_to "Failed", application_batches_path(@application, batches_status: "failed") %></li>
     </ul>
   </div>
 

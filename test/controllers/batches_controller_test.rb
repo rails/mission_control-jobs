@@ -40,25 +40,31 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.batch", 2
   end
 
-  test "batch list filters by finished and unfinished" do
+  test "batch list filters by finished, unfinished, and failed" do
     create_batch(description: "Still going")
     finished = create_batch(description: "All done")
+    failed = create_batch(description: "Went wrong")
     @server.activating do
       SolidQueue::Job.where(batch_id: finished.id).each { |job| finish(job) }
+      SolidQueue::Job.where(batch_id: failed.id).each { |job| fail_job(job, RuntimeError.new("boom")) }
     end
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
     assert_response :ok
-    assert_select "tr.batch", 1
-    assert_select "td", "All done"
+    assert_select "tr.batch", 2 # a failed batch has also finished
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
     assert_response :ok
     assert_select "tr.batch", 1
     assert_select "td", "Still going"
 
+    get mission_control_jobs.application_batches_url(@application, batches_status: "failed")
+    assert_response :ok
+    assert_select "tr.batch", 1
+    assert_select "td", "Went wrong"
+
     get mission_control_jobs.application_batches_url(@application)
-    assert_select "tr.batch", 2
+    assert_select "tr.batch", 3
   end
 
   test "batch list pagination preserves the status filter" do

@@ -16,7 +16,7 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
   private
     JOB_STATUSES = %w[ pending failed in_progress blocked scheduled finished ]
     UNFINISHED_JOB_STATUSES = %i[ pending in_progress blocked scheduled ]
-    BATCHES_STATUSES = %w[ finished unfinished ]
+    BATCHES_STATUSES = %w[ finished unfinished failed ]
 
     def batches_status
       @batches_status ||= params[:batches_status].presence_in(BATCHES_STATUSES)

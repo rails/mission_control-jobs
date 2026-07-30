@@ -40,6 +40,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       case status
       when :finished   then SolidQueue::Batch.finished
       when :unfinished then SolidQueue::Batch.unfinished
+      when :failed     then SolidQueue::Batch.failed
       else SolidQueue::Batch.all
       end
     end
