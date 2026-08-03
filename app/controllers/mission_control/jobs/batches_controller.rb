@@ -1,5 +1,4 @@
 class MissionControl::Jobs::BatchesController < MissionControl::Jobs::ApplicationController
-  JOB_STATUSES = %w[ pending failed in_progress blocked scheduled finished ]
   UNFINISHED_JOB_STATUSES = %i[ pending in_progress blocked scheduled ]
   BATCHES_STATUSES = %w[ finished unfinished failed ]
 
@@ -43,8 +42,8 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
     end
 
     def jobs_status
-      if params[:jobs_status].in?(JOB_STATUSES)
-        params[:jobs_status]
+      if status = params[:jobs_status].presence&.to_sym.presence_in(supported_job_statuses)
+        status.to_s
       elsif @batch.failed?
         "failed"
       elsif @batch.finished?

@@ -65,6 +65,4 @@ Rails.application.configure do
 
   # Silence Solid Queue logging
   config.solid_queue.logger = ActiveSupport::Logger.new(nil)
-
-  config.mission_control.jobs.http_basic_auth_enabled = false
 end
