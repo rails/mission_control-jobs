@@ -8,12 +8,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     SolidQueue.logger = ActiveSupport::Logger.new(nil)
   end
 
-  teardown do
-    SolidQueue::Batch.destroy_all
-  end
-
   test "supports batches only when the Solid Queue batch API is available" do
-    SolidQueue::Batch
     assert ActiveJob::Base.queue_adapter.supports_batches?
 
     SolidQueue.stubs(:const_defined?).with(:Batch, false).returns(false)

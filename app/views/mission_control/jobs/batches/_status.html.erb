@@ -1,7 +1,1 @@
-<% tag_class = case batch.status
-   when :completed then "is-success"
-   when :failed then "is-danger"
-   when :enqueued then "is-info"
-   else "is-light"
-   end %>
-<span class="tag <%= tag_class %>"><%= batch.status %></span>
+<span class="tag <%= modifier_for_batch_status(batch.status) %>"><%= batch.status %></span>

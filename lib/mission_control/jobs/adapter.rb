@@ -55,6 +55,31 @@ module MissionControl::Jobs::Adapter
     end
   end
 
+
+  # Returns an array with the list of workers. Each worker is represented as a hash
+  # with these attributes:
+  #   {
+  #     id: 123,
+  #     name: "worker-name",
+  #     hostname: "hey-default-101",
+  #     last_heartbeat_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
+  #     configuration: { ... }
+  #     raw_data: { ... }
+  #   }
+  def workers
+    if exposes_workers?
+      raise_incompatible_adapter_error_from :workers
+    end
+  end
+
+  # Returns a worker represented by a hash as indicated above
+  def find_worker(worker_id)
+    if exposes_workers?
+      raise_incompatible_adapter_error_from :find_worker
+    end
+  end
+
+
   def supports_batches?
     false
   end
@@ -96,30 +121,6 @@ module MissionControl::Jobs::Adapter
   def find_batch(batch_id)
     if supports_batches?
       raise_incompatible_adapter_error_from :find_batch
-    end
-  end
-
-
-  # Returns an array with the list of workers. Each worker is represented as a hash
-  # with these attributes:
-  #   {
-  #     id: 123,
-  #     name: "worker-name",
-  #     hostname: "hey-default-101",
-  #     last_heartbeat_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
-  #     configuration: { ... }
-  #     raw_data: { ... }
-  #   }
-  def workers
-    if exposes_workers?
-      raise_incompatible_adapter_error_from :workers
-    end
-  end
-
-  # Returns a worker represented by a hash as indicated above
-  def find_worker(worker_id)
-    if exposes_workers?
-      raise_incompatible_adapter_error_from :find_worker
     end
   end
 

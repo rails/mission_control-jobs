@@ -1,3 +1,8 @@
+# A relation of batches.
+#
+# Relations are enumerable, so you can use +Enumerable+ methods on them.
+# Notice however that using these methods will imply loading all the relation
+# in memory, which could introduce performance concerns.
 class MissionControl::Jobs::BatchesRelation
   include Enumerable
 

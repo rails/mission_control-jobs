@@ -9,13 +9,6 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     def perform(*); end
   end
 
-  teardown do
-    @server.activating do
-      SolidQueue::Job.destroy_all
-      SolidQueue::Batch.destroy_all
-    end
-  end
-
   test "get batch list" do
     create_batch(description: "Nightly imports")
 
@@ -45,10 +38,8 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     create_batch(description: "Still going")
     finished = create_batch(description: "All done")
     failed = create_batch(description: "Went wrong")
-    @server.activating do
-      SolidQueue::Job.where(batch_id: finished.id).each { |job| finish(job) }
-      SolidQueue::Job.where(batch_id: failed.id).each { |job| fail_job(job, RuntimeError.new("boom")) }
-    end
+    SolidQueue::Job.where(batch_id: finished.id).each { |job| finish(job) }
+    SolidQueue::Job.where(batch_id: failed.id).each { |job| fail_job(job, RuntimeError.new("boom")) }
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
     assert_response :ok
@@ -150,9 +141,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
   test "batch progress reflects finished jobs" do
     batch = create_batch(jobs: 4)
-    @server.activating do
-      finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
-    end
+    finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
 
     get mission_control_jobs.application_batch_url(@application, batch.id)
     assert_response :ok
@@ -164,11 +153,9 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
   test "failed batch shows its failed jobs with error details" do
     batch = create_batch(description: "Doomed", jobs: 2)
-    @server.activating do
-      jobs = SolidQueue::Job.where(batch_id: batch.id).order(:id).to_a
-      fail_job jobs.first, RuntimeError.new("boom went the job")
-      finish jobs.second
-    end
+    jobs = SolidQueue::Job.where(batch_id: batch.id).order(:id).to_a
+    fail_job jobs.first, RuntimeError.new("boom went the job")
+    finish jobs.second
 
     get mission_control_jobs.application_batch_url(@application, batch.id)
     assert_response :ok
@@ -182,9 +169,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
   test "jobs_status param switches the job list" do
     batch = create_batch(jobs: 3)
-    @server.activating do
-      finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
-    end
+    finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
 
     get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
     assert_response :ok
@@ -195,9 +180,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
   test "pagination preserves the selected jobs status" do
     batch = create_batch(jobs: 3)
-    @server.activating do
-      SolidQueue::Job.where(batch_id: batch.id).find_each { |job| finish(job) }
-    end
+    SolidQueue::Job.where(batch_id: batch.id).find_each { |job| finish(job) }
 
     stub_const(MissionControl::Jobs::Page, :DEFAULT_PAGE_SIZE, 2) do
       get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
@@ -225,38 +208,34 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
   private
     def create_batch(description: nil, jobs: 1, wait: nil)
-      @server.activating do
-        SolidQueue::Batch.enqueue(description: description) do
-          jobs.times do |i|
-            wait ? BatchedJob.set(wait: wait).perform_later(i) : BatchedJob.perform_later(i)
-          end
+      SolidQueue::Batch.enqueue(description: description) do
+        jobs.times do |i|
+          wait ? BatchedJob.set(wait: wait).perform_later(i) : BatchedJob.perform_later(i)
         end
       end
     end
 
     def create_batch_with_unfinished_statuses
-      @server.activating do
-        batch = SolidQueue::Batch.enqueue do
-          3.times { |i| BatchedJob.perform_later(i) }
-          BatchedJob.set(wait: 1.hour).perform_later(3)
-        end
-
-        claimed_job_id, blocked_job_id = SolidQueue::ReadyExecution.where(job_id: batch.jobs.ids).order(:job_id).limit(2).pluck(:job_id)
-        SolidQueue::ReadyExecution.where(job_id: [ claimed_job_id, blocked_job_id ]).delete_all
-
-        SolidQueue::ClaimedExecution.insert_all!([ { job_id: claimed_job_id, process_id: nil, created_at: Time.current } ])
-        SolidQueue::Job.where(id: blocked_job_id).update_all(concurrency_key: "batch-key")
-        SolidQueue::BlockedExecution.insert_all!([ {
-          job_id: blocked_job_id,
-          queue_name: "default",
-          priority: 0,
-          concurrency_key: "batch-key",
-          expires_at: 1.hour.from_now,
-          created_at: Time.current
-        } ])
-
-        batch
+      batch = SolidQueue::Batch.enqueue do
+        3.times { |i| BatchedJob.perform_later(i) }
+        BatchedJob.set(wait: 1.hour).perform_later(3)
       end
+
+      claimed_job_id, blocked_job_id = SolidQueue::ReadyExecution.where(job_id: batch.jobs.ids).order(:job_id).limit(2).pluck(:job_id)
+      SolidQueue::ReadyExecution.where(job_id: [ claimed_job_id, blocked_job_id ]).delete_all
+
+      SolidQueue::ClaimedExecution.insert_all!([ { job_id: claimed_job_id, process_id: nil, created_at: Time.current } ])
+      SolidQueue::Job.where(id: blocked_job_id).update_all(concurrency_key: "batch-key")
+      SolidQueue::BlockedExecution.insert_all!([ {
+        job_id: blocked_job_id,
+        queue_name: "default",
+        priority: 0,
+        concurrency_key: "batch-key",
+        expires_at: 1.hour.from_now,
+        created_at: Time.current
+      } ])
+
+      batch
     end
 
     # Mirror the real worker flow: the execution is claimed away before the job resolves

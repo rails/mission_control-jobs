@@ -20,4 +20,13 @@ module MissionControl::Jobs::InterfaceHelper
     else "is-primary is-light"
     end
   end
+
+  def modifier_for_batch_status(status)
+    case status.to_s
+    when "completed" then "is-success"
+    when "failed"    then "is-danger"
+    when "enqueued"  then "is-info"
+    else "is-light"
+    end
+  end
 end
