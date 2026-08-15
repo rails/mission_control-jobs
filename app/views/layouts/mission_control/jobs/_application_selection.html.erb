@@ -1,8 +1,12 @@
 <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="navbar-menu is-active mb-4">
     <div class="navbar-start">
-      <% if defined?(main_app.root_path) %>
-        <%= link_to "Back to main app", main_app.root_path %>
+      <%
+        back_to_main_app_path = MissionControl::Jobs.back_to_main_app_path
+        back_to_main_app_path = main_app.root_path if back_to_main_app_path.nil? && defined?(main_app.root_path)
+      %>
+      <% if back_to_main_app_path %>
+        <%= link_to "Back to main app", back_to_main_app_path %>
       <% end %>
     </div>
 

@@ -34,6 +34,8 @@ module MissionControl
 
     mattr_accessor :filter_arguments, default: []
 
+    mattr_accessor :back_to_main_app_path
+
     def self.job_arguments_filter
       MissionControl::Jobs::ArgumentsFilter.new(filter_arguments)
     end

@@ -115,6 +115,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
 - `backtrace_cleaner`: a backtrace cleaner used for optionally filtering backtraces on the Failed Jobs detail page. Defaults to `Rails::BacktraceCleaner.new`. See the [Advanced configuration](#advanced-configuration) section for how to configure/override this setting on a per application/server basis.
 - `filter_arguments`: an array of strings representing the job argument keys you want to filter out in the UI. This is useful for hiding sensitive user data. Currently, only root-level hash keys are supported.
+- `back_to_main_app_path`: the path used by the "Back to main app" link in the navbar. Defaults to `nil`, which falls back to the host app's `main_app.root_path`. Set it to a specific path (e.g. `"/admin"`) if you mount Mission Control Jobs under an admin namespace and want the link to go back there instead of the top-level root. Set it to `false` to hide the link entirely.
 
 This library extends Active Job with a querying interface and the following setting:
 - `config.active_job.default_page_size`: the internal batch size that Active Job will use when sending queries to the underlying adapter and the batch size for the bulk operations defined above—defaults to `1000`.
