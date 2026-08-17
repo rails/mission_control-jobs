@@ -1,5 +1,7 @@
 MissionControl::Jobs::Engine.routes.draw do
   resources :applications, only: [] do
+    resource :dashboard, only: :show
+
     resources :queues, only: [ :index, :show ] do
       scope module: :queues do
         resource :pause, only: [ :create, :destroy ]
@@ -24,6 +26,7 @@ MissionControl::Jobs::Engine.routes.draw do
   end
 
   # Allow referencing urls without providing an application_id. It will default to the first one.
+  resource :dashboard, only: :show
   resources :queues, only: [ :index, :show ]
 
   resources :jobs, only: :show

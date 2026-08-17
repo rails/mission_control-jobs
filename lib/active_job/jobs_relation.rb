@@ -107,6 +107,15 @@ class ActiveJob::JobsRelation
   alias length count
   alias size count
 
+  # Returns the number of jobs for each requested status.
+  #
+  # Adapters can implement this as a single aggregate operation, which is more
+  # efficient than issuing one independent +count+ query per status.
+  def counts_by_status(statuses: STATUSES)
+    statuses = statuses.map(&:to_sym) & STATUSES & queue_adapter.supported_job_statuses
+    queue_adapter.jobs_counts(self, statuses)
+  end
+
   def empty?
     count == 0
   end

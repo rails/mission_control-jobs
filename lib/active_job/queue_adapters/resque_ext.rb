@@ -57,6 +57,22 @@ module ActiveJob::QueueAdapters::ResqueExt
     resque_jobs_for(jobs_relation).count
   end
 
+  def jobs_counts(jobs_relation, statuses)
+    if !jobs_relation.paginated? && jobs_relation.queue_name.blank? && jobs_relation.job_class_name.blank?
+      pending_counts = []
+      failed_count = nil
+
+      redis.multi do |multi|
+        queue_names.each { |queue_name| pending_counts << multi.llen("queue:#{queue_name}") } if statuses.include?(:pending)
+        failed_count = multi.llen("failed") if statuses.include?(:failed)
+      end
+
+      { pending: pending_counts.sum(&:value), failed: failed_count&.value.to_i }.slice(*statuses)
+    else
+      super
+    end
+  end
+
   def fetch_jobs(jobs_relation)
     resque_jobs_for(jobs_relation).all
   end

@@ -121,6 +121,13 @@ module MissionControl::Jobs::Adapter
     raise_incompatible_adapter_error_from :jobs_count
   end
 
+  # Returns a hash with the number of jobs for each requested status. Adapters
+  # should override this when their backend supports a more efficient aggregate
+  # operation.
+  def jobs_counts(jobs_relation, statuses)
+    statuses.index_with { |status| jobs_count(jobs_relation.with_status(status)) }
+  end
+
   def fetch_jobs(jobs_relation)
     raise_incompatible_adapter_error_from :fetch_jobs
   end

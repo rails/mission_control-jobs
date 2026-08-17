@@ -60,6 +60,19 @@ module ActiveJob::QueueAdapters::AdapterTesting::CountJobs
     assert_equal 3, ActiveJob.jobs.failed.count
   end
 
+  test "count jobs grouped by status" do
+    2.times { DummyJob.perform_later }
+    3.times { FailingJob.perform_later }
+    perform_enqueued_jobs
+    4.times { DummyJob.perform_later }
+
+    counts = ActiveJob.jobs.counts_by_status(statuses: %i[ pending failed ])
+
+    assert_equal 4, counts[:pending]
+    assert_equal 3, counts[:failed]
+    assert_equal ActiveJob::Base.queue_adapter.supported_job_statuses.sort, ActiveJob.jobs.counts_by_status.keys.sort
+  end
+
   test "count failed jobs of a given class" do
     5.times { FailingJob.perform_later }
     10.times { FailingReloadedJob.perform_later }

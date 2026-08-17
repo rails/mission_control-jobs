@@ -1,0 +1,62 @@
+<% navigation(title: "Dashboard", section: :dashboard) %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "mission_control/jobs/dashboard", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="dashboard"
+  data-controller="dashboard"
+  data-dashboard-url-value="<%= application_dashboard_path(@application, format: :json) %>"
+  data-dashboard-interval-value="5000"
+  data-dashboard-initial-snapshot-value="<%= @snapshot.to_json %>">
+  <div class="dashboard-heading">
+    <div>
+      <h1 class="title is-4 mb-2">Jobs overview</h1>
+      <p class="subtitle is-6 has-text-grey">Live counts reported by the active queue adapter</p>
+    </div>
+
+    <div class="dashboard-connection" data-dashboard-target="connection">
+      <span class="dashboard-connection-dot" aria-hidden="true"></span>
+      <span data-dashboard-target="connectionLabel">Live</span>
+    </div>
+  </div>
+
+  <div class="dashboard-metrics">
+    <% @dashboard.statuses.each do |status| %>
+      <% count = @snapshot[:counts].fetch(status) %>
+      <%= link_to application_jobs_path(@application, status), class: "dashboard-metric", data: { status: status } do %>
+        <span class="dashboard-metric-label"><%= status.to_s.titleize %></span>
+        <strong class="dashboard-metric-value" data-dashboard-target="count" data-status="<%= status %>">
+          <%= count[:exact] ? number_with_delimiter(count[:value]) : "Many" %>
+        </strong>
+      <% end %>
+    <% end %>
+  </div>
+
+  <section class="dashboard-chart-panel" aria-labelledby="dashboard-chart-title">
+    <div class="dashboard-chart-heading">
+      <div>
+        <h2 id="dashboard-chart-title" class="title is-5 mb-1">Queue activity</h2>
+        <p class="is-size-7 has-text-grey">Counts sampled every 5 seconds for this browser session</p>
+      </div>
+      <time class="is-size-7 has-text-grey" data-dashboard-target="updatedAt"></time>
+    </div>
+
+    <div class="dashboard-legend" aria-hidden="true">
+      <% @dashboard.statuses.each do |status| %>
+        <span class="dashboard-legend-item" data-status="<%= status %>">
+          <span class="dashboard-legend-swatch"></span>
+          <%= status.to_s.titleize %>
+        </span>
+      <% end %>
+    </div>
+
+    <div class="dashboard-chart-frame">
+      <canvas
+        class="dashboard-chart"
+        data-dashboard-target="chart"
+        role="img"
+        aria-label="A live chart of job counts by status">
+      </canvas>
+    </div>
+  </section>
+</div>

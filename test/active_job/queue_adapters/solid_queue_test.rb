@@ -8,6 +8,21 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     SolidQueue.logger = ActiveSupport::Logger.new(nil)
   end
 
+  test "counts all statuses in one storage query" do
+    ActiveJob.jobs.counts_by_status(statuses: ActiveJob::JobsRelation::STATUSES)
+    queries = []
+
+    callback = lambda do |_name, _started, _finished, _unique_id, payload|
+      queries << payload[:sql] unless payload[:name] == "SCHEMA"
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      ActiveJob.jobs.counts_by_status(statuses: ActiveJob::JobsRelation::STATUSES)
+    end
+
+    assert_equal 1, queries.count { |query| query.match?(/\ASELECT/) }
+  end
+
   private
     def queue_adapter
       :solid_queue
