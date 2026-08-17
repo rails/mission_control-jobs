@@ -47,6 +47,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     SolidQueueJobs.new(jobs_relation).count
   end
 
+  def jobs_counts(jobs_relation, statuses)
+    if jobs_relation_unfiltered?(jobs_relation)
+      SolidQueueJobs.counts(statuses)
+    else
+      super
+    end
+  end
+
   def fetch_jobs(jobs_relation)
     SolidQueueJobs.new(jobs_relation).jobs.map do |job|
       deserialize_and_proxy_solid_queue_job(job, jobs_relation.status)
@@ -80,6 +88,12 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   private
+    def jobs_relation_unfiltered?(jobs_relation)
+      !jobs_relation.paginated? && %i[ queue_name job_class_name worker_id recurring_task_id finished_at ].none? do |filter|
+        jobs_relation.public_send(filter).present?
+      end
+    end
+
     def find_queue_by_name(queue_name)
       SolidQueue::Queue.find_by_name(queue_name)
     end
@@ -149,6 +163,39 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         scheduled: :scheduled,
         finished: :finished
       }
+
+      class << self
+        def counts(statuses)
+          return {} if statuses.empty?
+
+          count_limit = MissionControl::Jobs.internal_query_count_limit + 1
+          connection = SolidQueue::Job.connection
+
+          columns = statuses.map do |status|
+            relation = relation_for_status(status).limit(count_limit).select("1")
+            alias_name = connection.quote_column_name(status)
+            subquery_name = connection.quote_table_name("dashboard_#{status}")
+
+            "(SELECT COUNT(*) FROM (#{relation.to_sql}) #{subquery_name}) AS #{alias_name}"
+          end
+
+          row = connection.select_one("SELECT #{columns.join(", ")}")
+
+          statuses.index_with do |status|
+            count = row.fetch(status.to_s).to_i
+            count == count_limit ? Float::INFINITY : count
+          end
+        end
+
+        private
+          def relation_for_status(status)
+            if status == :finished
+              SolidQueue::Job.finished
+            else
+              "SolidQueue::#{STATUS_MAP.fetch(status).capitalize}Execution".constantize.all
+            end
+          end
+      end
 
       def initialize(jobs_relation)
         @jobs_relation = jobs_relation
