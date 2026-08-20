@@ -81,6 +81,20 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "div", text: "No finished batches found"
   end
 
+  test "a batch enqueued with no jobs finishes right away and renders with zero totals" do
+    SolidQueue::Batch.enqueue(description: "No work") { }
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
+    assert_response :ok
+    assert_select "tr.batch", 1
+    assert_select "td", "No work"
+    assert_select "span.tag", "completed"
+
+    get mission_control_jobs.application_batch_url(@application, SolidQueue::Batch.last.id)
+    assert_response :ok
+    assert_select "td", /of 0 total/
+  end
+
   test "batch list defaults to unfinished and shows an empty notice when there are none" do
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
