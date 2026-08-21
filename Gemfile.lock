@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/jpcamara/solid_queue.git
-  revision: cbb178f3942b71e42a98ece7f3ff989ff40925b0
+  revision: b6288c601b3dff7b96fc40235a6189aaa63e84c8
   branch: batch-poc
   specs:
     solid_queue (1.6.0)
