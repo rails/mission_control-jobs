@@ -5,8 +5,5 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 gemspec
 
 gem "capybara", github: "teamcapybara/capybara"
-# Use `path: "../solid_queue"` when co-developing locally
-gem "solid_queue", github: "jpcamara/solid_queue", branch: "batch-poc"
-
 # minitest 6 is incompatible with railties 7.2 line filtering
 gem "minitest", "~> 5.25"
