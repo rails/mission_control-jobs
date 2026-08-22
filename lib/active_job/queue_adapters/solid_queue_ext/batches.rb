@@ -65,7 +65,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
         job_counts = job_counts.transform_values { 0 }.merge(failed: batch[:failed_jobs])
         unfinished_jobs = 0
       else
-        completed_jobs = batch.total_jobs - unfinished_jobs - job_counts[:failed]
+        # +total_jobs+ counts logical jobs while the tracking rows count attempts, so a
+        # retry overlapping its previous attempt can outnumber them. Clamp like
+        # +SolidQueue::Batch::Status+ does.
+        completed_jobs = [ batch.total_jobs - unfinished_jobs - job_counts[:failed], 0 ].max
       end
 
       {
@@ -149,7 +152,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     def progress_percentage(total_jobs, unfinished_jobs)
       return 0 if total_jobs == 0
 
-      ((total_jobs - unfinished_jobs) * 100.0 / total_jobs).round(2)
+      ([ total_jobs - unfinished_jobs, 0 ].max * 100.0 / total_jobs).round(2)
     end
 
     def job_execution_models

@@ -58,6 +58,25 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_no_match(/solid_queue_batch_executions|solid_queue_ready_executions|solid_queue_failed_executions/, queries.first)
   end
 
+  test "never reports negative counts while a retry overlaps its previous attempt" do
+    batch, job = create_batch
+    previous_attempt = SolidQueue::Job.find_by(active_job_id: job.job_id)
+
+    # A retry keeps its Active Job id, so Solid Queue doesn't count it as a new logical
+    # job, but it gets its own tracking row while the previous attempt still has one.
+    retry_attributes = previous_attempt.attributes.except("id", "created_at", "updated_at")
+    SolidQueue::Job.create!(retry_attributes.merge("arguments" => previous_attempt.arguments.merge("executions" => 1)))
+
+    assert_equal 1, batch.reload.total_jobs
+    assert_equal 2, SolidQueue::BatchExecution.where(batch_id: batch.id).count
+
+    attributes = ActiveJob::Base.queue_adapter.batches(status: :unfinished).sole
+
+    assert_equal 0, attributes[:completed_jobs]
+    assert_equal 0.0, attributes[:progress_percentage]
+    assert_includes 0..100, attributes[:progress_percentage]
+  end
+
   test "caps batches count like job counts" do
     3.times { create_batch }
 
@@ -86,16 +105,6 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
       job = nil
       batch = SolidQueue::Batch.enqueue { job = DummyJob.perform_later }
       [ batch, job ]
-    end
-
-    def capture_select_queries
-      queries = []
-      subscriber = lambda do |*, payload|
-        queries << payload[:sql] if payload[:sql].match?(/\ASELECT\b/i)
-      end
-
-      ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") { yield }
-      queries
     end
 
     def queue_adapter

@@ -37,8 +37,10 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
       requested.presence_in(BATCHES_STATUSES) unless requested == "all"
     end
 
+    # +batches_status+ is nil for the "all" population so the adapter query stays
+    # unfiltered, but the sentinel has to survive pagination links.
     def batches_filter_param
-      { batches_status: batches_status }.compact
+      { batches_status: batches_status || "all" }
     end
 
     def jobs_status

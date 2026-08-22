@@ -72,6 +72,49 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "nav[aria-label=pagination] a[href*=?]", "batches_status=unfinished"
   end
 
+  test "batch list pagination preserves the all population" do
+    12.times { |i| create_batch(description: "Batch #{i}") }
+    SolidQueue::Batch.order(:id).limit(3).each { |batch| SolidQueue::Job.where(batch_id: batch.id).each { |job| finish(job) } }
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "all")
+    assert_response :ok
+    assert_select "tr.batch", 10
+
+    next_page_url = css_select("a.pagination-next").find { |link| link.text == "Next page" }["href"]
+    assert_includes next_page_url, "batches_status=all"
+
+    get next_page_url
+    assert_response :ok
+
+    assert_select "li.is-active a", "All"
+    assert_select "tr.batch", 2 # all 12 batches, not the 9 unfinished ones the default population would show
+  end
+
+  test "batch list counts the batches once per request" do
+    12.times { create_batch }
+
+    queries = capture_select_queries do
+      get mission_control_jobs.application_batches_url(@application)
+    end
+    assert_response :ok
+
+    count_queries = queries.grep(/\ASELECT COUNT\(\*\) FROM .*solid_queue_batches/i)
+    assert_equal 1, count_queries.size, count_queries.join("\n\n")
+  end
+
+  test "batch list hides the jump-to-last link when the count is capped" do
+    12.times { create_batch }
+
+    with_internal_query_count_limit(5) do
+      get mission_control_jobs.application_batches_url(@application)
+      assert_response :ok
+
+      assert_select "nav[aria-label=pagination]", /1 \/ \.\.\./
+      assert_select "a.pagination-next", text: "↠", count: 0
+      assert_select "a.pagination-next", text: "Next page", count: 1
+    end
+  end
+
   test "batch list shows an empty notice for a status filter without matches" do
     create_batch(description: "Still going")
 
@@ -281,5 +324,13 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     def fail_job(job, error)
       SolidQueue::ReadyExecution.where(job_id: job.id).destroy_all
       job.failed_with(error)
+    end
+
+    def with_internal_query_count_limit(limit)
+      previous_limit = MissionControl::Jobs.internal_query_count_limit
+      MissionControl::Jobs.internal_query_count_limit = limit
+      yield
+    ensure
+      MissionControl::Jobs.internal_query_count_limit = previous_limit
     end
 end

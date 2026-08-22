@@ -25,7 +25,7 @@ Dir[File.join(__dir__, "active_job", "queue_adapters", "adapter_testing", "*.rb"
 ENV["FORK_PER_JOB"] = "false" # Disable forking when dispatching resque jobs
 
 class ActiveSupport::TestCase
-  include JobsHelper, JobQueuesHelper, ThreadHelper
+  include JobsHelper, JobQueuesHelper, QueriesHelper, ThreadHelper
 
   setup do
     @original_applications = MissionControl::Jobs.applications
@@ -74,6 +74,11 @@ class ActiveSupport::TestCase
 end
 
 class ActionDispatch::IntegrationTest
+  ASYNC_TIMEOUT = 10.seconds
+  ASYNC_POLLING_INTERVAL = 0.01
+  SOLID_QUEUE_MODEL_NAMES = %w[ Batch BatchExecution BlockedExecution ClaimedExecution FailedExecution
+    Job Pause Process ReadyExecution RecurringExecution RecurringTask ScheduledExecution Semaphore ]
+
   # Integration tests just use Solid Queue for now
   setup do
     MissionControl::Jobs.applications.add("integration-tests", { solid_queue: queue_adapter_for_test })
@@ -100,8 +105,12 @@ class ActionDispatch::IntegrationTest
       count.times { |i| SolidQueue::Process.register(kind: "Worker", pid: i, name: "worker-#{i}") }
     end
 
+    # Solid Queue boots processes asynchronously, so the worker isn't registered when
+    # +start+ returns. Wait for it before giving the jobs the requested processing time.
     def perform_enqueued_jobs_async(wait: 1.second)
+      preload_solid_queue_schemas
       @worker.start
+      wait_for_worker_registration
       sleep(wait)
 
       yield if block_given?
@@ -114,5 +123,35 @@ class ActionDispatch::IntegrationTest
 
       yield if block_given?
       @scheduler.stop
+    end
+
+    # Transactional tests pin a single connection that the worker thread shares. Loading a
+    # model's schema holds a class-level lock while it queries, so a model first touched
+    # from the test thread while the worker holds that connection deadlocks the two. Warming
+    # the schemas up before any worker starts keeps both threads off that path.
+    def preload_solid_queue_schemas
+      SOLID_QUEUE_MODEL_NAMES.each { |name| SolidQueue.const_get(name).load_schema }
+    end
+
+    def wait_for_worker_registration
+      wait_until("the worker to register") { @worker.process_id.present? }
+    end
+
+    def wait_for_claimed_executions(count)
+      wait_until("#{count} claimed executions") { SolidQueue::ClaimedExecution.count >= count }
+    end
+
+    def wait_until(condition, timeout: ASYNC_TIMEOUT)
+      deadline = monotonic_now + timeout
+
+      until yield
+        raise "Timed out after #{timeout.inspect} waiting for #{condition}" if monotonic_now > deadline
+
+        sleep ASYNC_POLLING_INTERVAL
+      end
+    end
+
+    def monotonic_now
+      ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
     end
 end
