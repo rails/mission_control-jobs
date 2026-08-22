@@ -211,6 +211,26 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     end
   end
 
+  test "batched job's show page links back to its batch" do
+    batch = create_batch(description: "Nightly imports")
+    job = SolidQueue::Job.where(batch_id: batch.id).sole
+
+    get mission_control_jobs.application_job_url(@application, job.active_job_id)
+    assert_response :ok
+
+    assert_select "th", "Part of"
+    assert_select "td a[href=?]", mission_control_jobs.application_batch_path(@application, batch.id), text: "batch #{batch.id}"
+  end
+
+  test "unbatched job's show page has no batch link" do
+    active_job = BatchedJob.perform_later(1)
+
+    get mission_control_jobs.application_job_url(@application, active_job.job_id)
+    assert_response :ok
+
+    assert_select "th", text: "Part of", count: 0
+  end
+
   test "redirect to batches list when batch doesn't exist" do
     get mission_control_jobs.application_batch_url(@application, 987654)
     assert_redirected_to mission_control_jobs.application_batches_url(@application)

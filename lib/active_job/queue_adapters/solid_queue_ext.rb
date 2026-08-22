@@ -107,6 +107,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.worker_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
         job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
         job.scheduled_at = solid_queue_job.scheduled_at
+        job.batch_id = solid_queue_job.batch_id if solid_queue_job.respond_to?(:batch_id)
       end
     end
 

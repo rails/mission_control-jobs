@@ -9,6 +9,9 @@ class ActiveJob::JobProxy < ActiveJob::Base
   attr_reader :job_class_name
   # Raw data with the sensitive user data filtered out.
   attr_accessor :filtered_raw_data
+  # Defined here rather than on ActiveJob::Base so it can't clash with
+  # adapters that put their own batch_id on jobs, like Solid Queue.
+  attr_accessor :batch_id
 
   def initialize(job_data)
     super
