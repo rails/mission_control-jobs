@@ -1,5 +1,4 @@
 module ActiveJob::QueueAdapters::SolidQueueExt::Batches
-  BATCHES_LIMIT = 100
   BATCH_COLUMNS = %w[ id description metadata total_jobs completed_jobs failed_jobs enqueued_at finished_at failed_at ]
   BATCH_EXECUTION_COLUMNS = %w[ job_id batch_id ]
   JOB_COLUMNS = %w[ id batch_id ]
@@ -15,19 +14,20 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     solid_queue_batch_models_available? &&
       SolidQueue::Batch.method_defined?(:status) &&
       solid_queue_batch_schema_available?
-  rescue ActiveRecord::ActiveRecordError, NameError
-    false
   end
 
-  def batches(status: nil, offset: 0, limit: BATCHES_LIMIT)
-    batches_relation(status).merge(batches_scope(status)).order(id: :desc).offset(offset).limit(limit).collect do |batch|
-      batch_attributes_from_solid_queue_batch(batch)
-    end
+  def fetch_batches(batches_relation)
+    status = batches_relation.status
+
+    batches_for_listing(status).merge(batches_scope(status)).order(id: :desc)
+      .offset(batches_relation.offset_value).limit(batches_relation.limit_value).collect do |batch|
+        batch_attributes_from_solid_queue_batch(batch)
+      end
   end
 
-  def batches_count(status: nil)
+  def count_batches(batches_relation)
     count_limit = MissionControl::Jobs.internal_query_count_limit + 1
-    limited_count = batches_scope(status).limit(count_limit).count
+    limited_count = batches_scope(batches_relation.status).limit(count_limit).count
     (limited_count == count_limit) ? Float::INFINITY : limited_count
   end
 
@@ -49,7 +49,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
 
     # Finished/failed batches already store counters on the row. Skip live job-count
     # subqueries there so listing millions of historical batches stays cheap.
-    def batches_relation(status)
+    def batches_for_listing(status)
       case status
       when :finished, :failed then SolidQueue::Batch.all
       else solid_queue_batches
