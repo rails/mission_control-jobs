@@ -16,8 +16,8 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_not ActiveJob::Base.queue_adapter.supports_batches?
   end
 
-  test "supports batches only when the Solid Queue batch schema is installed" do
-    SolidQueue::Batch.stubs(:table_exists?).returns(false)
+  test "supports batches only when the Solid Queue batch migration has been run" do
+    SolidQueue::Batch.stubs(:migrated?).returns(false)
 
     assert_not ActiveJob::Base.queue_adapter.supports_batches?
   end
@@ -36,7 +36,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     3.times { create_batch }
 
     queries = capture_select_queries do
-      batches = ActiveJob::Base.queue_adapter.batches
+      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
       assert_equal [ 1, 1, 1 ], batches.pluck(:pending_jobs)
     end
 
@@ -48,7 +48,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     batch.update!(finished_at: Time.current, completed_jobs: 1, failed_jobs: 0)
 
     queries = capture_select_queries do
-      batches = ActiveJob::Base.queue_adapter.batches(status: :finished)
+      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation(status: :finished))
       assert_equal [ batch.id ], batches.pluck(:id)
       assert_equal [ 0 ], batches.pluck(:pending_jobs)
       assert_equal [ 1 ], batches.pluck(:completed_jobs)
@@ -70,7 +70,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_equal 1, batch.reload.total_jobs
     assert_equal 2, SolidQueue::BatchExecution.where(batch_id: batch.id).count
 
-    attributes = ActiveJob::Base.queue_adapter.batches(status: :unfinished).sole
+    attributes = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation(status: :unfinished)).sole
 
     assert_equal 0, attributes[:completed_jobs]
     assert_equal 0.0, attributes[:progress_percentage]
@@ -83,8 +83,8 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     original_limit = MissionControl::Jobs.internal_query_count_limit
     MissionControl::Jobs.internal_query_count_limit = 2
 
-    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.batches_count
-    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.batches_count(status: :unfinished)
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.count_batches(batches_relation)
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :unfinished))
   ensure
     MissionControl::Jobs.internal_query_count_limit = original_limit
   end
@@ -95,12 +95,16 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     original_limit = MissionControl::Jobs.internal_query_count_limit
     MissionControl::Jobs.internal_query_count_limit = 5
 
-    assert_equal 2, ActiveJob::Base.queue_adapter.batches_count(status: :unfinished)
+    assert_equal 2, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :unfinished))
   ensure
     MissionControl::Jobs.internal_query_count_limit = original_limit
   end
 
   private
+    def batches_relation(status: nil)
+      MissionControl::Jobs::BatchesRelation.new(queue_adapter: ActiveJob::Base.queue_adapter, status: status)
+    end
+
     def create_batch
       job = nil
       batch = SolidQueue::Batch.enqueue { job = DummyJob.perform_later }

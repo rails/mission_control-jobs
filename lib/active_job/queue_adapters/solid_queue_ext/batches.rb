@@ -1,19 +1,8 @@
 module ActiveJob::QueueAdapters::SolidQueueExt::Batches
-  BATCH_COLUMNS = %w[ id description metadata total_jobs completed_jobs failed_jobs enqueued_at finished_at failed_at ]
-  BATCH_EXECUTION_COLUMNS = %w[ job_id batch_id ]
-  JOB_COLUMNS = %w[ id batch_id ]
-  JOB_EXECUTION_CLASS_NAMES = {
-    pending: "SolidQueue::ReadyExecution",
-    failed: "SolidQueue::FailedExecution",
-    in_progress: "SolidQueue::ClaimedExecution",
-    blocked: "SolidQueue::BlockedExecution",
-    scheduled: "SolidQueue::ScheduledExecution"
-  }
-
+  # Batches shipped in Solid Queue 1.7 as an optional migration, so the
+  # constant existing doesn't mean the tables do.
   def supports_batches?
-    solid_queue_batch_models_available? &&
-      SolidQueue::Batch.method_defined?(:status) &&
-      solid_queue_batch_schema_available?
+    SolidQueue.const_defined?(:Batch, false) && SolidQueue::Batch.migrated?
   end
 
   def fetch_batches(batches_relation)
@@ -89,24 +78,9 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       }
     end
 
-    def solid_queue_batch_models_available?
-      %i[ Batch BatchExecution ].all? { |name| SolidQueue.const_defined?(name, false) }
-    end
-
-    def solid_queue_batch_schema_available?
-      model_has_columns?(SolidQueue::Batch, BATCH_COLUMNS) &&
-        model_has_columns?(SolidQueue::BatchExecution, BATCH_EXECUTION_COLUMNS) &&
-        model_has_columns?(SolidQueue::Job, JOB_COLUMNS) &&
-        job_execution_models.all? { |model| model_has_columns?(model, [ "job_id" ]) }
-    end
-
-    def model_has_columns?(model, columns)
-      model.table_exists? && columns.all? { |column| model.column_names.include?(column) }
-    end
-
     def solid_queue_batches
       selects = [ "#{SolidQueue::Batch.quoted_table_name}.*", unfinished_jobs_count_select ]
-      selects.concat JOB_EXECUTION_CLASS_NAMES.map { |status, class_name| job_count_select(status, class_name.constantize) }
+      selects.concat job_execution_classes.map { |status, model| job_count_select(status, model) }
       SolidQueue::Batch.select(*selects)
     end
 
@@ -138,7 +112,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     end
 
     def job_counts_from_solid_queue_batch(batch)
-      JOB_EXECUTION_CLASS_NAMES.keys.to_h { |status| [ status, batch_count(batch, status) ] }
+      job_execution_classes.keys.to_h { |status| [ status, batch_count(batch, status) ] }
     end
 
     def batch_count(batch, status)
@@ -155,8 +129,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       ([ total_jobs - unfinished_jobs, 0 ].max * 100.0 / total_jobs).round(2)
     end
 
-    def job_execution_models
-      JOB_EXECUTION_CLASS_NAMES.values.map(&:constantize)
+    def job_execution_classes
+      {
+        pending: SolidQueue::ReadyExecution,
+        failed: SolidQueue::FailedExecution,
+        in_progress: SolidQueue::ClaimedExecution,
+        blocked: SolidQueue::BlockedExecution,
+        scheduled: SolidQueue::ScheduledExecution
+      }
     end
 
     def quote_column_name(name)
