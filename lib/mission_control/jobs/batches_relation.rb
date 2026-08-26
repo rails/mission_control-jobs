@@ -64,8 +64,12 @@ class MissionControl::Jobs::BatchesRelation
       end
     end
 
-    # The adapter count ignores pagination and can be +Float::INFINITY+ when
-    # internally limited, so clamp it into the offset/limit window here.
+    # +count_batches+ answers with the size of the whole status population: it
+    # doesn't apply this relation's offset/limit, and it gives up with
+    # +Float::INFINITY+ when the population is too large to count. Subtracting
+    # the offset and capping to the limit turns that into the number of batches
+    # a fetch would actually return. Infinity survives the arithmetic, which is
+    # how an uncountable population stays visible to +Page+.
     def query_count
       @count ||= begin
         count = [ @queue_adapter.count_batches(self) - offset_value, 0 ].max
