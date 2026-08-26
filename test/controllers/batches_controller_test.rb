@@ -27,7 +27,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
     assert_select "tr.batch", 10
-    assert_select "nav[aria-label=pagination]"
+    assert_select "nav[aria-label=\"pagination\"]"
 
     get mission_control_jobs.application_batches_url(@application, page: 2)
     assert_response :ok
@@ -69,7 +69,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
     assert_response :ok
     assert_select "tr.batch", 10
-    assert_select "nav[aria-label=pagination] a[href*=?]", "batches_status=unfinished"
+    assert_select "nav[aria-label=\"pagination\"] a[href*=?]", "batches_status=unfinished"
   end
 
   test "batch list pagination preserves the all population" do
@@ -109,7 +109,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
       get mission_control_jobs.application_batches_url(@application)
       assert_response :ok
 
-      assert_select "nav[aria-label=pagination]", /1 \/ \.\.\./
+      assert_select "nav[aria-label=\"pagination\"]", /1 \/ \.\.\./
       assert_select "a.pagination-next", text: "↠", count: 0
       assert_select "a.pagination-next", text: "Next page", count: 1
     end

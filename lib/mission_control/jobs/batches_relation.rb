@@ -59,7 +59,7 @@ class MissionControl::Jobs::BatchesRelation
     end
 
     def batches
-      @batches ||= @queue_adapter.batches(status: status, offset: offset_value, limit: limit_value).collect do |attributes|
+      @batches ||= @queue_adapter.fetch_batches(self).collect do |attributes|
         MissionControl::Jobs::Batch.new(queue_adapter: @queue_adapter, **attributes)
       end
     end
@@ -68,7 +68,7 @@ class MissionControl::Jobs::BatchesRelation
     # internally limited, so clamp it into the offset/limit window here.
     def query_count
       @count ||= begin
-        count = [ @queue_adapter.batches_count(status: status) - offset_value, 0 ].max
+        count = [ @queue_adapter.count_batches(self) - offset_value, 0 ].max
         limit_value_provided? ? [ count, limit_value ].min : count
       end
     end
