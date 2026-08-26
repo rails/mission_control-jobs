@@ -21,6 +21,10 @@ module MissionControl::Jobs::InterfaceHelper
     end
   end
 
+  def label_for_batch_job_status(status)
+    status == :finished ? "completed" : status.to_s.humanize.downcase
+  end
+
   def modifier_for_batch_status(status)
     case status.to_s
     when "completed" then "is-success"
