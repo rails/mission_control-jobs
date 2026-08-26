@@ -24,8 +24,11 @@ module MissionControl::Jobs::NotFoundRedirections
     end
 
     def best_location_for_resource_not_found_error(error)
-      if error.message.match?(/recurring task/i)
+      case error.message
+      when /recurring task/i
         application_recurring_tasks_path(@application)
+      when /queue/i
+        application_queues_path(@application)
       else
         root_url
       end
