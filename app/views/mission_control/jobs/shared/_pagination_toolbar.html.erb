@@ -3,7 +3,7 @@
   <%= link_to "↞", url_for(page: 1, **filter_param), class: "pagination-previous", disabled: page.first? %>
   <%= link_to "Previous page", url_for(page: page.previous_index, **filter_param), class: "pagination-previous", disabled: page.first? %>
   <%= link_to "Next page", url_for(page: page.next_index, **filter_param), class: "pagination-next", disabled: page.last? %>
-  <% if page.pages_count %><%# The last page is unknown when the count is capped %>
+  <% if page.pages_count %><%# With more records than internal_query_count_limit, the count is capped and the last page is unknown %>
     <%= link_to "↠", url_for(page: page.pages_count, **filter_param), class: "pagination-next", disabled: page.last? %>
   <% end %>
 </nav>
