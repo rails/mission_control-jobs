@@ -44,18 +44,16 @@ class MissionControl::Jobs::BatchesController < MissionControl::Jobs::Applicatio
     end
 
     def jobs_status
-      if status = params[:jobs_status].presence&.to_sym.presence_in(supported_job_statuses)
-        status.to_s
-      elsif @batch.failed?
+      params[:jobs_status].presence&.to_s || default_jobs_status
+    end
+
+    def default_jobs_status
+      if @batch.failed?
         "failed"
       elsif @batch.finished?
         "finished"
       else
-        default_unfinished_jobs_status
+        UNFINISHED_JOB_STATUSES.find { |status| @batch.public_send("#{status}_jobs") > 0 }&.to_s || "pending"
       end
-    end
-
-    def default_unfinished_jobs_status
-      UNFINISHED_JOB_STATUSES.find { |status| @batch.public_send("#{status}_jobs") > 0 }&.to_s || "pending"
     end
 end
