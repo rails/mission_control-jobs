@@ -41,21 +41,30 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     3.times { create_batch }
     queries = capture_select_queries do
       batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
-      assert_equal [ 1, 1, 1, 1 ], batches.pluck(:pending_jobs)
+      assert_equal [ 0, 0, 0, 0 ], batches.pluck(:failed_jobs)
     end
 
     assert_equal queries_for_one.size, queries.size, queries.join("\n\n")
   end
 
-  test "lists finished batches without live job-count subqueries" do
+  test "breaks jobs down by status for a single batch" do
+    batch, = create_batch
+
+    attributes = ActiveJob::Base.queue_adapter.find_batch(batch.id)
+
+    assert_equal 1, attributes[:pending_jobs]
+    assert_equal [ 0, 0, 0, 0 ], attributes.values_at(:failed_jobs, :in_progress_jobs, :blocked_jobs, :scheduled_jobs)
+  end
+
+  test "lists finished batches without counting their jobs" do
     batch, = create_batch
     batch.update!(finished_at: Time.current, completed_jobs: 1, failed_jobs: 0)
 
     queries = capture_select_queries do
       batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation(status: :finished))
       assert_equal [ batch.id ], batches.pluck(:id)
-      assert_equal [ 0 ], batches.pluck(:pending_jobs)
       assert_equal [ 1 ], batches.pluck(:completed_jobs)
+      assert_equal [ 100.0 ], batches.pluck(:progress_percentage)
     end
 
     assert_equal 1, queries.size, queries.join("\n\n")

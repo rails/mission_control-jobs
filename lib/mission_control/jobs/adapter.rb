@@ -104,6 +104,10 @@ module MissionControl::Jobs::Adapter
   #     enqueued_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
   #     finished_at: nil
   #   }
+  #
+  # The listing renders progress and failures only, so adapters may leave the
+  # +pending_jobs+, +in_progress_jobs+, +blocked_jobs+ and +scheduled_jobs+
+  # breakdown to +find_batch+ rather than counting it for every batch listed.
   def fetch_batches(batches_relation)
     if supports_batches?
       raise_incompatible_adapter_error_from :fetch_batches
