@@ -11,7 +11,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
 
     # Progress comes from the tracking rows, which are always counted, so the
     # listing only counts failures on top. The batch page needs the rest.
-    batch_attributes_from(batches, job_statuses_to_count: [ :failed ])
+    attributes_for_batches(batches, job_statuses_to_count: [ :failed ])
   end
 
   def count_batches(batches_relation)
@@ -22,7 +22,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
 
   def find_batch(batch_id)
     if batch = SolidQueue::Batch.find_by(id: batch_id)
-      batch_attributes_from([ batch ], job_statuses_to_count: job_execution_classes.keys).first
+      attributes_for_batches([ batch ], job_statuses_to_count: job_execution_classes.keys).first
     end
   end
 
@@ -39,7 +39,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     # Finished batches froze their counters on the row at finalize time, so
     # only live batches pay for job counting — a page of history runs no
     # count queries at all.
-    def batch_attributes_from(batches, job_statuses_to_count:)
+    def attributes_for_batches(batches, job_statuses_to_count:)
       job_counts = job_counts_for(batches.reject(&:finished_at?), job_statuses_to_count)
       batches.collect { |batch| batch_attributes_from_solid_queue_batch(batch, job_counts[batch.id]) }
     end
@@ -54,10 +54,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       counts_by_status = job_execution_classes.slice(*job_statuses_to_count).transform_values do |execution_class|
         execution_class.joins(:job).merge(jobs_in_batches).count
       end
-      counts_by_status[:unfinished] = SolidQueue::BatchExecution.where(batch_id: batch_ids).group(:batch_id).count
+      counts_by_status[:outstanding] = SolidQueue::BatchExecution.where(batch_id: batch_ids).group(:batch_id).count
 
       batch_ids.index_with do |batch_id|
-        counts_by_status.transform_values { |counts| counts.fetch(batch_id, 0) }
+        counts_by_status.transform_values { |counts_by_batch_id| counts_by_batch_id.fetch(batch_id, 0) }
       end
     end
 
@@ -67,13 +67,13 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
         # queries, and finalizing the batch already froze these on the row.
         completed_jobs = batch[:completed_jobs]
         job_counts = { pending: 0, in_progress: 0, blocked: 0, scheduled: 0, failed: batch[:failed_jobs] }
-        unfinished_jobs = 0
+        outstanding_jobs = 0
       else
         # +total_jobs+ counts logical jobs while the tracking rows count attempts, so a
         # retry overlapping its previous attempt can outnumber them. Clamp like
         # +SolidQueue::Batch::Status+ does.
-        unfinished_jobs = job_counts[:unfinished]
-        completed_jobs = [ batch.total_jobs - unfinished_jobs - job_counts[:failed], 0 ].max
+        outstanding_jobs = job_counts[:outstanding]
+        completed_jobs = [ batch.total_jobs - outstanding_jobs - job_counts[:failed], 0 ].max
       end
 
       {
@@ -87,17 +87,17 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
         in_progress_jobs: job_counts[:in_progress],
         blocked_jobs: job_counts[:blocked],
         scheduled_jobs: job_counts[:scheduled],
-        progress_percentage: progress_percentage(batch.total_jobs, unfinished_jobs),
+        progress_percentage: progress_percentage(batch.total_jobs, outstanding_jobs),
         metadata: batch.metadata,
         enqueued_at: batch.enqueued_at,
         finished_at: batch.finished_at
       }
     end
 
-    def progress_percentage(total_jobs, unfinished_jobs)
+    def progress_percentage(total_jobs, outstanding_jobs)
       return 0 if total_jobs == 0
 
-      ([ total_jobs - unfinished_jobs, 0 ].max * 100.0 / total_jobs).round(2)
+      ([ total_jobs - outstanding_jobs, 0 ].max * 100.0 / total_jobs).round(2)
     end
 
     def job_execution_classes
