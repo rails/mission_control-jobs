@@ -43,6 +43,17 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "div.is-danger", "failed"
   end
 
+  test "get blocked jobs with their expiration" do
+    BlockingJob.perform_later(42)
+    BlockingJob.perform_later(43)
+
+    get mission_control_jobs.application_jobs_url(@application, :blocked)
+    assert_response :ok
+
+    assert_select "tr.job", 1
+    assert_select "tr.job span[title=?]", SolidQueue::BlockedExecution.last.expires_at.to_fs(:long), /in \d+ minutes/
+  end
+
   test "get finished jobs filtered by finished_at date" do
     [ "UTC", "International Date Line West" ].each do |timezone|
       Time.use_zone(timezone) do
