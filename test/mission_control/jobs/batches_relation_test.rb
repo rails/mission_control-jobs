@@ -1,8 +1,6 @@
 require "test_helper"
 
 class MissionControl::Jobs::BatchesRelationTest < ActiveSupport::TestCase
-  # The adapter count deliberately ignores pagination, so the relation clamps it
-  # into the window itself. A stub keeps that arithmetic under direct test.
   class StubAdapter
     def initialize(count)
       @count = count
@@ -18,7 +16,7 @@ class MissionControl::Jobs::BatchesRelationTest < ActiveSupport::TestCase
   end
 
   setup do
-    @batches_relation = MissionControl::Jobs::BatchesRelation.new(queue_adapter: ActiveJob::QueueAdapters::SolidQueueExt)
+    @batches_relation = MissionControl::Jobs::BatchesRelation.new(queue_adapter: ActiveJob::Base.queue_adapter)
   end
 
   test "set limit and offset" do

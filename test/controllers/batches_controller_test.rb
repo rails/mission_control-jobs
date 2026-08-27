@@ -1,7 +1,8 @@
 require "test_helper"
 
 class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationTest
-  # File-local job so no shared job class gets its queue adapter mutated
+  # Pinning a shared job class to an adapter would stop it inheriting the one
+  # the adapter tests set, so batches get their own job class
   class BatchedJob < ActiveJob::Base
     self.queue_adapter = :solid_queue
     queue_as :default
@@ -10,31 +11,69 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
   end
 
   test "get batch list" do
+    create_batch(description: "Older imports")
     create_batch(description: "Nightly imports")
 
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
 
-    assert_select "tr.batch", 1
-    assert_select "td", "Nightly imports"
+    assert_select "tr.batch", 2
     assert_select "span.tag", "enqueued"
     assert_select "li.is-active a", "Unfinished"
+    assert_equal [ "Nightly imports", "Older imports" ], css_select("tr.batch td:nth-child(2)").collect { |cell| cell.text.strip }
   end
 
-  test "batch list is paginated" do
+  test "get batch list when the server doesn't support batches" do
+    get mission_control_jobs.application_batches_url(@application)
+    assert_response :ok
+    assert_select "a", text: "Batches", count: 1
+
+    @server.queue_adapter.stubs(:supports_batches?).returns(false)
+
+    get mission_control_jobs.application_batches_url(@application)
+    assert_redirected_to mission_control_jobs.root_url
+
+    get mission_control_jobs.application_batch_url(@application, 987654)
+    assert_redirected_to mission_control_jobs.root_url
+
+    get mission_control_jobs.application_jobs_url(@application, :pending)
+    assert_response :ok
+    assert_select "a", text: "Batches", count: 0
+  end
+
+  test "get batch list when there are no batches" do
+    get mission_control_jobs.application_batches_url(@application)
+    assert_response :ok
+
+    assert_select "tr.batch", 0
+    assert_select "li.is-active a", "Unfinished"
+    assert_select "div", text: "No unfinished batches found"
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "all")
+    assert_response :ok
+
+    assert_select "tr.batch", 0
+    assert_select "div", text: "There are no batches"
+  end
+
+  test "paginate batches" do
     12.times { |i| create_batch(description: "Batch #{i}") }
 
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
+
     assert_select "tr.batch", 10
-    assert_select "nav[aria-label=\"pagination\"]"
+    assert_select "nav[aria-label=\"pagination\"]", /1 \/ 2/
+    assert_select "nav[aria-label=\"pagination\"] a[href*=?]", "batches_status=unfinished"
+    assert_select "a.pagination-next", text: "↠", count: 1
 
     get mission_control_jobs.application_batches_url(@application, page: 2)
     assert_response :ok
+
     assert_select "tr.batch", 2
   end
 
-  test "batch list filters by finished, unfinished, and failed" do
+  test "filter batches by status" do
     create_batch(description: "Still going")
     finished = create_batch(description: "All done")
     failed = create_batch(description: "Went wrong")
@@ -43,41 +82,63 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
     assert_response :ok
-    assert_select "tr.batch", 2 # a failed batch has also finished
+
+    assert_select "td", "All done"
+    assert_select "td", "Went wrong"
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
     assert_response :ok
+
     assert_select "tr.batch", 1
     assert_select "td", "Still going"
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "failed")
     assert_response :ok
+
     assert_select "tr.batch", 1
     assert_select "td", "Went wrong"
 
-    get mission_control_jobs.application_batches_url(@application)
-    assert_select "tr.batch", 1
-    assert_select "td", "Still going"
-
     get mission_control_jobs.application_batches_url(@application, batches_status: "all")
+    assert_response :ok
+
     assert_select "tr.batch", 3
   end
 
-  test "batch list pagination preserves the status filter" do
-    12.times { create_batch }
+  test "get batch list defaulting to the unfinished batches" do
+    create_batch(description: "Still going")
+    finished = create_batch(description: "All done")
+    SolidQueue::Job.where(batch_id: finished.id).each { |job| finish(job) }
 
-    get mission_control_jobs.application_batches_url(@application, batches_status: "unfinished")
+    get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
-    assert_select "tr.batch", 10
-    assert_select "nav[aria-label=\"pagination\"] a[href*=?]", "batches_status=unfinished"
+
+    assert_select "tr.batch", 1
+    assert_select "td", "Still going"
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
+    assert_response :ok
+
+    assert_select "tr.batch", 1
+    assert_select "td", "All done"
   end
 
-  test "batch list pagination preserves the all population" do
+  test "get batch list filtered by a status without matches" do
+    create_batch(description: "Still going")
+
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
+    assert_response :ok
+
+    assert_select "tr.batch", 0
+    assert_select "div", text: "No finished batches found"
+  end
+
+  test "paginate batches preserving the all population" do
     12.times { |i| create_batch(description: "Batch #{i}") }
     SolidQueue::Batch.order(:id).limit(3).each { |batch| SolidQueue::Job.where(batch_id: batch.id).each { |job| finish(job) } }
 
     get mission_control_jobs.application_batches_url(@application, batches_status: "all")
     assert_response :ok
+
     assert_select "tr.batch", 10
 
     next_page_url = css_select("a.pagination-next").find { |link| link.text == "Next page" }["href"]
@@ -87,10 +148,10 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_response :ok
 
     assert_select "li.is-active a", "All"
-    assert_select "tr.batch", 2 # all 12 batches, not the 9 unfinished ones the default population would show
+    assert_select "tr.batch", 2
   end
 
-  test "batch list counts the batches once per request" do
+  test "count batches once per request" do
     12.times { create_batch }
 
     queries = capture_select_queries do
@@ -100,59 +161,24 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
 
     count_queries = queries.grep(/\ASELECT COUNT\(\*\) FROM .*solid_queue_batches/i)
     assert_equal 1, count_queries.size, count_queries.join("\n\n")
+
+    fetch_queries = queries.grep(/\ASELECT "?solid_queue_batches"?\.\* FROM/i)
+    assert_equal 1, fetch_queries.size, fetch_queries.join("\n\n")
   end
 
-  test "batch list hides the jump-to-last link when the count is capped" do
+  test "hide the jump-to-last link when the batches count is capped" do
     12.times { create_batch }
+    original_limit = MissionControl::Jobs.internal_query_count_limit
+    MissionControl::Jobs.internal_query_count_limit = 5
 
-    with_internal_query_count_limit(5) do
-      get mission_control_jobs.application_batches_url(@application)
-      assert_response :ok
-
-      assert_select "nav[aria-label=\"pagination\"]", /1 \/ \.\.\./
-      assert_select "a.pagination-next", text: "↠", count: 0
-      assert_select "a.pagination-next", text: "Next page", count: 1
-    end
-  end
-
-  test "batch list shows an empty notice for a status filter without matches" do
-    create_batch(description: "Still going")
-
-    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
-    assert_response :ok
-    assert_select "tr.batch", 0
-    assert_select "div", text: "No finished batches found"
-  end
-
-  test "a batch enqueued with no jobs finishes right away and renders with zero totals" do
-    SolidQueue::Batch.enqueue(description: "No work") { }
-
-    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
-    assert_response :ok
-    assert_select "tr.batch", 1
-    assert_select "td", "No work"
-    assert_select "span.tag", "completed"
-
-    get mission_control_jobs.application_batch_url(@application, SolidQueue::Batch.last.id)
-    assert_response :ok
-    assert_select "td", /of 0 total/
-  end
-
-  test "batch list defaults to unfinished and shows an empty notice when there are none" do
     get mission_control_jobs.application_batches_url(@application)
     assert_response :ok
 
-    assert_select "tr.batch", 0
-    assert_select "li.is-active a", "Unfinished"
-    assert_select "div", text: "No unfinished batches found"
-  end
-
-  test "batch list shows an empty notice when there are no batches on the all tab" do
-    get mission_control_jobs.application_batches_url(@application, batches_status: "all")
-    assert_response :ok
-
-    assert_select "tr.batch", 0
-    assert_select "div", text: "There are no batches"
+    assert_select "nav[aria-label=\"pagination\"]", /1 \/ \.\.\./
+    assert_select "a.pagination-next", text: "↠", count: 0
+    assert_select "a.pagination-next", text: "Next page", count: 1
+  ensure
+    MissionControl::Jobs.internal_query_count_limit = original_limit
   end
 
   test "get batch details and pending job list" do
@@ -166,7 +192,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.job", 2
   end
 
-  test "batch details expose each unfinished job status separately" do
+  test "get batch details filtered by each unfinished job status" do
     batch = create_batch_with_unfinished_statuses
 
     get mission_control_jobs.application_batch_url(@application, batch.id)
@@ -186,7 +212,50 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     end
   end
 
-  test "scheduled-only batch shows its scheduled jobs by default" do
+  test "get batch details listing only that batch's jobs" do
+    batch = create_batch(jobs: 2)
+    other_batch = create_batch(jobs: 2)
+    BatchedJob.perform_later(99)
+    finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
+    SolidQueue::Job.where(batch_id: other_batch.id).each { |job| finish(job) }
+
+    get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :pending)
+    assert_response :ok
+
+    assert_select "h2", "1 pending job"
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
+    assert_response :ok
+
+    assert_select "h2", "1 finished job"
+    assert_select "tr.job", 1
+  end
+
+  test "get batch details for a completed batch" do
+    batch = create_batch(jobs: 2)
+    SolidQueue::Job.where(batch_id: batch.id).each { |job| finish(job) }
+
+    get mission_control_jobs.application_batch_url(@application, batch.id)
+    assert_response :ok
+
+    assert_select "span.tag", "completed"
+    assert_select "h2", "2 finished jobs"
+    assert_select "tr.job", 2
+  end
+
+  test "get batch details filtered by job status" do
+    batch = create_batch(jobs: 3)
+    finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
+
+    get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
+    assert_response :ok
+
+    assert_select "h2", "1 finished job"
+    assert_select "tr.job", 1
+  end
+
+  test "get batch details for a batch with only scheduled jobs" do
     batch = create_batch(jobs: 2, wait: 1.hour)
 
     get mission_control_jobs.application_batch_url(@application, batch.id)
@@ -196,7 +265,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.job", 2
   end
 
-  test "batch progress reflects finished jobs" do
+  test "get batch details with finished jobs" do
     batch = create_batch(jobs: 4)
     finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
 
@@ -208,7 +277,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "td", /of 4 total/
   end
 
-  test "failed batch shows its failed jobs with error details" do
+  test "get batch details for a failed batch" do
     batch = create_batch(description: "Doomed", jobs: 2)
     jobs = SolidQueue::Job.where(batch_id: batch.id).order(:id).to_a
     fail_job jobs.first, RuntimeError.new("boom went the job")
@@ -224,18 +293,23 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "td a", "1 failed"
   end
 
-  test "jobs_status param switches the job list" do
-    batch = create_batch(jobs: 3)
-    finish SolidQueue::Job.where(batch_id: batch.id).order(:id).first
+  test "get batch list and details for a batch enqueued with no jobs" do
+    SolidQueue::Batch.enqueue(description: "No work") { }
 
-    get mission_control_jobs.application_batch_url(@application, batch.id, jobs_status: :finished)
+    get mission_control_jobs.application_batches_url(@application, batches_status: "finished")
     assert_response :ok
 
-    assert_select "h2", "1 finished job"
-    assert_select "tr.job", 1
+    assert_select "tr.batch", 1
+    assert_select "td", "No work"
+    assert_select "span.tag", "completed"
+
+    get mission_control_jobs.application_batch_url(@application, SolidQueue::Batch.last.id)
+    assert_response :ok
+
+    assert_select "td", /of 0 total/
   end
 
-  test "pagination preserves the selected jobs status" do
+  test "paginate batch jobs preserving the job status" do
     batch = create_batch(jobs: 3)
     SolidQueue::Job.where(batch_id: batch.id).find_each { |job| finish(job) }
 
@@ -254,7 +328,7 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     end
   end
 
-  test "batched job's show page links back to its batch" do
+  test "get job details for a batched job" do
     batch = create_batch(description: "Nightly imports")
     job = SolidQueue::Job.where(batch_id: batch.id).sole
 
@@ -265,10 +339,10 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "td a[href=?]", mission_control_jobs.application_batch_path(@application, batch.id), text: "batch #{batch.id}"
   end
 
-  test "unbatched job's show page has no batch link" do
-    active_job = BatchedJob.perform_later(1)
+  test "get job details for an unbatched job" do
+    job = BatchedJob.perform_later(1)
 
-    get mission_control_jobs.application_job_url(@application, active_job.job_id)
+    get mission_control_jobs.application_job_url(@application, job.job_id)
     assert_response :ok
 
     assert_select "th", text: "Part of", count: 0
@@ -315,7 +389,6 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
       batch
     end
 
-    # Mirror the real worker flow: the execution is claimed away before the job resolves
     def finish(job)
       SolidQueue::ReadyExecution.where(job_id: job.id).destroy_all
       job.finished!
@@ -324,13 +397,5 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     def fail_job(job, error)
       SolidQueue::ReadyExecution.where(job_id: job.id).destroy_all
       job.failed_with(error)
-    end
-
-    def with_internal_query_count_limit(limit)
-      previous_limit = MissionControl::Jobs.internal_query_count_limit
-      MissionControl::Jobs.internal_query_count_limit = limit
-      yield
-    ensure
-      MissionControl::Jobs.internal_query_count_limit = previous_limit
     end
 end

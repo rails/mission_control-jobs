@@ -11,7 +11,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
   test "supports batches only when the Solid Queue batch API is available" do
     assert ActiveJob::Base.queue_adapter.supports_batches?
 
-    SolidQueue.stubs(:const_defined?).with(:Batch, false).returns(false)
+    SolidQueue.stubs(:const_defined?).returns(false)
 
     assert_not ActiveJob::Base.queue_adapter.supports_batches?
   end
@@ -32,19 +32,16 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_nil batch_jobs.find_by_id(job_2.job_id)
   end
 
-  test "counts jobs with a fixed number of queries however many batches are listed" do
-    create_batch
-    queries_for_one = capture_select_queries do
-      ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
-    end
+  test "counts the jobs of every batch listed with the same three queries" do
+    4.times { create_batch }
 
-    3.times { create_batch }
     queries = capture_select_queries do
       batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
       assert_equal [ 0, 0, 0, 0 ], batches.pluck(:failed_jobs)
+      assert_equal [ 0.0, 0.0, 0.0, 0.0 ], batches.pluck(:progress_percentage)
     end
 
-    assert_equal queries_for_one.size, queries.size, queries.join("\n\n")
+    assert_equal 3, queries.size, queries.join("\n\n")
   end
 
   test "breaks jobs down by status for a single batch" do
@@ -74,11 +71,7 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
   test "never reports negative counts while a retry overlaps its previous attempt" do
     batch, job = create_batch
     previous_attempt = SolidQueue::Job.find_by(active_job_id: job.job_id)
-
-    # A retry keeps its Active Job id, so Solid Queue doesn't count it as a new logical
-    # job, but it gets its own tracking row while the previous attempt still has one.
-    retry_attributes = previous_attempt.attributes.except("id", "created_at", "updated_at")
-    SolidQueue::Job.create!(retry_attributes.merge("arguments" => previous_attempt.arguments.merge("executions" => 1)))
+    enqueue_retry_of previous_attempt
 
     assert_equal 1, batch.reload.total_jobs
     assert_equal 2, SolidQueue::BatchExecution.where(batch_id: batch.id).count
@@ -104,11 +97,15 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
 
   test "returns an exact batches count below the internal limit" do
     2.times { create_batch }
+    finished, = create_batch
+    finished.update!(finished_at: Time.current)
 
     original_limit = MissionControl::Jobs.internal_query_count_limit
     MissionControl::Jobs.internal_query_count_limit = 5
 
+    assert_equal 3, ActiveJob::Base.queue_adapter.count_batches(batches_relation)
     assert_equal 2, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :unfinished))
+    assert_equal 1, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :finished))
   ensure
     MissionControl::Jobs.internal_query_count_limit = original_limit
   end
@@ -122,6 +119,11 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
       job = nil
       batch = SolidQueue::Batch.enqueue { job = DummyJob.perform_later }
       [ batch, job ]
+    end
+
+    def enqueue_retry_of(job)
+      attributes = job.attributes.except("id", "created_at", "updated_at")
+      SolidQueue::Job.create!(attributes.merge("arguments" => job.arguments.merge("executions" => 1)))
     end
 
     def queue_adapter

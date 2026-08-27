@@ -1,4 +1,6 @@
 module QueriesHelper
+  extend ActiveSupport::Concern
+
   def capture_select_queries
     queries = []
     subscriber = lambda do |*, payload|
