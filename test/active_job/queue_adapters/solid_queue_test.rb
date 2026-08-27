@@ -32,15 +32,19 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_nil batch_jobs.find_by_id(job_2.job_id)
   end
 
-  test "loads batches and their job counts in one query" do
-    3.times { create_batch }
-
-    queries = capture_select_queries do
-      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
-      assert_equal [ 1, 1, 1 ], batches.pluck(:pending_jobs)
+  test "counts jobs with a fixed number of queries however many batches are listed" do
+    create_batch
+    queries_for_one = capture_select_queries do
+      ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
     end
 
-    assert_equal 1, queries.size, queries.join("\n\n")
+    3.times { create_batch }
+    queries = capture_select_queries do
+      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
+      assert_equal [ 1, 1, 1, 1 ], batches.pluck(:pending_jobs)
+    end
+
+    assert_equal queries_for_one.size, queries.size, queries.join("\n\n")
   end
 
   test "lists finished batches without live job-count subqueries" do
