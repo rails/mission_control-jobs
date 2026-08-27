@@ -9,9 +9,9 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     batches = batches_scope(batches_relation.status).order(id: :desc)
       .offset(batches_relation.offset_value).limit(batches_relation.limit_value).to_a
 
-    # The listing shows progress and failures; only the batch page breaks the
-    # remaining jobs down by status.
-    batch_attributes_from(batches, job_statuses: [ :failed ])
+    # Progress comes from the tracking rows, which are always counted, so the
+    # listing only counts failures on top. The batch page needs the rest.
+    batch_attributes_from(batches, job_statuses_to_count: [ :failed ])
   end
 
   def count_batches(batches_relation)
@@ -22,7 +22,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
 
   def find_batch(batch_id)
     if batch = SolidQueue::Batch.find_by(id: batch_id)
-      batch_attributes_from([ batch ], job_statuses: job_execution_classes.keys).first
+      batch_attributes_from([ batch ], job_statuses_to_count: job_execution_classes.keys).first
     end
   end
 
@@ -39,19 +39,19 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     # Finished batches froze their counters on the row at finalize time, so
     # only live batches pay for job counting — a page of history runs no
     # count queries at all.
-    def batch_attributes_from(batches, job_statuses:)
-      job_counts = job_counts_for(batches.reject(&:finished_at?), job_statuses)
+    def batch_attributes_from(batches, job_statuses_to_count:)
+      job_counts = job_counts_for(batches.reject(&:finished_at?), job_statuses_to_count)
       batches.collect { |batch| batch_attributes_from_solid_queue_batch(batch, job_counts[batch.id]) }
     end
 
     # One grouped count per status covers every batch given, so a page costs
     # the same number of queries as a single batch.
-    def job_counts_for(batches, job_statuses)
+    def job_counts_for(batches, job_statuses_to_count)
       return {} if batches.none?
 
       batch_ids = batches.map(&:id)
       jobs_in_batches = SolidQueue::Job.where(batch_id: batch_ids).group(:batch_id)
-      counts_by_status = job_execution_classes.slice(*job_statuses).transform_values do |execution_class|
+      counts_by_status = job_execution_classes.slice(*job_statuses_to_count).transform_values do |execution_class|
         execution_class.joins(:job).merge(jobs_in_batches).count
       end
       counts_by_status[:unfinished] = SolidQueue::BatchExecution.where(batch_id: batch_ids).group(:batch_id).count
