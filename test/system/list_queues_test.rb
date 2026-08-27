@@ -15,4 +15,21 @@ class ListQueuesTest < ApplicationSystemTestCase
       end
     end
   end
+
+  test "back to main app points to root path by default" do
+    visit queues_path
+
+    assert_equal "/", URI.parse(find_link("Back to main app")[:href]).path
+  end
+
+  test "back to main app points to configured override path" do
+    original_back_to_main_app_path = MissionControl::Jobs.back_to_main_app_path
+    MissionControl::Jobs.back_to_main_app_path = "/admin"
+
+    visit queues_path
+
+    assert_equal "/admin", URI.parse(find_link("Back to main app")[:href]).path
+  ensure
+    MissionControl::Jobs.back_to_main_app_path = original_back_to_main_app_path
+  end
 end
