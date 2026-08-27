@@ -113,6 +113,7 @@ Besides `base_controller_class`, you can also set the following for `MissionCont
 - `internal_query_count_limit`: in count queries, the maximum number of records that will be counted if the adapter needs to limit these queries. True counts above this number will be returned as `INFINITY`. This keeps count queries fast—defaults to `500,000`
 - `scheduled_job_delay_threshold`: the time duration before a scheduled job is considered delayed. Defaults to `1.minute` (a job is considered delayed if it hasn't transitioned from the `scheduled` status 1 minute after the scheduled time).
 - `show_console_help`: whether to show the console help. If you don't want the console help message, set this to `false`—defaults to `true`.
+- `back_to_main_app_path`: an optional string path for the "Back to main app" link. Example: `'/admin'`. Defaults to the host app's `root_path` when available.
 - `backtrace_cleaner`: a backtrace cleaner used for optionally filtering backtraces on the Failed Jobs detail page. Defaults to `Rails::BacktraceCleaner.new`. See the [Advanced configuration](#advanced-configuration) section for how to configure/override this setting on a per application/server basis.
 - `filter_arguments`: an array of strings representing the job argument keys you want to filter out in the UI. This is useful for hiding sensitive user data. Currently, only root-level hash keys are supported.
 
