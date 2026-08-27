@@ -50,6 +50,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
       unfinished_jobs = batch_count(batch, :unfinished)
 
       if batch.finished_at.present?
+        # Raw column reads: the gem's counter methods compute with live COUNT
+        # queries, and finalizing the batch already froze these on the row.
         completed_jobs = batch[:completed_jobs]
         job_counts = job_counts.transform_values { 0 }.merge(failed: batch[:failed_jobs])
         unfinished_jobs = 0
@@ -79,36 +81,33 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     end
 
     def solid_queue_batches
-      selects = [ "#{SolidQueue::Batch.quoted_table_name}.*", unfinished_jobs_count_select ]
-      selects.concat job_execution_classes.map { |status, model| job_count_select(status, model) }
-      SolidQueue::Batch.select(*selects)
+      SolidQueue::Batch.select(
+        "#{SolidQueue::Batch.quoted_table_name}.*",
+        unfinished_jobs_count_select,
+        *job_execution_classes.map { |status, model| job_count_select(status, model) }
+      )
     end
 
-    # CASE keeps Postgres from evaluating the correlated COUNT for finished rows
-    # when an "all" listing mixes finished and unfinished batches.
+    # CASE keeps the database from evaluating the correlated COUNT for finished
+    # rows when an "all" listing mixes finished and unfinished batches.
     def unfinished_jobs_count_select
-      batch_executions_table = SolidQueue::BatchExecution.quoted_table_name
-      batches_table = SolidQueue::Batch.quoted_table_name
-      batch_id = quote_column_name("batch_id")
-      id = quote_column_name("id")
-      finished_at = quote_column_name("finished_at")
-      live_count = "SELECT COUNT(*) FROM #{batch_executions_table} WHERE #{batch_executions_table}.#{batch_id} = #{batches_table}.#{id}"
+      batches = SolidQueue::Batch.quoted_table_name
+      tracking = SolidQueue::BatchExecution.quoted_table_name
+      live_count = "SELECT COUNT(*) FROM #{tracking} WHERE #{tracking}.batch_id = #{batches}.id"
 
-      "(CASE WHEN #{batches_table}.#{finished_at} IS NOT NULL THEN 0 ELSE (#{live_count}) END) AS #{quote_column_name(batch_count_attribute(:unfinished))}"
+      "(CASE WHEN #{batches}.finished_at IS NOT NULL THEN 0 ELSE (#{live_count}) END) AS #{batch_count_attribute(:unfinished)}"
     end
 
     def job_count_select(status, execution_model)
-      executions_table = execution_model.quoted_table_name
-      jobs_table = SolidQueue::Job.quoted_table_name
-      batches_table = SolidQueue::Batch.quoted_table_name
-      job_id = quote_column_name("job_id")
-      batch_id = quote_column_name("batch_id")
-      id = quote_column_name("id")
-      finished_at = quote_column_name("finished_at")
-      finished_value = status == :failed ? "#{batches_table}.#{quote_column_name("failed_jobs")}" : "0"
-      live_count = "SELECT COUNT(*) FROM #{executions_table} INNER JOIN #{jobs_table} ON #{jobs_table}.#{id} = #{executions_table}.#{job_id} WHERE #{jobs_table}.#{batch_id} = #{batches_table}.#{id}"
+      batches = SolidQueue::Batch.quoted_table_name
+      jobs = SolidQueue::Job.quoted_table_name
+      executions = execution_model.quoted_table_name
+      finished_value = status == :failed ? "#{batches}.failed_jobs" : "0"
+      live_count = "SELECT COUNT(*) FROM #{executions} " \
+        "INNER JOIN #{jobs} ON #{jobs}.id = #{executions}.job_id " \
+        "WHERE #{jobs}.batch_id = #{batches}.id"
 
-      "(CASE WHEN #{batches_table}.#{finished_at} IS NOT NULL THEN #{finished_value} ELSE (#{live_count}) END) AS #{quote_column_name(batch_count_attribute(status))}"
+      "(CASE WHEN #{batches}.finished_at IS NOT NULL THEN #{finished_value} ELSE (#{live_count}) END) AS #{batch_count_attribute(status)}"
     end
 
     def job_counts_from_solid_queue_batch(batch)
@@ -137,9 +136,5 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
         blocked: SolidQueue::BlockedExecution,
         scheduled: SolidQueue::ScheduledExecution
       }
-    end
-
-    def quote_column_name(name)
-      SolidQueue::Batch.connection.quote_column_name(name)
     end
 end
