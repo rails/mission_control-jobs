@@ -1,6 +1,6 @@
 module ActiveJob::QueueAdapters::SolidQueueExt
   include MissionControl::Jobs::Adapter
-  include RecurringTasks, Workers
+  include RecurringTasks, Workers, Batches
 
   def queues
     queues = SolidQueue::Queue.all
@@ -73,8 +73,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     dispatch_immediately find_solid_queue_job!(job.job_id, jobs_relation)
   end
 
-  def find_job(job_id, *)
-    if job = SolidQueue::Job.where(active_job_id: job_id).order(:id).last
+  def find_job(job_id, jobs_relation)
+    if job = find_solid_queue_job(job_id, jobs_relation)
       deserialize_and_proxy_solid_queue_job job
     end
   end
@@ -107,6 +107,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         job.worker_id = solid_queue_job&.claimed_execution&.process_id if job_status == :in_progress
         job.started_at = solid_queue_job&.claimed_execution&.created_at if job_status == :in_progress
         job.scheduled_at = solid_queue_job.scheduled_at
+        job.batch_id = solid_queue_job.try(:batch_id)
       end
     end
 
@@ -180,7 +181,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         attr_reader :jobs_relation
 
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
-          :default_page_size, :worker_id, :recurring_task_id, :finished_at, to: :jobs_relation
+          :default_page_size, :worker_id, :recurring_task_id, :batch_id, :finished_at, to: :jobs_relation
 
         def executions
           execution_class_by_status
@@ -189,6 +190,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
             .then { |executions| filter_executions_by_task_key(executions) }
+            .then { |executions| filter_executions_by_batch(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -197,6 +199,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           SolidQueue::Job.finished
             .then { |jobs| filter_jobs_by_queue(jobs) }
             .then { |jobs| filter_jobs_by_class(jobs) }
+            .then { |jobs| filter_jobs_by_batch(jobs) }
             .then { |jobs| filter_jobs_by_finished_at(jobs) }
             .then { |jobs| limit(jobs) }
             .then { |jobs| offset(jobs) }
@@ -216,7 +219,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         end
 
         def matches_relation_filters?(job)
-          matches_status?(job) && matches_queue_name?(job)
+          matches_status?(job) && matches_queue_name?(job) && matches_batch?(job)
         end
 
         def direct_count
@@ -275,6 +278,14 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           recurring_task_id.present? ? executions.where(task_key: recurring_task_id) : executions
         end
 
+        def filter_executions_by_batch(executions)
+          batch_id.present? ? executions.where(job: { batch_id: batch_id }) : executions
+        end
+
+        def filter_jobs_by_batch(jobs)
+          batch_id.present? ? jobs.where(batch_id: batch_id) : jobs
+        end
+
         def filter_jobs_by_class(jobs)
           job_class_name.present? ? jobs.where(class_name: job_class_name) : jobs
         end
@@ -297,6 +308,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def matches_queue_name?(job)
           queue_name.blank? || job.queue_name == queue_name
+        end
+
+        def matches_batch?(job)
+          batch_id.blank? || job.batch_id.to_s == batch_id.to_s
         end
 
         def solid_queue_status

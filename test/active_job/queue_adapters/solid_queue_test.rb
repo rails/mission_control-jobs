@@ -8,7 +8,124 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     SolidQueue.logger = ActiveSupport::Logger.new(nil)
   end
 
+  test "supports batches only when the Solid Queue batch API is available" do
+    assert ActiveJob::Base.queue_adapter.supports_batches?
+
+    SolidQueue.stubs(:const_defined?).returns(false)
+
+    assert_not ActiveJob::Base.queue_adapter.supports_batches?
+  end
+
+  test "supports batches only when the Solid Queue batch migration has been run" do
+    SolidQueue::Batch.stubs(:migrated?).returns(false)
+
+    assert_not ActiveJob::Base.queue_adapter.supports_batches?
+  end
+
+  test "find a job by id applies the batch filter" do
+    batch_1, job_1 = create_batch
+    _batch_2, job_2 = create_batch
+
+    batch_jobs = ActiveJob.jobs.where(batch_id: batch_1.id)
+
+    assert_equal job_1.job_id, batch_jobs.find_by_id(job_1.job_id).job_id
+    assert_nil batch_jobs.find_by_id(job_2.job_id)
+  end
+
+  test "counts the jobs of every batch listed with the same three queries" do
+    4.times { create_batch }
+
+    queries = capture_select_queries do
+      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation)
+      assert_equal [ 0, 0, 0, 0 ], batches.pluck(:failed_jobs)
+      assert_equal [ 0.0, 0.0, 0.0, 0.0 ], batches.pluck(:progress_percentage)
+    end
+
+    assert_equal 3, queries.size, queries.join("\n\n")
+  end
+
+  test "breaks jobs down by status for a single batch" do
+    batch, = create_batch
+
+    attributes = ActiveJob::Base.queue_adapter.find_batch(batch.id)
+
+    assert_equal 1, attributes[:pending_jobs]
+    assert_equal [ 0, 0, 0, 0 ], attributes.values_at(:failed_jobs, :in_progress_jobs, :blocked_jobs, :scheduled_jobs)
+  end
+
+  test "lists finished batches without counting their jobs" do
+    batch, = create_batch
+    batch.update!(finished_at: Time.current, completed_jobs: 1, failed_jobs: 0)
+
+    queries = capture_select_queries do
+      batches = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation(status: :finished))
+      assert_equal [ batch.id ], batches.pluck(:id)
+      assert_equal [ 1 ], batches.pluck(:completed_jobs)
+      assert_equal [ 100.0 ], batches.pluck(:progress_percentage)
+    end
+
+    assert_equal 1, queries.size, queries.join("\n\n")
+    assert_no_match(/solid_queue_batch_executions|solid_queue_ready_executions|solid_queue_failed_executions/, queries.first)
+  end
+
+  test "never reports negative counts while a retry overlaps its previous attempt" do
+    batch, job = create_batch
+    previous_attempt = SolidQueue::Job.find_by(active_job_id: job.job_id)
+    enqueue_retry_of previous_attempt
+
+    assert_equal 1, batch.reload.total_jobs
+    assert_equal 2, SolidQueue::BatchExecution.where(batch_id: batch.id).count
+
+    attributes = ActiveJob::Base.queue_adapter.fetch_batches(batches_relation(status: :unfinished)).sole
+
+    assert_equal 0, attributes[:completed_jobs]
+    assert_equal 0.0, attributes[:progress_percentage]
+    assert_includes 0..100, attributes[:progress_percentage]
+  end
+
+  test "caps batches count like job counts" do
+    3.times { create_batch }
+
+    original_limit = MissionControl::Jobs.internal_query_count_limit
+    MissionControl::Jobs.internal_query_count_limit = 2
+
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.count_batches(batches_relation)
+    assert_equal Float::INFINITY, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :unfinished))
+  ensure
+    MissionControl::Jobs.internal_query_count_limit = original_limit
+  end
+
+  test "returns an exact batches count below the internal limit" do
+    2.times { create_batch }
+    finished, = create_batch
+    finished.update!(finished_at: Time.current)
+
+    original_limit = MissionControl::Jobs.internal_query_count_limit
+    MissionControl::Jobs.internal_query_count_limit = 5
+
+    assert_equal 3, ActiveJob::Base.queue_adapter.count_batches(batches_relation)
+    assert_equal 2, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :unfinished))
+    assert_equal 1, ActiveJob::Base.queue_adapter.count_batches(batches_relation(status: :finished))
+  ensure
+    MissionControl::Jobs.internal_query_count_limit = original_limit
+  end
+
   private
+    def batches_relation(status: nil)
+      MissionControl::Jobs::BatchesRelation.new(queue_adapter: ActiveJob::Base.queue_adapter, status: status)
+    end
+
+    def create_batch
+      job = nil
+      batch = SolidQueue::Batch.enqueue { job = DummyJob.perform_later }
+      [ batch, job ]
+    end
+
+    def enqueue_retry_of(job)
+      attributes = job.attributes.except("id", "created_at", "updated_at")
+      SolidQueue::Job.create!(attributes.merge("arguments" => job.arguments.merge("executions" => 1)))
+    end
+
     def queue_adapter
       :solid_queue
     end

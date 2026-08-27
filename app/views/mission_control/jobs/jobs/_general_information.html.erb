@@ -67,5 +67,13 @@
       </td>
     </tr>
   <% end %>
+  <% if job.batch_id.present? %>
+    <tr>
+      <th>Part of</th>
+      <td>
+        <%= link_to "batch #{job.batch_id}", application_batch_path(@application, job.batch_id) %>
+      </td>
+    </tr>
+  <% end %>
   </tbody>
 </table>

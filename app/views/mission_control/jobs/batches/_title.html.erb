@@ -1,0 +1,13 @@
+<h1 class="title">
+  <div class="level">
+    <div class="level-left">
+      Batch <%= batch.id %>
+      <% if batch.description.present? %>
+        <span class="has-text-grey ml-2"><%= batch.description %></span>
+      <% end %>
+    </div>
+    <div class="level-right">
+      <%= render "mission_control/jobs/batches/status", batch: batch %>
+    </div>
+  </div>
+</h1>
