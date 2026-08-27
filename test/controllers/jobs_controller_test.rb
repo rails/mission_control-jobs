@@ -41,6 +41,18 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", /AutoRetryingJob\s+failed\s+/
     assert_includes response.body, job.job_id
     assert_select "div.is-danger", "failed"
+    assert_select "tr", /Retries\s+2/
+  end
+
+  test "get scheduled jobs flagging retries" do
+    DummyJob.set(wait: 1.hour).perform_later(42)
+    DummyJob.new(43).tap { |job| job.executions = 1 }.enqueue(wait: 1.hour)
+
+    get mission_control_jobs.application_jobs_url(@application, :scheduled)
+    assert_response :ok
+
+    assert_select "tr.job", 2
+    assert_select "tr.job div.tag", text: "1st retry", count: 1
   end
 
   test "get blocked jobs with their expiration" do

@@ -26,6 +26,12 @@
       <%= time_distance_in_words_with_title(job.enqueued_at.to_datetime) %> ago
     </td>
   </tr>
+  <% if job.executions > 0 %>
+    <tr>
+      <th>Retries</th>
+      <td><%= job.executions %></td>
+    </tr>
+  <% end %>
   <% if job.scheduled? %>
     <tr>
       <th>Scheduled</th>
