@@ -40,25 +40,29 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Batches
     # only live batches pay for job counting — a page of history runs no
     # count queries at all.
     def attributes_for_batches(batches, job_statuses_to_count:)
-      job_counts = job_counts_for(batches.reject(&:finished_at?), job_statuses_to_count)
-      batches.collect { |batch| batch_attributes_from_solid_queue_batch(batch, job_counts[batch.id]) }
+      counts_by_status = job_counts_for(batches.reject(&:finished_at?), job_statuses_to_count)
+
+      batches.collect do |batch|
+        job_counts = counts_by_status.transform_values { |counts_by_batch_id| counts_by_batch_id.fetch(batch.id, 0) }
+        batch_attributes_from_solid_queue_batch(batch, job_counts)
+      end
     end
 
-    # One grouped count per status covers every batch given, so a page costs
-    # the same number of queries as a single batch.
+    # One grouped count per status covers every batch given, so a page costs the
+    # same number of queries as a single batch:
+    #
+    #   { failed: { 12 => 1 }, outstanding: { 12 => 4, 13 => 9 } }
     def job_counts_for(batches, job_statuses_to_count)
       return {} if batches.none?
 
       batch_ids = batches.map(&:id)
       jobs_in_batches = SolidQueue::Job.where(batch_id: batch_ids).group(:batch_id)
+
       counts_by_status = job_execution_classes.slice(*job_statuses_to_count).transform_values do |execution_class|
         execution_class.joins(:job).merge(jobs_in_batches).count
       end
-      counts_by_status[:outstanding] = SolidQueue::BatchExecution.where(batch_id: batch_ids).group(:batch_id).count
 
-      batch_ids.index_with do |batch_id|
-        counts_by_status.transform_values { |counts_by_batch_id| counts_by_batch_id.fetch(batch_id, 0) }
-      end
+      counts_by_status.merge(outstanding: SolidQueue::BatchExecution.where(batch_id: batch_ids).group(:batch_id).count)
     end
 
     def batch_attributes_from_solid_queue_batch(batch, job_counts)
