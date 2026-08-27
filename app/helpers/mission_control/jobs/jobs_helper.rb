@@ -38,6 +38,10 @@ module MissionControl::Jobs::JobsHelper
     job.scheduled_at.before?(MissionControl::Jobs.scheduled_job_delay_threshold.ago)
   end
 
+  def blocked_job_expiration(job)
+    "Expires #{bidirectional_time_distance_in_words_with_title(job.blocked_until)}".html_safe if job.blocked_until
+  end
+
   private
     def renderable_job_arguments_for(job)
       job.serialized_arguments.collect do |argument|
