@@ -21,4 +21,10 @@ class MissionControl::Jobs::QueuesControllerTest < ActionDispatch::IntegrationTe
     assert_select "tbody td", "default"
     assert_select "tbody td", "1"
   end
+
+  test "turbo prefetch is disabled" do
+    get mission_control_jobs.application_queues_url(@application)
+
+    assert_select %(meta[name="turbo-prefetch"][content="false"])
+  end
 end
