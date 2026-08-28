@@ -26,6 +26,10 @@ MissionControl::Jobs::Engine.routes.draw do
   # Allow referencing urls without providing an application_id. It will default to the first one.
   resources :queues, only: [ :index, :show ]
 
+  namespace :internal_api do
+    resources :navigation, only: [ :index ]
+  end
+
   resources :jobs, only: :show
   resources :jobs, only: :index, path: ":status/jobs"
 
