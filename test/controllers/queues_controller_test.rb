@@ -14,6 +14,7 @@ class MissionControl::Jobs::QueuesControllerTest < ActionDispatch::IntegrationTe
 
     get mission_control_jobs.application_queues_url(@application)
 
+    assert_select "p", "1 pending job across 1 queue"
     assert_select "thead th", "Queue"
     assert_select "thead th", "Pending jobs"
 

@@ -1,5 +1,9 @@
 <% navigation(title: "Queues", section: :queues)  %>
 
+<% if @queues.any? %>
+  <p class="has-text-grey mb-4"><%= pluralize(@queues.sum(&:size), "pending job") %> across <%= pluralize(@queues.size, "queue") %></p>
+<% end %>
+
 <table class="queues table is-hoverable is-fullwidth">
   <thead>
   <tr>
