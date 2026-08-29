@@ -23,6 +23,19 @@ class MissionControl::Jobs::QueuesControllerTest < ActionDispatch::IntegrationTe
     assert_select "tbody td", "1"
   end
 
+  test "truncate long job arguments in the queue's job list" do
+    job = DummyJob.perform_later("a" * 1000)
+
+    get mission_control_jobs.application_queue_url(@application, "default")
+    assert_response :ok
+    assert_select "tr.job", /a{297}\.\.\./
+    assert_no_match(/a{298}/, response.body)
+
+    get mission_control_jobs.application_job_url(@application, job.job_id)
+    assert_response :ok
+    assert_includes response.body, "a" * 1000
+  end
+
   test "turbo prefetch is disabled" do
     get mission_control_jobs.application_queues_url(@application)
 
