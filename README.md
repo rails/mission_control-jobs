@@ -103,6 +103,23 @@ If you do this, you can disable the default HTTP Basic Authentication using the 
 config.mission_control.jobs.http_basic_auth_enabled = false
 ```
 
+Your base controller's code runs inside the engine, whose route helpers take precedence. Route helpers of your app that Mission Control doesn't define itself, like `new_session_path` from Rails' authentication generator, still work as they are, for example from a `before_action` that redirects to the login page. Helpers that both your app and Mission Control define, like `root_path`, resolve to Mission Control's; use `main_app.root_path` to reach your app's.
+
+#### Authentication via route constraints
+
+You can also keep authentication out of Mission Control's controllers altogether and restrict access when mounting the engine, using [route constraints](https://guides.rubyonrails.org/routing.html#advanced-constraints). For example, with the sessions created by Rails' authentication generator:
+
+```ruby
+# config/routes.rb
+Rails.application.routes.draw do
+  constraints ->(request) { Session.find_by(id: request.cookie_jar.signed[:session_id])&.user&.admin? } do
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+  end
+end
+```
+
+Requests that don't satisfy the constraint never reach the engine. As with a custom base controller, disable HTTP Basic Authentication if you don't want both.
+
 ### Other configuration settings
 
 Besides `base_controller_class`, you can also set the following for `MissionControl::Jobs` or `config.mission_control.jobs`:
