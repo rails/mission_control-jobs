@@ -115,14 +115,14 @@ module ActiveJob::QueueAdapters::ResqueExt
       end
 
       def all
-        @all ||= fetch_resque_jobs.collect.with_index { |resque_job, index| deserialize_resque_job(resque_job, index) if resque_job.is_a?(Hash) }.compact
+        @all ||= fetch_resque_jobs.collect { |resque_job, position| deserialize_resque_job(resque_job, position) if resque_job.is_a?(Hash) }.compact
       end
 
       def retry_all
         if use_batches?
           retry_all_in_batches
         else
-          retry_jobs(jobs_relation.to_a.reverse)
+          retry_jobs(jobs_relation.to_a)
         end
       end
 
@@ -165,6 +165,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           !paginated? && !jobs_relation.filtering_needed?
         end
 
+        # Returns pairs of raw Resque job and its position in the Redis list
         def fetch_resque_jobs
           if jobs_relation.failed? || jobs_relation.queue_name.blank?
             fetch_failed_resque_jobs
@@ -173,24 +174,32 @@ module ActiveJob::QueueAdapters::ResqueExt
           end
         end
 
+        # Failed jobs are listed newest first, but Resque stores them oldest first,
+        # so read them from the end of the list, keeping their positions in it.
         def fetch_failed_resque_jobs
-          Array.wrap(Resque::Failure.all(jobs_relation.offset_value, jobs_relation.limit_value))
+          newest = failed_jobs_count - jobs_relation.offset_value - 1
+          oldest = [ newest - jobs_relation.limit_value + 1, 0 ].max
+          return [] if newest < 0
+
+          Array.wrap(Resque::Failure.all(oldest, newest - oldest + 1)).reverse.zip(newest.downto(oldest).to_a)
         end
 
         def fetch_queue_resque_jobs
           unless jobs_relation.queue_name.present?
             raise ActiveJob::Errors::QueryError, "This adapter requires a queue name unless fetching failed jobs"
           end
-          Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value))
+          Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)).each_with_index.collect do |resque_job, index|
+            [ resque_job, jobs_relation.offset_value + index ]
+          end
         end
 
-        def deserialize_resque_job(resque_job_hash, index)
+        def deserialize_resque_job(resque_job_hash, position)
           args_hash = extract_args_hash(resque_job_hash)
           ActiveJob::JobProxy.new(args_hash).tap do |job|
             job.last_execution_error = execution_error_from_resque_job(resque_job_hash)
             job.raw_data = resque_job_hash
             job.filtered_raw_data = filter_raw_data_arguments(resque_job_hash)
-            job.position = jobs_relation.offset_value + index
+            job.position = position
             job.failed_at = resque_job_hash["failed_at"]&.to_datetime&.utc
             job.status = job.failed_at.present? ? :failed : :pending
           end
@@ -248,9 +257,14 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def retry_jobs(jobs)
-          in_transactional_jobs_batches(jobs) do |jobs_batch|
+          in_transactional_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
             jobs_batch.each { |job| retry_job(job) }
           end
+        end
+
+        # Removing a job shifts the ones after it in the list, so operate from the end
+        def jobs_by_descending_position(jobs)
+          jobs.sort_by(&:position).reverse
         end
 
         def in_transactional_jobs_batches(jobs)
@@ -288,12 +302,12 @@ module ActiveJob::QueueAdapters::ResqueExt
           if use_batches?
             discard_all_in_batches
           else
-            discard_jobs(jobs_relation.to_a.reverse)
+            discard_jobs(jobs_relation.to_a)
           end
         end
 
         def discard_jobs(jobs)
-          in_transactional_jobs_batches(jobs) do |jobs_batch|
+          in_transactional_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
             jobs_batch.each { |job| discard(job) }
           end
         end

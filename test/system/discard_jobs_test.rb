@@ -23,7 +23,7 @@ class DiscardJobsTest < ApplicationSystemTestCase
 
   test "discard a single job" do
     assert_equal 9, job_row_elements.length
-    expected_job_id = ActiveJob.jobs.failed[2].job_id
+    expected_job_id = ActiveJob.jobs.failed.find { |job| job.serialized_arguments == [ "failing-arg-2" ] }.job_id
 
     within_job_row "failing-arg-2" do
       accept_confirm do

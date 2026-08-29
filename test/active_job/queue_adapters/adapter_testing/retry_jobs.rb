@@ -45,7 +45,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
 
     assert_equal 7, ActiveJob.jobs.failed.count
 
-    [ 0, 1, 5, 6, 7, 8, 9 ].each.with_index do |expected_argument, index|
+    [ 9, 8, 4, 3, 2, 1, 0 ].each.with_index do |expected_argument, index|
       assert_equal [ expected_argument ], ActiveJob.jobs.failed[index].serialized_arguments
     end
   end
