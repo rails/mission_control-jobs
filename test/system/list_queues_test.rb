@@ -8,6 +8,8 @@ class ListQueuesTest < ApplicationSystemTestCase
   test "list queues sorted by name" do
     visit queues_path
 
+    assert_text "10 pending jobs across 10 queues"
+
     assert_equal 10, queue_row_elements.length
     queue_row_elements.each.with_index do |queue_element, index|
       within queue_element do
