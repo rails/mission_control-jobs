@@ -30,8 +30,9 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
       get mission_control_jobs.application_recurring_task_url(@application, "periodic_pause_job")
       assert_response :ok
       assert_select "h1", /periodic_pause_job/
-      assert_select "h2", "1 job"
-      assert_select "tr.job", 1
+      # The task runs every second, so it may have run once or twice by now
+      assert_select "h2", /\A\d+ jobs?\z/
+      assert_select "tr.job", minimum: 1
       assert_select "td a", "PauseJob"
       assert_select "td", /less than \d+ seconds ago/
     end
