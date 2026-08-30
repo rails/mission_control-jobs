@@ -30,6 +30,26 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_equal 1, ready_execution_counts
   end
 
+  test "filter jobs by scheduled_at and enqueued_at natively" do
+    DummyJob.set(wait: 30.minutes).perform_later(1)
+    DummyJob.set(wait: 3.hours).perform_later(2)
+    DummyJob.perform_later(3)
+    FailingJob.perform_later(4)
+    perform_enqueued_jobs
+
+    scheduled_soon = ActiveJob.jobs.scheduled.where(scheduled_at: Time.now..1.hour.from_now)
+    assert_not scheduled_soon.filtering_needed?
+    assert_equal [ [ 1 ] ], scheduled_soon.map(&:serialized_arguments)
+
+    enqueued_now = ActiveJob.jobs.failed.where(enqueued_at: 1.minute.ago..)
+    assert_not enqueued_now.filtering_needed?
+    assert_equal [ [ 4 ] ], enqueued_now.map(&:serialized_arguments)
+    assert_empty ActiveJob.jobs.failed.where(enqueued_at: ..1.minute.ago)
+
+    assert_equal 1, ActiveJob.jobs.finished.where(enqueued_at: 1.minute.ago..).count
+    assert_empty ActiveJob.jobs.finished.where(scheduled_at: 1.hour.from_now..)
+  end
+
   private
     def queue_adapter
       :solid_queue
