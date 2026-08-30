@@ -44,6 +44,34 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tr", /Retries\s+2/
   end
 
+  test "failed job details include copy as text button" do
+    job = FailingJob.perform_later(42)
+
+    perform_enqueued_jobs_async
+
+    get mission_control_jobs.application_job_url(@application, job.job_id)
+    assert_response :ok
+
+    assert_select "button[data-action='copy#copy']", "Copy as text"
+    copy_text = css_select("pre[data-copy-target='source']").first.text
+    assert_match(/Job: FailingJob/, copy_text)
+    assert_match(/Job id: #{job.job_id}/, copy_text)
+    assert_match(/Arguments:.*42/m, copy_text)
+    assert_match(/RuntimeError: This always fails!/, copy_text)
+    assert_match(/failing_job.rb/, copy_text)
+    assert_match(/"job_class": "FailingJob"/, copy_text)
+  end
+
+  test "copy as text button is not rendered for non failed jobs" do
+    job = DummyJob.perform_later(42)
+
+    get mission_control_jobs.application_job_url(@application, job.job_id)
+    assert_response :ok
+
+    assert_no_match(/Copy as text/, response.body)
+    assert_no_match(/data-copy-target="source"/, response.body)
+  end
+
   test "get scheduled jobs flagging retries" do
     DummyJob.set(wait: 1.hour).perform_later(42)
     DummyJob.new(43).tap { |job| job.executions = 1 }.enqueue(wait: 1.hour)

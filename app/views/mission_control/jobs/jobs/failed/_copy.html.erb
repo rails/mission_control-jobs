@@ -1,0 +1,4 @@
+<%= tag.div data: { controller: "copy" } do %>
+  <%= button_tag "Copy as text", type: "button", class: "button is-info is-light mr-0", data: { action: "copy#copy", copy_target: "button" } %>
+  <%= tag.pre job_copy_text(job, @server), data: { copy_target: "source" }, class: "is-hidden" %>
+<% end %>
