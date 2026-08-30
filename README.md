@@ -304,6 +304,11 @@ ActiveJob.jobs.finished.where(job_class_name: "SomeJob")
 # For adapters that support filtering by worker:
 # All jobs in progress being run by a given worker
 ActiveJob.jobs.in_progress.where(worker_id: 42)
+
+# Filtering by dates takes a range, which can be open on either end
+ActiveJob.jobs.failed.where(enqueued_at: 2.days.ago..)
+ActiveJob.jobs.scheduled.where(scheduled_at: Time.now..1.hour.from_now)
+ActiveJob.jobs.finished.where(finished_at: ..1.week.ago)
 ```
 
 Some examples of bulk operations:

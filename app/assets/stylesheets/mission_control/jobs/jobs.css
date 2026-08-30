@@ -1,3 +1,9 @@
+.filter,
+.filter form {
+    max-width: 100%;
+    min-width: 0;
+}
+
 .filter input {
     width: 15rem;
 }

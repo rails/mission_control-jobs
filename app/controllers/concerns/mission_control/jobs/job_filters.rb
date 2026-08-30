@@ -12,7 +12,9 @@ module MissionControl::Jobs::JobFilters
       @job_filters = {
         job_class_name: params.dig(:filter, :job_class_name).to_s.strip.presence,
         queue_name: params.dig(:filter, :queue_name).to_s.strip.presence,
-        finished_at: finished_at_range_params
+        finished_at: date_range_params(:finished_at),
+        scheduled_at: date_range_params(:scheduled_at),
+        enqueued_at: date_range_params(:enqueued_at)
       }.compact
     end
 
@@ -28,8 +30,8 @@ module MissionControl::Jobs::JobFilters
       end
     end
 
-    def finished_at_range_params
-      range_start, range_end = params.dig(:filter, :finished_at_start), params.dig(:filter, :finished_at_end)
+    def date_range_params(attribute)
+      range_start, range_end = params.dig(:filter, :"#{attribute}_start"), params.dig(:filter, :"#{attribute}_end")
       if range_start || range_end
         (parse_with_time_zone(range_start)..parse_with_time_zone(range_end))
       end
