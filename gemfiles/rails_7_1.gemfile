@@ -4,3 +4,7 @@ gemspec path: ".."
 
 gem "rails", "~> 7.1.0"
 gem "capybara"
+
+# Resque 3 needs Active Job 7.2's AbstractAdapter, and minitest 6 needs Rails 8's test runner
+gem "resque", "< 3"
+gem "minitest", "< 6"
