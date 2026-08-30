@@ -10,3 +10,6 @@
 /test/dummy/tmp/
 .DS_Store
 .ruby-gemset
+
+# Lockfiles of the CI gemfiles, resolved fresh on each run
+gemfiles/*.lock
