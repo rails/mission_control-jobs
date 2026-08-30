@@ -42,7 +42,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
   end
 
   def supported_job_filters(*)
-    [ :queue_name, :job_class_name, :finished_at ]
+    [ :queue_name, :job_class_name, :finished_at, :scheduled_at, :enqueued_at ]
   end
 
   def jobs_count(jobs_relation)
@@ -187,7 +187,7 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         attr_reader :jobs_relation
 
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
-          :default_page_size, :worker_id, :recurring_task_id, :finished_at, to: :jobs_relation
+          :default_page_size, :worker_id, :recurring_task_id, :finished_at, :scheduled_at, :enqueued_at, to: :jobs_relation
 
         def executions
           execution_class_by_status
@@ -196,6 +196,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
             .then { |executions| filter_executions_by_task_key(executions) }
+            .then { |executions| filter_executions_by_scheduled_at(executions) }
+            .then { |executions| filter_executions_by_enqueued_at(executions) }
             .then { |executions| limit(executions) }
             .then { |executions| offset(executions) }
         end
@@ -205,6 +207,8 @@ module ActiveJob::QueueAdapters::SolidQueueExt
             .then { |jobs| filter_jobs_by_queue(jobs) }
             .then { |jobs| filter_jobs_by_class(jobs) }
             .then { |jobs| filter_jobs_by_finished_at(jobs) }
+            .then { |jobs| filter_jobs_by_scheduled_at(jobs) }
+            .then { |jobs| filter_jobs_by_enqueued_at(jobs) }
             .then { |jobs| limit(jobs) }
             .then { |jobs| offset(jobs) }
         end
@@ -289,6 +293,29 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
         def filter_jobs_by_finished_at(jobs)
           finished_at.present? ? jobs.where(finished_at: finished_at) : jobs
+        end
+
+        def filter_executions_by_scheduled_at(executions)
+          return executions unless scheduled_at.present?
+
+          if solid_queue_status.scheduled?
+            executions.where(scheduled_at: scheduled_at)
+          else
+            executions.where(job: { scheduled_at: scheduled_at })
+          end
+        end
+
+        def filter_jobs_by_scheduled_at(jobs)
+          scheduled_at.present? ? jobs.where(scheduled_at: scheduled_at) : jobs
+        end
+
+        # Jobs are created when enqueued
+        def filter_executions_by_enqueued_at(executions)
+          enqueued_at.present? ? executions.where(job: { created_at: enqueued_at }) : executions
+        end
+
+        def filter_jobs_by_enqueued_at(jobs)
+          enqueued_at.present? ? jobs.where(created_at: enqueued_at) : jobs
         end
 
         def limit(executions_or_jobs)
