@@ -2,14 +2,10 @@
 
 <div class="control">
   <%= form.label :"#{attribute}_start", "#{label} from", class: "label" %>
-  <div class="select is-rounded">
-    <%= form.datetime_field :"#{attribute}_start", value: @job_filters[attribute]&.begin, class: "input" %>
-  </div>
+  <%= form.datetime_field :"#{attribute}_start", value: @job_filters[attribute]&.begin, class: "input is-rounded" %>
 </div>
 
 <div class="control">
   <%= form.label :"#{attribute}_end", "#{label} to", class: "label" %>
-  <div class="select is-rounded">
-    <%= form.datetime_field :"#{attribute}_end", value: @job_filters[attribute]&.end, class: "input" %>
-  </div>
+  <%= form.datetime_field :"#{attribute}_end", value: @job_filters[attribute]&.end, class: "input is-rounded" %>
 </div>
