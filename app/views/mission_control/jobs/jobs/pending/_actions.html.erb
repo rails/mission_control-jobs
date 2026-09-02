@@ -1,0 +1,4 @@
+<div class="buttons is-right">
+  <%= button_to "Discard", application_job_discard_path(@application, job.job_id, params: jobs_filter_param), class: "button is-danger is-light mr-0",
+    form: { data: { turbo_confirm: "This will delete the job and can't be undone. Are you sure?" } } %>
+</div>

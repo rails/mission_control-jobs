@@ -5,6 +5,9 @@
       <div class="<%= modifier_for_status(job.status) %> tag ml-4"><%= job.status %></div>
     </div>
     <div class="level-right">
+      <% if job.pending? %>
+        <%= render "mission_control/jobs/jobs/pending/actions", job: job %>
+      <% end %>
       <% if job.failed? %>
         <%= render "mission_control/jobs/jobs/failed/actions", job: job %>
       <% end %>

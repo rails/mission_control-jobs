@@ -12,7 +12,11 @@ class MissionControl::Jobs::DiscardsController < MissionControl::Jobs::Applicati
     end
 
     def redirect_location
-      status = @job.status.presence_in(supported_job_statuses) || :failed
-      application_jobs_url(@application, status, **jobs_filter_param)
+      if @job.pending?
+        application_queue_path(@application, @job.queue_name)
+      else
+        status = @job.status.presence_in(supported_job_statuses) || :failed
+        application_jobs_url(@application, status, **jobs_filter_param)
+      end
     end
 end
