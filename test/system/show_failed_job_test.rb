@@ -16,6 +16,59 @@ class ShowFailedJobsTest < ApplicationSystemTestCase
     assert_text /failing_job.rb/
   end
 
+  test "failed job details offer copy as text" do
+    within_job_row /FailingJob\s*2/ do
+      click_on "FailingJob"
+    end
+
+    assert_selector "button[data-action='copy#copy']", text: "Copy as text"
+
+    copy_source = find("pre[data-copy-target='source']", visible: false)
+    copy_text = page.evaluate_script("arguments[0].textContent", copy_source)
+    assert_match /Job: FailingJob/, copy_text
+    assert_match /Arguments:\s*2/, copy_text
+    assert_match /RuntimeError: This always fails!/, copy_text
+    assert_match /failing_job.rb/, copy_text
+  end
+
+  test "copy as text copies the job data to the clipboard" do
+    within_job_row /FailingJob\s*2/ do
+      click_on "FailingJob"
+    end
+
+    page.execute_script <<~JS
+      window.__copied = null
+      navigator.clipboard.writeText = (text) => { window.__copied = text; return Promise.resolve() }
+    JS
+
+    click_on "Copy as text"
+
+    copied_text = page.evaluate_script("window.__copied")
+    assert_match /Job: FailingJob/, copied_text
+    assert_match /RuntimeError: This always fails!/, copied_text
+    assert_match /failing_job.rb/, copied_text
+
+    assert page.evaluate_script(<<~JS)
+      document.querySelector("button[data-action='copy#copy']").textContent.trim() === "Copied!"
+    JS
+  end
+
+  test "shows a failure when copying the job data fails" do
+    within_job_row /FailingJob\s*2/ do
+      click_on "FailingJob"
+    end
+
+    page.execute_script <<~JS
+      navigator.clipboard.writeText = () => Promise.reject()
+    JS
+
+    click_on "Copy as text"
+
+    assert page.evaluate_script(<<~JS)
+      document.querySelector("button[data-action='copy#copy']").textContent.trim() === "Copy failed!"
+    JS
+  end
+
   test "filtered arguments are hidden" do
     ActiveJob.jobs.failed.discard_all
     FailingPostJob.perform_later(Post.create(title: "hello_world"), 1.year.ago, author: "Jorge")
