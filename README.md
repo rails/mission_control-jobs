@@ -228,7 +228,7 @@ When you have multiple apps and servers configured, you can choose between them 
 
 ## Basic UI usage
 
-As mentioned, the features available in Mission Control depend on the adapter you're using, as each adapter supports different features. Besides inspecting the queues and the jobs in them, and discarding and retrying failed jobs, you can inspect jobs in different statuses supported by each adapter, filter them by _queue name_ and _job class name_ (with the idea of [adding more filters in the future](https://github.com/rails/mission_control-jobs/issues/30)), pause and un-pause queues (if the adapter allows that), inspect workers, know which jobs are being run by what worker, checking a specific job or a specific worker...
+As mentioned, the features available in Mission Control depend on the adapter you're using, as each adapter supports different features. Besides inspecting the queues and the jobs in them, and discarding and retrying failed jobs, you can inspect jobs in different statuses supported by each adapter, filter them by _queue name_, _job class name_ and, for failed jobs, _error class name_ (with the idea of [adding more filters in the future](https://github.com/rails/mission_control-jobs/issues/30)), pause and un-pause queues (if the adapter allows that), inspect workers, know which jobs are being run by what worker, checking a specific job or a specific worker...
 
 ![Default queue tab](docs/images/default-queue.png)
 

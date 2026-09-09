@@ -12,6 +12,7 @@ module MissionControl::Jobs::JobFilters
       @job_filters = {
         job_class_name: params.dig(:filter, :job_class_name).to_s.strip.presence,
         queue_name: params.dig(:filter, :queue_name).to_s.strip.presence,
+        error_class_name: params.dig(:filter, :error_class_name).to_s.strip.presence,
         finished_at: date_range_params(:finished_at),
         scheduled_at: date_range_params(:scheduled_at),
         enqueued_at: date_range_params(:enqueued_at)

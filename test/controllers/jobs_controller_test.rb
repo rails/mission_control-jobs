@@ -123,6 +123,7 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tr.job", 2
     assert_select "input[name='filter[scheduled_at_start]']"
     assert_select "input[name='filter[finished_at_start]']", 0
+    assert_select "input[name='filter[error_class_name]']", 0
 
     get mission_control_jobs.application_jobs_url(@application, :scheduled, filter: { scheduled_at_start: 1.hour.from_now.strftime("%Y-%m-%dT%H:%M") })
     assert_response :ok
@@ -238,5 +239,34 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_select "tr.job", 1
     assert_select "tr.job", /DummyJob/
+  end
+
+  test "empty error class name after stripping whitespace does not filter" do
+    FailingJob.perform_later(42)
+    FailingWithCustomErrorJob.perform_later
+    perform_enqueued_jobs_async
+
+    get mission_control_jobs.application_jobs_url(@application, :failed, filter: { error_class_name: " \n\t \n\t" })
+    assert_response :ok
+    assert_select "tr.job", 2
+    assert_select "tr.job", /RuntimeError/
+    assert_select "tr.job", /FailingWithCustomErrorJob::CustomError/
+  end
+
+  test "get failed jobs filtered by error class name ignoring surrounding white spaces, newlines and tabs" do
+    FailingJob.perform_later(42)
+    FailingWithCustomErrorJob.perform_later
+    perform_enqueued_jobs_async
+
+    get mission_control_jobs.application_jobs_url(@application, :failed)
+    assert_response :ok
+    assert_select "tr.job", 2
+    assert_select "input[name='filter[error_class_name]']"
+    assert_select "datalist#error-classes option[value='RuntimeError']"
+
+    get mission_control_jobs.application_jobs_url(@application, :failed, filter: { error_class_name: " \n\tRuntimeError \n\t" })
+    assert_response :ok
+    assert_select "tr.job", 1
+    assert_select "tr.job", /RuntimeError/
   end
 end
