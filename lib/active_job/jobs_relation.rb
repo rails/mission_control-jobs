@@ -25,7 +25,7 @@ class ActiveJob::JobsRelation
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
   FILTERS = %i[ queue_name job_class_name scheduled_at enqueued_at ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at scheduled_at enqueued_at ]
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id batch_id finished_at scheduled_at enqueued_at ]
   attr_reader(*PROPERTIES, :default_page_size)
 
   delegate :last, :[], :reverse, to: :to_a
@@ -51,15 +51,17 @@ class ActiveJob::JobsRelation
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
+  # * <tt>:batch_id</tt> - To only include the jobs belonging to a given batch.
   # * <tt>:finished_at</tt> - (Range) To only include the jobs finished between the provided range
   # * <tt>:scheduled_at</tt> - (Range) To only include the jobs scheduled between the provided range
   # * <tt>:enqueued_at</tt> - (Range) To only include the jobs enqueued between the provided range
-  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, batch_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
       queue_name: queue_name&.to_s,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
+      batch_id: batch_id,
       finished_at: finished_at,
       scheduled_at: scheduled_at,
       enqueued_at: enqueued_at

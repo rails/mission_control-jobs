@@ -8,11 +8,18 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
 
   test "get workers" do
     perform_enqueued_jobs_async(wait: 0) do
+      wait_for_claimed_executions(2)
       worker = @server.workers_relation.first
       get mission_control_jobs.application_workers_url(@application)
 
       assert_select "tr.worker", 1
       assert_select "tr.worker", /worker #{worker.id}\s+PID: \d+\s+my-hostname-123\s+PauseJob/
+    end
+  end
+
+  test "workers are registered by the time performing jobs asynchronously returns" do
+    perform_enqueued_jobs_async(wait: 0) do
+      assert_not_nil @server.workers_relation.first
     end
   end
 
@@ -30,6 +37,7 @@ class MissionControl::Jobs::WorkersControllerTest < ActionDispatch::IntegrationT
 
   test "get worker details" do
     perform_enqueued_jobs_async(wait: 0) do
+      wait_for_claimed_executions(2)
       worker = @server.workers_relation.first
 
       get mission_control_jobs.application_worker_url(@application, worker.id)
