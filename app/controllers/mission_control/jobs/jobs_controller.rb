@@ -5,6 +5,7 @@ class MissionControl::Jobs::JobsController < MissionControl::Jobs::ApplicationCo
 
   def index
     @job_class_names = jobs_with_status.job_class_names
+    @error_class_names = jobs_status&.failed? ? jobs_with_status.error_class_names : []
     @queue_names = ActiveJob.queues.map(&:name)
 
     @jobs_page = MissionControl::Jobs::Page.new(filtered_jobs_with_status, page: params[:page].to_i)

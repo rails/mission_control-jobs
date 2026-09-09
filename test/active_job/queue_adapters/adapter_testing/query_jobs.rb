@@ -137,6 +137,31 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal 5, ActiveJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
 
+  test "filter jobs by error class name" do
+    3.times { FailingJob.perform_later }
+    2.times { FailingWithCustomErrorJob.perform_later }
+    perform_enqueued_jobs
+
+    runtime_errors = ActiveJob.jobs.failed.where(error_class_name: "RuntimeError")
+    custom_errors = ActiveJob.jobs.failed.where(error_class_name: "FailingWithCustomErrorJob::CustomError")
+
+    assert_equal 3, runtime_errors.count
+    runtime_errors.each { |job| assert_job_proxy FailingJob, job }
+
+    assert_equal 2, custom_errors.count
+    custom_errors.each { |job| assert_job_proxy FailingWithCustomErrorJob, job }
+
+    assert_empty ActiveJob.jobs.failed.where(error_class_name: "SomeOtherError")
+  end
+
+  test "fetch error classes in the first failed jobs" do
+    2.times { FailingJob.perform_later }
+    2.times { FailingWithCustomErrorJob.perform_later }
+    perform_enqueued_jobs
+
+    assert_equal [ "FailingWithCustomErrorJob::CustomError", "RuntimeError" ], ActiveJob.jobs.failed.error_class_names.sort
+  end
+
   test "fetch job classes in the first jobs" do
     3.times { DummyJob.perform_later }
     10.times { DummyReloadedJob.perform_later }

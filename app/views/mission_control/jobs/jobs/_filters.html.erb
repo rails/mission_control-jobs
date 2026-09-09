@@ -17,6 +17,15 @@
         </div>
       </div>
 
+      <% if jobs_status == "failed" %>
+        <div class="control">
+          <%= form.label :error_class_name, class: "label" %>
+          <div class="select is-rounded">
+            <%= form.text_field :error_class_name, value: @job_filters[:error_class_name], class: "input", list: "error-classes", placeholder: "Filter by error class...", autocomplete: "off" %>
+          </div>
+        </div>
+      <% end %>
+
       <% if jobs_status == "finished" %>
         <%= render "mission_control/jobs/jobs/date_range_filter", form: form, attribute: :finished_at, label: "Finished" %>
       <% else %>
@@ -38,6 +47,12 @@
       <datalist id="queue-names" class="is-hidden">
         <% queue_names.each do |queue_name| %>
           <option value="<%= queue_name %>"></option>
+        <% end %>
+      </datalist>
+
+      <datalist id="error-classes" class="is-hidden">
+        <% error_class_names.each do |error_class_name| %>
+          <option value="<%= error_class_name %>"></option>
         <% end %>
       </datalist>
 
