@@ -20,8 +20,29 @@ module ActiveJob::QueueAdapters::SolidQueueExt::Workers
   end
 
   private
-    def solid_queue_processes_from_workers_relation(relation)
-      SolidQueue::Process.where(kind: "Worker").offset(relation.offset_value).limit(relation.limit_value)
+
+    def solid_queue_processes_from_workers_relation(workers_relation)
+      SolidQueue::Process.where(kind: "Worker")
+        .then { |workers| filter_by_hostname(workers, workers_relation.hostname) }
+        .then { |workers| filter_by_pid(workers, workers_relation.pid) }
+        .then { |workers| limit(workers, workers_relation.limit_value) }
+        .then { |workers| offset(workers, workers_relation.offset_value) }
+    end
+
+    def filter_by_hostname(workers, hostname)
+      hostname.present? ? workers.where(hostname: hostname) : workers
+    end
+
+    def filter_by_pid(workers, pid)
+      pid.present? ? workers.where(pid: pid) : workers
+    end
+
+    def limit(workers, limit)
+      workers.limit(limit)
+    end
+
+    def offset(workers, offset)
+      workers.offset(offset)
     end
 
     def worker_from_solid_queue_process(process)
