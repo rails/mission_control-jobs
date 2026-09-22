@@ -8,6 +8,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
   # Include helpers if not already included
   helper MissionControl::Jobs::ApplicationHelper unless self < MissionControl::Jobs::ApplicationHelper
   helper Importmap::ImportmapTagsHelper unless self < Importmap::ImportmapTagsHelper
+  helper Turbo::Engine.helpers
 
   include MissionControl::Jobs::HostRouteHelpers
   include MissionControl::Jobs::BasicAuthentication
