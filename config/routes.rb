@@ -3,6 +3,11 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :queues, only: [ :index, :show ] do
       scope module: :queues do
         resource :pause, only: [ :create, :destroy ]
+        resource :bulk_discards, only: :create
+
+        resources :jobs, only: [] do
+          resource :discard, only: :create
+        end
       end
     end
 

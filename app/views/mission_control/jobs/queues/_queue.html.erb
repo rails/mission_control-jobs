@@ -9,8 +9,6 @@
     <%= queue.size %>
   </td>
   <td class="pr-0">
-    <% if queue_pausing_supported? %>
-      <%= render "mission_control/jobs/queues/actions", queue: queue %>
-    <% end %>
+    <%= render "mission_control/jobs/queues/actions", queue: queue %>
   </td>
 </tr>

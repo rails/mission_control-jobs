@@ -12,4 +12,12 @@
       </span>
     <% end %>
   </td>
+  <td class="pr-0">
+    <% if job.pending? %>
+      <div class="buttons is-right">
+        <%= button_to "Discard", application_queue_job_discard_path(@application, @queue.name, job.job_id), class: "button is-danger is-light mr-0",
+          form: { data: { turbo_confirm: "This will delete the job and can't be undone. Are you sure?" } } %>
+      </div>
+    <% end %>
+  </td>
 </tr>
