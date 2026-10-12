@@ -91,6 +91,23 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "ignore unparseable finished_at filter params" do
+    job = DummyJob.perform_later(42)
+    perform_enqueued_jobs_async
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: "not-a-date" })
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_start: "2026-13-40" })
+    assert_response :ok
+    assert_select "tr.job", 1
+
+    get mission_control_jobs.application_jobs_url(@application, :finished, filter: { finished_at_end: "garbage", finished_at_start: 1.hour.ago.strftime("%Y-%m-%dT%H:%M") })
+    assert_response :ok
+    assert_select "tr.job", 1
+  end
+
   test "get failed jobs filtered by enqueued_at date" do
     FailingJob.perform_later(42)
     perform_enqueued_jobs_async
