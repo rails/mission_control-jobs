@@ -192,6 +192,17 @@ class MissionControl::Jobs::BatchesControllerTest < ActionDispatch::IntegrationT
     assert_select "tr.job", 2
   end
 
+  test "open a batch job from a queue whose name changes when parameterized" do
+    batch = SolidQueue::Batch.enqueue { BatchedJob.set(queue: "Critical.Payments").perform_later(42) }
+
+    get mission_control_jobs.application_batch_url(@application, batch.id)
+    assert_response :ok
+
+    get css_select("tr.job a").first["href"]
+    assert_response :ok
+    assert_select "h1", /BatchedJob\s+pending/
+  end
+
   test "get batch details filtered by each unfinished job status" do
     batch = create_batch_with_unfinished_statuses
 
