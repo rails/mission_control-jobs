@@ -206,6 +206,25 @@ class MissionControl::Jobs::JobsControllerTest < ActionDispatch::IntegrationTest
     I18n.available_locales = previous_locales
   end
 
+  test "the host app keeps its other locales' translations when the first lookup happens in the dashboard" do
+    previous_locales, I18n.available_locales = I18n.available_locales, %i[ en es ]
+    previous_backend, I18n.backend = I18n.backend, I18n::Backend::Simple.new
+    locale_file = Tempfile.new([ "es", ".yml" ])
+    locale_file.write({ "es" => { "hello" => "Hola mundo" } }.to_yaml)
+    locale_file.close
+    I18n.load_path << locale_file.path
+
+    get mission_control_jobs.application_jobs_url(@application, :pending)
+    assert_response :ok
+
+    assert_equal "Hola mundo", I18n.t("hello", locale: :es)
+  ensure
+    I18n.load_path.delete(locale_file.path)
+    locale_file.unlink
+    I18n.backend = previous_backend
+    I18n.available_locales = previous_locales
+  end
+
   test "empty string after stripping whitespace does not filter" do
     DummyJob.perform_later(42)
     DummyReloadedJob.perform_later(42)
