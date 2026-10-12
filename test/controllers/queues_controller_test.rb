@@ -36,6 +36,18 @@ class MissionControl::Jobs::QueuesControllerTest < ActionDispatch::IntegrationTe
     assert_includes response.body, "a" * 1000
   end
 
+  test "open a job from a queue whose name changes when parameterized" do
+    job = DummyJob.set(queue: "Critical.Payments").perform_later(42)
+
+    get mission_control_jobs.application_queue_url(@application, "critical-payments")
+    assert_response :ok
+
+    get css_select("tr.job a").first["href"]
+    assert_response :ok
+    assert_select "h1", /DummyJob\s+pending/
+    assert_includes response.body, job.job_id
+  end
+
   test "turbo prefetch is disabled" do
     get mission_control_jobs.application_queues_url(@application)
 
