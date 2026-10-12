@@ -1,14 +1,12 @@
 class MissionControl::Jobs::I18nConfig < ::I18n::Config
-  AVAILABLE_LOCALES = [ :en ]
-  AVAILABLE_LOCALES_SET = [ :en, "en" ]
   DEFAULT_LOCALE = :en
 
   def available_locales
-    AVAILABLE_LOCALES
+    @available_locales ||= super | [ DEFAULT_LOCALE ]
   end
 
   def available_locales_set
-    AVAILABLE_LOCALES_SET
+    @available_locales_set ||= available_locales.flat_map { |locale| [ locale, locale.to_s ] }.to_set
   end
 
   def default_locale
