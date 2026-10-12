@@ -34,4 +34,16 @@ class ListQueuesTest < ApplicationSystemTestCase
   ensure
     MissionControl::Jobs.back_to_main_app_path = original_back_to_main_app_path
   end
+
+  test "back to main app uses configured override label" do
+    original_back_to_main_app_label = MissionControl::Jobs.back_to_main_app_label
+    MissionControl::Jobs.back_to_main_app_label = "Back to admin"
+
+    visit queues_path
+
+    assert_link "Back to admin"
+    assert_no_link "Back to main app"
+  ensure
+    MissionControl::Jobs.back_to_main_app_label = original_back_to_main_app_label
+  end
 end
