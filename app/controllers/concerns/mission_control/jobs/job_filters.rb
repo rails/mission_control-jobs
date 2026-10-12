@@ -24,10 +24,22 @@ module MissionControl::Jobs::JobFilters
 
     def jobs_filter_param
       if @job_filters&.any?
-        { filter: @job_filters }
+        { filter: filter_params_for(@job_filters) }
       else
         {}
       end
+    end
+
+    # Date ranges go back as the same +_start+ and +_end+ params that +set_filters+ reads
+    def filter_params_for(job_filters)
+      job_filters.each_with_object({}) do |(name, value), filter_params|
+        if value.is_a?(Range)
+          filter_params[:"#{name}_start"] = value.begin&.iso8601
+          filter_params[:"#{name}_end"] = value.end&.iso8601
+        else
+          filter_params[name] = value
+        end
+      end.compact
     end
 
     def date_range_params(attribute)
