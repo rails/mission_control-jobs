@@ -5,6 +5,10 @@ module MissionControl::Jobs::NavigationHelper
     MissionControl::Jobs.back_to_main_app_path.presence || main_app.try(:root_path)
   end
 
+  def back_to_main_app_label
+    MissionControl::Jobs.back_to_main_app_label.presence || "Back to main app"
+  end
+
   def navigation_sections
     { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
       supported_job_statuses.without(:pending).each do |status|

@@ -26,6 +26,7 @@ module MissionControl
     mattr_accessor :show_console_help, default: true
     mattr_accessor :backtrace_cleaner
     mattr_accessor :back_to_main_app_path
+    mattr_accessor :back_to_main_app_label
 
     mattr_accessor :importmap, default: Importmap::Map.new
 
