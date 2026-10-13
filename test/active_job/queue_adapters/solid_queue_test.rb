@@ -50,6 +50,40 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_empty ActiveJob.jobs.finished.where(scheduled_at: 1.hour.from_now..)
   end
 
+  test "job class names are the same as the class names of the first jobs" do
+    DummyJob.queue_as :queue_1
+    [ DummyReloadedJob, DummyJob, DummyJob, FailingReloadedJob, FailingJob, FailingReloadedJob, DummyReloadedJob ].each(&:perform_later)
+    perform_enqueued_jobs
+    [ DummyReloadedJob, DummyJob, DummyReloadedJob ].each { |job_class| job_class.set(wait: 1.hour).perform_later }
+    [ DummyReloadedJob, DummyJob, DummyJob, DummyReloadedJob ].each(&:perform_later)
+
+    relations = %i[ pending failed scheduled finished ].flat_map do |status|
+      jobs = ActiveJob.jobs.with_status(status)
+      [ jobs, jobs.where(queue_name: :default), jobs.where(job_class_name: "DummyJob"), jobs.offset(1), jobs.offset(1).limit(2) ]
+    end
+
+    relations.each do |jobs|
+      [ 500, 2 ].each do |from_first|
+        assert_equal jobs.first(from_first).collect(&:job_class_name).uniq, jobs.job_class_names(from_first: from_first), "#{jobs} from first #{from_first}"
+      end
+    end
+  end
+
+  test "job class names don't load the jobs" do
+    [ FailingReloadedJob, FailingJob, FailingReloadedJob ].each(&:perform_later)
+    perform_enqueued_jobs
+
+    queries = capture_select_queries do
+      instantiated_records = capture_instantiated_records do
+        assert_equal [ "FailingReloadedJob", "FailingJob" ], ActiveJob.jobs.failed.job_class_names
+      end
+      assert_empty instantiated_records
+    end
+
+    assert_equal 2, queries.size, queries.join("\n\n")
+    queries.each { |query| assert_no_match(/\berror\b/, query) }
+  end
+
   test "supports batches only when the Solid Queue batch API is available" do
     assert ActiveJob::Base.queue_adapter.supports_batches?
 
@@ -170,6 +204,17 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
 
     def queue_adapter
       :solid_queue
+    end
+
+    def capture_instantiated_records
+      class_names = []
+      subscriber = ActiveSupport::Notifications.subscribe("instantiation.active_record") do |*, payload|
+        class_names << payload[:class_name]
+      end
+      yield
+      class_names.uniq
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
     end
 
     def capture_sql

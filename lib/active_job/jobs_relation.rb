@@ -186,8 +186,15 @@ class ActiveJob::JobsRelation
   end
 
   # Returns an array of jobs class names in the first +from_first+ jobs.
+  #
+  # Adapters can implement +fetch_job_class_names+ to get them without
+  # loading the jobs. When filtering in memory is needed, the jobs are loaded.
   def job_class_names(from_first: 500)
-    first(from_first).collect(&:job_class_name).uniq
+    if queue_adapter.respond_to?(:fetch_job_class_names) && !filtering_needed?
+      queue_adapter.fetch_job_class_names(limit([ limit_value, from_first ].compact.min))
+    else
+      first(from_first).collect(&:job_class_name).uniq
+    end
   end
 
   def reload
