@@ -49,6 +49,10 @@ module ActiveJob::QueueAdapters::SolidQueueExt
     SolidQueueJobs.new(jobs_relation).count
   end
 
+  def fetch_job_class_names(jobs_relation)
+    SolidQueueJobs.new(jobs_relation).job_class_names
+  end
+
   def fetch_jobs(jobs_relation)
     SolidQueueJobs.new(jobs_relation).jobs.map do |job|
       deserialize_and_proxy_solid_queue_job(job, jobs_relation.status)
@@ -168,6 +172,16 @@ module ActiveJob::QueueAdapters::SolidQueueExt
 
       def count
         limit_value_provided? ? direct_count : internally_limited_count
+      end
+
+      # Read only the class names, without loading the jobs and their executions
+      def job_class_names
+        if solid_queue_status.finished?
+          order_finished_jobs(finished_jobs).pluck(:class_name).uniq
+        else
+          job_ids = order_executions(executions.unscope(:includes).joins(:job)).pluck(:job_id)
+          SolidQueue::Job.where(id: job_ids).pluck(:id, :class_name).to_h.values_at(*job_ids).compact.uniq
+        end
       end
 
       def find_job(active_job_id)
