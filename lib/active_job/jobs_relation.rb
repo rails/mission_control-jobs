@@ -253,15 +253,22 @@ class ActiveJob::JobsRelation
     end
 
     def perform_each
-      current_offset = offset_value
+      # When filtering in memory, the offset counts matching jobs, so skip them after filtering
+      current_offset = filtering_needed? ? 0 : offset_value
+      pending_skip = filtering_needed? ? offset_value : 0
       pending_count = limit_value || Float::INFINITY
 
       begin
-        limit = [ pending_count, default_page_size ].min
+        limit = [ pending_count + pending_skip, default_page_size ].min
         page = offset(current_offset).limit(limit)
         jobs = queue_adapter.fetch_jobs(page)
         finished = jobs.empty?
-        jobs = filter(jobs) if filtering_needed?
+        if filtering_needed?
+          jobs = filter(jobs)
+          skipped = [ pending_skip, jobs.length ].min
+          jobs = jobs.drop(skipped)
+          pending_skip -= skipped
+        end
         Array(jobs).each { |job| yield job }
         current_offset += limit
         pending_count -= jobs.length
