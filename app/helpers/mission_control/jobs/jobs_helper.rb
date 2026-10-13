@@ -7,6 +7,10 @@ module MissionControl::Jobs::JobsHelper
     renderable_job_arguments_for(job).join(", ")
   end
 
+  def recurring_task_arguments(recurring_task)
+    MissionControl::Jobs.job_arguments_filter.apply_to(recurring_task.arguments).join(",")
+  end
+
   def failed_job_error(job)
     "#{job.last_execution_error.error_class}: #{job.last_execution_error.message}"
   end

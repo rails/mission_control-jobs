@@ -8,7 +8,7 @@
 
     <tr>
       <th>Arguments</th>
-      <td><div class="is-family-monospace"><%= recurring_task.arguments.join(",") %></div></td>
+      <td><div class="is-family-monospace"><%= recurring_task_arguments(recurring_task) %></div></td>
     </tr>
   <% elsif recurring_task.command.present? %>
     <tr>
