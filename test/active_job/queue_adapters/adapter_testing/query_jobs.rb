@@ -38,6 +38,17 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert jobs.find { |job| assert_job_proxy FailingJob, job }
   end
 
+  test "enumerate all jobs after fetching the first ones" do
+    3.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    jobs = ActiveJob.jobs.failed
+    assert_equal [ 2 ], jobs.first.serialized_arguments
+
+    assert_equal 3, jobs.count
+    assert_equal [ [ 2 ], [ 1 ], [ 0 ] ], jobs.map(&:serialized_arguments)
+  end
+
   test "enumerate jobs with limit without offset" do
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs

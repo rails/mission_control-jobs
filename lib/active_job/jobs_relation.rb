@@ -244,12 +244,14 @@ class ActiveJob::JobsRelation
       @count ||= queue_adapter.jobs_count(self)
     end
 
+    # Only cache the jobs after a complete iteration, as +first+ or +find+ can stop it early
     def load_jobs
-      @loaded_jobs = []
+      jobs = []
       perform_each do |job|
-        @loaded_jobs << job
+        jobs << job
         yield job
       end
+      @loaded_jobs = jobs
     end
 
     def perform_each

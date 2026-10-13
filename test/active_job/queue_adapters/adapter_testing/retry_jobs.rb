@@ -23,6 +23,17 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_equal 2 * 10, FailingJob.invocations.count
   end
 
+  test "retry all failed jobs after fetching the first one" do
+    10.times { |index| FailingJob.perform_later(index) }
+    perform_enqueued_jobs
+
+    failed_jobs = ActiveJob.jobs.failed
+    assert_not_nil failed_jobs.first
+    failed_jobs.retry_all
+
+    assert_empty ActiveJob.jobs.failed
+  end
+
   test "retry all failed jobs when pagination kicks in" do
     10.times { |index| WithPaginationFailingJob.perform_later(index) }
     perform_enqueued_jobs
