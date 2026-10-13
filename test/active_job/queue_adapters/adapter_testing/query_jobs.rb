@@ -68,6 +68,28 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal [ 6 ], jobs[1].serialized_arguments
   end
 
+  test "enumerate jobs filtered by class with offset and limit" do
+    10.times do |index|
+      FailingJob.perform_later(index)
+      FailingReloadedJob.perform_later(index)
+    end
+    perform_enqueued_jobs
+
+    jobs = ActiveJob.jobs.failed.where(job_class_name: "FailingJob").offset(2).limit(3).to_a
+    assert_equal [ [ 7 ], [ 6 ], [ 5 ] ], jobs.map(&:serialized_arguments)
+  end
+
+  test "enumerate jobs filtered by class with offset and limit when pagination kicks in" do
+    10.times do |index|
+      WithPaginationFailingJob.perform_later(index)
+      FailingJob.perform_later(index)
+    end
+    perform_enqueued_jobs
+
+    jobs = WithPaginationFailingJob.jobs.failed.where(job_class_name: "WithPaginationFailingJob").offset(2).limit(3).to_a
+    assert_equal [ [ 7 ], [ 6 ], [ 5 ] ], jobs.map(&:serialized_arguments)
+  end
+
   test "enumerate jobs when limit is greater than the available set" do
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs

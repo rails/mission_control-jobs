@@ -69,6 +69,20 @@ module ActiveJob::QueueAdapters::AdapterTesting::RetryJobs
     assert_equal 2 * 5, FailingReloadedJob.invocations.count
   end
 
+  test "retry all failed of a given kind when pagination kicks in" do
+    5.times do |index|
+      WithPaginationFailingJob.perform_later(index)
+      FailingJob.perform_later(index)
+    end
+    perform_enqueued_jobs
+
+    failed_jobs = WithPaginationFailingJob.jobs.failed.where(job_class_name: "WithPaginationFailingJob")
+    failed_jobs.retry_all
+
+    assert_empty failed_jobs.reload
+    assert_equal 5, ActiveJob.jobs.failed.where(job_class_name: "FailingJob").count
+  end
+
   test "retry all failed of a given queue" do
     FailingJob.queue_as :queue_1
     FailingReloadedJob.queue_as :queue_2
