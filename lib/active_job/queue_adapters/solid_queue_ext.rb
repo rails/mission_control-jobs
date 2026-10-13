@@ -177,11 +177,15 @@ module ActiveJob::QueueAdapters::SolidQueueExt
       end
 
       def discard_all
-        execution_class_by_status.discard_all_from_jobs(jobs)
+        if all_jobs_with_status?
+          execution_class_by_status.discard_all_in_batches
+        else
+          execution_class_by_status.discard_all_from_jobs(jobs_with_id_only)
+        end
       end
 
       def retry_all
-        SolidQueue::FailedExecution.retry_all(jobs)
+        SolidQueue::FailedExecution.retry_all(jobs_with_id_only)
       end
 
       private
@@ -190,9 +194,9 @@ module ActiveJob::QueueAdapters::SolidQueueExt
         delegate :queue_name, :limit_value, :limit_value_provided?, :offset_value, :job_class_name,
           :default_page_size, :worker_id, :recurring_task_id, :batch_id, :finished_at, :scheduled_at, :enqueued_at, to: :jobs_relation
 
-        def executions
+        def executions(eager_load: true)
           execution_class_by_status
-            .then { |executions| include_execution_association(executions) }
+            .then { |executions| eager_load ? include_execution_association(executions) : executions.left_joins(:job) }
             .then { |executions| filter_executions_by_queue(executions) }
             .then { |executions| filter_executions_by_class(executions) }
             .then { |executions| filter_executions_by_process_id(executions) }
@@ -228,6 +232,18 @@ module ActiveJob::QueueAdapters::SolidQueueExt
           when recurring_task_id.present?    then executions.order(job_id: :desc)
           else executions.order(job_id: :asc)
           end
+        end
+
+        # Bulk operations only need the ids of the jobs, so don't load the jobs
+        # and their executions (the failed ones carry the serialized error).
+        def jobs_with_id_only
+          job_ids = order_executions(executions(eager_load: false)).pluck(:job_id)
+          SolidQueue::Job.select(:id).where(id: job_ids).to_a
+        end
+
+        def all_jobs_with_status?
+          filters = ActiveJob::JobsRelation::PROPERTIES - %i[ status offset_value limit_value ]
+          !jobs_relation.paginated? && filters.all? { |filter| jobs_relation.public_send(filter).blank? }
         end
 
         def matches_relation_filters?(job)
