@@ -38,6 +38,26 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
     end
   end
 
+  test "get recurring task details when the key has a dot" do
+    SolidQueue::RecurringTask.create!(key: "reports.daily", class_name: "DummyJob", schedule: "every day at 9am", static: true)
+
+    get mission_control_jobs.application_recurring_task_url(@application, "reports.daily")
+    assert_response :ok
+    assert_select "h1", /reports\.daily/
+  end
+
+  test "enqueue recurring task when the key has a dot" do
+    SolidQueue::RecurringTask.create!(key: "reports.daily", class_name: "DummyJob", schedule: "every day at 9am", static: true)
+
+    assert_difference -> { SolidQueue::Job.count }, +1 do
+      put mission_control_jobs.application_recurring_task_url(@application, "reports.daily")
+    end
+
+    job = SolidQueue::Job.last
+    assert_redirected_to mission_control_jobs.application_job_url(@application, job.active_job_id)
+    assert_equal "DummyJob", job.class_name
+  end
+
   test "redirect to recurring tasks list when recurring task doesn't exist" do
     schedule_recurring_tasks_async do
       get mission_control_jobs.application_recurring_task_url(@application, "invalid_key")

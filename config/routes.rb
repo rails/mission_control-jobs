@@ -20,7 +20,7 @@ MissionControl::Jobs::Engine.routes.draw do
     resources :jobs, only: :index, path: ":status/jobs"
 
     resources :workers, only: [ :index, :show ]
-    resources :recurring_tasks, only: [ :index, :show, :update ]
+    resources :recurring_tasks, only: [ :index, :show, :update ], id: /[^\/]+/
     resources :batches, only: [ :index, :show ]
   end
 
