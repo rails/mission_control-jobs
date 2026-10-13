@@ -50,6 +50,59 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
     assert_empty ActiveJob.jobs.finished.where(scheduled_at: 1.hour.from_now..)
   end
 
+  test "bulk discard and retry act on the same failed jobs that the relation lists" do
+    relations = {
+      "all" => -> { ActiveJob.jobs.failed },
+      "by class" => -> { ActiveJob.jobs.failed.where(job_class_name: "FailingReloadedJob") },
+      "by queue" => -> { ActiveJob.jobs.failed.where(queue_name: :queue_1) },
+      "by enqueued at" => -> { ActiveJob.jobs.failed.where(enqueued_at: ..30.minutes.ago) },
+      "page" => -> { ActiveJob.jobs.failed.offset(2).limit(3) },
+      "filtered page" => -> { ActiveJob.jobs.failed.where(job_class_name: "FailingJob", enqueued_at: ..30.minutes.ago).offset(1).limit(2) }
+    }
+
+    %i[ discard_all retry_all ].each do |operation|
+      relations.each do |description, relation|
+        delete_all_jobs
+        enqueue_failed_jobs
+        all_job_ids = ActiveJob.jobs.failed.map(&:job_id)
+        listed_job_ids = relation.call.map(&:job_id)
+        assert_not_empty listed_job_ids
+
+        relation.call.public_send(operation)
+
+        assert_equal (all_job_ids - listed_job_ids).sort, ActiveJob.jobs.failed.map(&:job_id).sort, "#{operation} #{description}"
+        if operation == :retry_all
+          assert_equal listed_job_ids.sort, ActiveJob.jobs.pending.map(&:job_id).sort, "#{operation} #{description}"
+        end
+      end
+    end
+  end
+
+  test "bulk discard and retry don't load the failed executions" do
+    enqueue_failed_jobs
+
+    [ ActiveJob.jobs.failed.where(job_class_name: "FailingJob"), ActiveJob.jobs.failed.offset(1).limit(2) ].each do |jobs|
+      instantiated = capture_instantiated_records { jobs.retry_all }
+      assert_not_includes instantiated, "SolidQueue::FailedExecution", "retry_all #{jobs}"
+
+      instantiated = capture_instantiated_records { jobs.discard_all }
+      assert_not_includes instantiated, "SolidQueue::FailedExecution", "discard_all #{jobs}"
+    end
+
+    assert_empty capture_instantiated_records { ActiveJob.jobs.failed.discard_all }
+    assert_empty ActiveJob.jobs.failed
+  end
+
+  test "discard all jobs with a status in batches" do
+    3.times { |index| DummyJob.set(wait: 1.hour).perform_later(index) }
+    DummyJob.perform_later
+
+    ActiveJob.jobs.scheduled.discard_all
+
+    assert_empty ActiveJob.jobs.scheduled
+    assert_equal 1, ActiveJob.jobs.pending.count
+  end
+
   test "supports batches only when the Solid Queue batch API is available" do
     assert ActiveJob::Base.queue_adapter.supports_batches?
 
@@ -170,6 +223,27 @@ class ActiveJob::QueueAdapters::SolidQueueTest < ActiveSupport::TestCase
 
     def queue_adapter
       :solid_queue
+    end
+
+    def enqueue_failed_jobs
+      FailingJob.queue_as :queue_1
+      FailingReloadedJob.queue_as :queue_2
+      5.times { |index| FailingJob.perform_later(index) }
+      5.times { |index| FailingReloadedJob.perform_later(index) }
+      perform_enqueued_jobs
+
+      SolidQueue::Job.where(id: SolidQueue::Job.order(:id).ids.values_at(1, 3, 5, 7, 9)).update_all(created_at: 1.hour.ago)
+    end
+
+    def capture_instantiated_records
+      class_names = []
+      subscriber = ActiveSupport::Notifications.subscribe("instantiation.active_record") do |*, payload|
+        class_names << payload[:class_name]
+      end
+      yield
+      class_names.uniq
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
     end
 
     def capture_sql
