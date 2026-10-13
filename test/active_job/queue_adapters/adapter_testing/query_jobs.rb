@@ -137,6 +137,23 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal 5, ActiveJob.jobs.pending.where(queue_name: "queue_2").to_a.length
   end
 
+  test "fetch pending jobs in all queues" do
+    FailingJob.perform_later
+    perform_enqueued_jobs
+
+    DummyJob.queue_as :queue_1
+    2.times { |index| DummyJob.perform_later(index) }
+    DummyJob.queue_as :queue_2
+    DummyJob.perform_later(2)
+
+    jobs = ActiveJob.jobs.pending.to_a
+    assert_equal [ [ 0 ], [ 1 ], [ 2 ] ], jobs.map(&:serialized_arguments)
+    jobs.each { |job| assert_job_proxy DummyJob, job }
+
+    assert_equal [ [ 1 ], [ 2 ] ], ActiveJob.jobs.pending.offset(1).limit(2).map(&:serialized_arguments)
+    assert_equal 3, ActiveJob.jobs.pending.where(job_class_name: "DummyJob").count
+  end
+
   test "fetch job classes in the first jobs" do
     3.times { DummyJob.perform_later }
     10.times { DummyReloadedJob.perform_later }

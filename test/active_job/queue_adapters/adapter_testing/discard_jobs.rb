@@ -28,6 +28,19 @@ module ActiveJob::QueueAdapters::AdapterTesting::DiscardJobs
     perform_enqueued_jobs
   end
 
+  test "discard all pending jobs of a given class in all queues" do
+    DummyJob.queue_as :queue_1
+    2.times { DummyJob.perform_later }
+    DummyJob.queue_as :queue_2
+    2.times { DummyJob.perform_later }
+    DummyReloadedJob.perform_later
+
+    ActiveJob.jobs.pending.where(job_class_name: "DummyJob").discard_all
+
+    assert_empty ActiveJob.jobs.pending.where(job_class_name: "DummyJob")
+    assert_equal 1, ActiveJob.jobs.pending.count
+  end
+
   test "discard all failed withing a given page" do
     10.times { |index| FailingJob.perform_later(index) }
     perform_enqueued_jobs

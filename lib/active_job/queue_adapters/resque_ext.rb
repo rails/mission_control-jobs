@@ -141,8 +141,8 @@ module ActiveJob::QueueAdapters::ResqueExt
 
       def discard(job)
         redis.multi do |multi|
-          multi.lset(queue_redis_key, job.position, SENTINEL)
-          multi.lrem(queue_redis_key, 1, SENTINEL)
+          multi.lset(queue_redis_key(job), job.position, SENTINEL)
+          multi.lrem(queue_redis_key(job), 1, SENTINEL)
         end
       rescue Redis::CommandError => error
         handle_resque_job_error(job, error)
@@ -167,7 +167,9 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         # Returns pairs of raw Resque job and its position in the Redis list
         def fetch_resque_jobs
-          if jobs_relation.failed? || jobs_relation.queue_name.blank?
+          if jobs_relation.pending? && jobs_relation.queue_name.blank?
+            fetch_all_queues_resque_jobs
+          elsif jobs_relation.failed? || jobs_relation.queue_name.blank?
             fetch_failed_resque_jobs
           else
             fetch_queue_resque_jobs
@@ -188,8 +190,24 @@ module ActiveJob::QueueAdapters::ResqueExt
           unless jobs_relation.queue_name.present?
             raise ActiveJob::Errors::QueryError, "This adapter requires a queue name unless fetching failed jobs"
           end
-          Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)).each_with_index.collect do |resque_job, index|
-            [ resque_job, jobs_relation.offset_value + index ]
+          peek_resque_jobs(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)
+        end
+
+        # Read pending jobs from all queues, one queue after the other
+        def fetch_all_queues_resque_jobs
+          offset, limit = jobs_relation.offset_value, jobs_relation.limit_value
+
+          Resque.queue_sizes.sort.flat_map do |queue_name, size|
+            jobs = offset < size && limit > 0 ? peek_resque_jobs(queue_name, offset, limit) : []
+            offset = [ offset - size, 0 ].max
+            limit -= jobs.size
+            jobs
+          end
+        end
+
+        def peek_resque_jobs(queue_name, offset, limit)
+          Array.wrap(Resque.peek(queue_name, offset, limit)).each_with_index.collect do |resque_job, index|
+            [ resque_job, offset + index ]
           end
         end
 
@@ -248,8 +266,8 @@ module ActiveJob::QueueAdapters::ResqueExt
           all.size
         end
 
-        def queue_redis_key
-          jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name}"
+        def queue_redis_key(job)
+          jobs_relation.failed? ? "failed" : "queue:#{jobs_relation.queue_name.presence || job.queue_name}"
         end
 
         def clear_failed_queue
@@ -292,7 +310,7 @@ module ActiveJob::QueueAdapters::ResqueExt
           resque_job = job.raw_data
           resque_job["retried_at"] = Time.now.utc.strftime("%Y/%m/%d %H:%M:%S")
 
-          redis.lset(queue_redis_key, job.position, Resque.encode(resque_job))
+          redis.lset(queue_redis_key(job), job.position, Resque.encode(resque_job))
           Resque::Job.create(resque_job["queue"], resque_job["payload"]["class"], *resque_job["payload"]["args"])
         rescue Redis::CommandError => error
           handle_resque_job_error(job, error)
