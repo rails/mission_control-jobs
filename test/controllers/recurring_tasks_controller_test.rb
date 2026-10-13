@@ -48,4 +48,21 @@ class MissionControl::Jobs::RecurringTasksControllerTest < ActionDispatch::Integ
       assert_select "article.is-danger", /Recurring task with id 'invalid_key' not found/
     end
   end
+
+  test "filtered arguments are hidden in recurring tasks" do
+    @previous_filter_arguments, MissionControl::Jobs.filter_arguments = MissionControl::Jobs.filter_arguments, %w[ author ]
+    SolidQueue::RecurringTask.create!(key: "periodic_post", class_name: "DummyJob", arguments: [ 42, { author: "Jorge" } ], schedule: "every hour", static: true)
+
+    get mission_control_jobs.application_recurring_tasks_url(@application)
+    assert_response :ok
+    assert_select "td div.is-family-monospace", /42.*\[FILTERED\]/
+    assert_no_match /Jorge/, response.body
+
+    get mission_control_jobs.application_recurring_task_url(@application, "periodic_post")
+    assert_response :ok
+    assert_select "td div.is-family-monospace", /42.*\[FILTERED\]/
+    assert_no_match /Jorge/, response.body
+  ensure
+    MissionControl::Jobs.filter_arguments = @previous_filter_arguments
+  end
 end
