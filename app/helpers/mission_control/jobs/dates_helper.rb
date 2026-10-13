@@ -1,6 +1,6 @@
 module MissionControl::Jobs::DatesHelper
   def time_distance_in_words_with_title(time)
-    tag.span time_ago_in_words_with_default_options(time), title: "Since #{time.to_fs(:long)}"
+    tag.span time_ago_in_words_with_default_options(time), title: "Since #{time.in_time_zone.to_fs(:long)}"
   end
 
   def bidirectional_time_distance_in_words_with_title(time)
@@ -10,7 +10,7 @@ module MissionControl::Jobs::DatesHelper
       "in #{time_ago_in_words_with_default_options(time)}"
     end
 
-    tag.span time_distance, title: time.to_fs(:long)
+    tag.span time_distance, title: time.in_time_zone.to_fs(:long)
   end
 
   def time_ago_in_words_with_default_options(time)
