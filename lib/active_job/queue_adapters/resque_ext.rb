@@ -148,8 +148,23 @@ module ActiveJob::QueueAdapters::ResqueExt
         handle_resque_job_error(job, error)
       end
 
+      # Read the jobs page by page and deserialize only the matching one. Deserializing
+      # every job in a long list to find one is slow.
       def find_job(job_id)
-        jobs_by_id[job_id]
+        offset, pending = jobs_relation.offset_value, jobs_relation.limit_value
+
+        while pending > 0
+          limit = [ pending, default_page_size ].min
+          resque_jobs = fetch_resque_jobs(offset: offset, limit: limit)
+          return if resque_jobs.empty?
+
+          resque_jobs.each do |resque_job, position|
+            return deserialize_resque_job(resque_job, position) if resque_job_id(resque_job) == job_id
+          end
+
+          offset += limit
+          pending -= limit
+        end
       end
 
       private
@@ -166,31 +181,35 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         # Returns pairs of raw Resque job and its position in the Redis list
-        def fetch_resque_jobs
+        def fetch_resque_jobs(offset: jobs_relation.offset_value, limit: jobs_relation.limit_value)
           if jobs_relation.failed? || jobs_relation.queue_name.blank?
-            fetch_failed_resque_jobs
+            fetch_failed_resque_jobs(offset, limit)
           else
-            fetch_queue_resque_jobs
+            fetch_queue_resque_jobs(offset, limit)
           end
         end
 
         # Failed jobs are listed newest first, but Resque stores them oldest first,
         # so read them from the end of the list, keeping their positions in it.
-        def fetch_failed_resque_jobs
-          newest = failed_jobs_count - jobs_relation.offset_value - 1
-          oldest = [ newest - jobs_relation.limit_value + 1, 0 ].max
+        def fetch_failed_resque_jobs(offset, limit)
+          newest = failed_jobs_count - offset - 1
+          oldest = [ newest - limit + 1, 0 ].max
           return [] if newest < 0
 
           Array.wrap(Resque::Failure.all(oldest, newest - oldest + 1)).reverse.zip(newest.downto(oldest).to_a)
         end
 
-        def fetch_queue_resque_jobs
+        def fetch_queue_resque_jobs(offset, limit)
           unless jobs_relation.queue_name.present?
             raise ActiveJob::Errors::QueryError, "This adapter requires a queue name unless fetching failed jobs"
           end
-          Array.wrap(Resque.peek(jobs_relation.queue_name, jobs_relation.offset_value, jobs_relation.limit_value)).each_with_index.collect do |resque_job, index|
-            [ resque_job, jobs_relation.offset_value + index ]
+          Array.wrap(Resque.peek(jobs_relation.queue_name, offset, limit)).each_with_index.collect do |resque_job, index|
+            [ resque_job, offset + index ]
           end
+        end
+
+        def resque_job_id(resque_job)
+          extract_args_hash(resque_job)&.dig("job_id") if resque_job.is_a?(Hash)
         end
 
         def deserialize_resque_job(resque_job_hash, position)
@@ -314,10 +333,6 @@ module ActiveJob::QueueAdapters::ResqueExt
 
         def discard_all_in_batches
           jobs_relation.in_batches(order: :desc, &:discard_all)
-        end
-
-        def jobs_by_id
-          @jobs_by_id ||= all.index_by(&:job_id)
         end
 
         def handle_resque_job_error(job, error)
