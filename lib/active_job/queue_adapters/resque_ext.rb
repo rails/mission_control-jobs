@@ -257,8 +257,15 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def retry_jobs(jobs)
-          in_transactional_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
-            jobs_batch.each { |job| retry_job(job) }
+          in_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
+            requeued_jobs = []
+            jobs_batch.each do |job|
+              requeue(job)
+              requeued_jobs << job
+            end
+          ensure
+            # Remove the jobs already requeued also when a later job in the batch fails
+            discard_batch(requeued_jobs) if requeued_jobs.present?
           end
         end
 
@@ -267,12 +274,8 @@ module ActiveJob::QueueAdapters::ResqueExt
           jobs.sort_by(&:position).reverse
         end
 
-        def in_transactional_jobs_batches(jobs)
-          jobs.each_slice(MAX_REDIS_TRANSACTION_SIZE) do |jobs_batch|
-            redis.multi do |multi|
-              yield jobs_batch
-            end
-          end
+        def in_jobs_batches(jobs, &block)
+          jobs.each_slice(MAX_REDIS_TRANSACTION_SIZE, &block)
         end
 
         def use_batches?
@@ -307,9 +310,20 @@ module ActiveJob::QueueAdapters::ResqueExt
         end
 
         def discard_jobs(jobs)
-          in_transactional_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
-            jobs_batch.each { |job| discard(job) }
+          in_jobs_batches(jobs_by_descending_position(jobs)) do |jobs_batch|
+            discard_batch(jobs_batch)
           end
+        end
+
+        # +LREM+ scans the whole list, so run it once per batch instead of once per job:
+        # mark all the jobs in the batch and remove the marks together, in one transaction.
+        def discard_batch(jobs)
+          redis.multi do |multi|
+            jobs.each { |job| multi.lset(queue_redis_key, job.position, SENTINEL) }
+            multi.lrem(queue_redis_key, 0, SENTINEL)
+          end
+        rescue Redis::CommandError => error
+          handle_resque_job_error(jobs.first, error)
         end
 
         def discard_all_in_batches
