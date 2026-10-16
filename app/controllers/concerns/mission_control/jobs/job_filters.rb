@@ -31,13 +31,27 @@ module MissionControl::Jobs::JobFilters
     end
 
     def date_range_params(attribute)
-      range_start, range_end = params.dig(:filter, :"#{attribute}_start"), params.dig(:filter, :"#{attribute}_end")
-      if range_start || range_end
-        (parse_with_time_zone(range_start)..parse_with_time_zone(range_end))
-      end
+      raw_start = params.dig(:filter, :"#{attribute}_start")
+      raw_end = params.dig(:filter, :"#{attribute}_end")
+      return unless raw_start.present? || raw_end.present?
+
+      start_time = parse_with_time_zone(raw_start)
+      end_time = parse_with_time_zone(raw_end)
+
+      # A provided endpoint that cannot be parsed must not become a nil..nil
+      # (or half-nil) range — that can 500 on out-of-range dates or silently
+      # apply a nonsense filter.
+      return if raw_start.present? && start_time.nil?
+      return if raw_end.present? && end_time.nil?
+
+      start_time..end_time
     end
 
     def parse_with_time_zone(date)
-      Time.zone.parse(date) if date.present?
+      return if date.blank?
+
+      Time.zone.parse(date)
+    rescue ArgumentError, TypeError
+      nil
     end
 end
