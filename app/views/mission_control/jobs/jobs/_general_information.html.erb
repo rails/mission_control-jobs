@@ -61,7 +61,7 @@
     <tr>
       <th>Duration</th>
       <td>
-        <%= job.duration.round(3) %> seconds
+        <%= tag.span formatted_duration(job.duration), title: "#{job.duration.round(3)} seconds" %>
       </td>
     </tr>
   <% end %>
