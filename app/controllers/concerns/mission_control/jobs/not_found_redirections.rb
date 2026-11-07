@@ -29,6 +29,8 @@ module MissionControl::Jobs::NotFoundRedirections
         application_recurring_tasks_path(@application)
       when /queue/i
         application_queues_path(@application)
+      when /batch/i
+        application_batches_path(@application)
       else
         root_url
       end

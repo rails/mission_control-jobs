@@ -1,7 +1,7 @@
 class MissionControl::Jobs::Page
   DEFAULT_PAGE_SIZE = 10
 
-  attr_reader :records, :index, :page_size
+  attr_reader :index, :page_size
 
   def initialize(relation, page: 1, page_size: DEFAULT_PAGE_SIZE)
     @relation = relation
@@ -9,8 +9,11 @@ class MissionControl::Jobs::Page
     @index = [ page, 1 ].max
   end
 
+  # Materialized once: rendering the collection and the pagination toolbar's
+  # predicates all ask for this page, and a fresh relation would re-run the
+  # (potentially capped and expensive) count query on each of them.
   def records
-    @relation.limit(page_size).offset(offset)
+    @records ||= @relation.limit(page_size).offset(offset).to_a
   end
 
   def first?

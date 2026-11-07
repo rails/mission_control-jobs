@@ -116,6 +116,17 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     assert_equal 10, jobs.size
   end
 
+  test "filter jobs by enqueued_at" do
+    3.times { DummyJob.perform_later }
+
+    pending_jobs = ActiveJob.jobs.pending.where(queue_name: :default)
+
+    assert_equal 3, pending_jobs.where(enqueued_at: 1.minute.ago..1.minute.from_now).count
+    assert_equal 3, pending_jobs.where(enqueued_at: 1.minute.ago..).count
+    assert_empty pending_jobs.where(enqueued_at: 1.hour.from_now..)
+    assert_empty pending_jobs.where(enqueued_at: ..1.hour.ago)
+  end
+
   test "fetch jobs in a given queue" do
     DummyJob.queue_as :queue_1
     3.times { DummyJob.perform_later }

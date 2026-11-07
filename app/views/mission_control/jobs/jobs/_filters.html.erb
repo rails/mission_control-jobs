@@ -2,7 +2,7 @@
   <%= form_for :filter, url: application_jobs_path(MissionControl::Jobs::Current.application, jobs_status), method: :get,
     data: { controller: "form", action: "change->form#submit" } do |form| %>
 
-    <div class="field is-grouped">
+    <div class="field is-grouped is-grouped-multiline">
       <div class="control">
         <%= form.label :job_class_name, class: "label" %>
         <div class="select is-rounded">
@@ -18,19 +18,13 @@
       </div>
 
       <% if jobs_status == "finished" %>
-        <div class="control">
-          <%= form.label :finished_at_start, class: "label" %>
-          <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_start, value: @job_filters[:finished_at]&.begin, class: "input", placeholder: "Finished from" %>
-          </div>
-        </div>
+        <%= render "mission_control/jobs/jobs/date_range_filter", form: form, attribute: :finished_at, label: "Finished" %>
+      <% else %>
+        <%= render "mission_control/jobs/jobs/date_range_filter", form: form, attribute: :enqueued_at, label: "Enqueued" %>
+      <% end %>
 
-        <div class="control">
-          <%= form.label :finished_at_end, class: "label" %>
-          <div class="select is-rounded">
-            <%= form.datetime_field :finished_at_end, value: @job_filters[:finished_at]&.end, class: "input", placeholder: "Finished to" %>
-          </div>
-        </div>
+      <% if jobs_status == "scheduled" %>
+        <%= render "mission_control/jobs/jobs/date_range_filter", form: form, attribute: :scheduled_at, label: "Scheduled" %>
       <% end %>
 
       <%= hidden_field_tag :server_id, MissionControl::Jobs::Current.server.id %>
