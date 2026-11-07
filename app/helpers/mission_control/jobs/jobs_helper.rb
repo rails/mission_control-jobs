@@ -23,6 +23,26 @@ module MissionControl::Jobs::JobsHelper
     end
   end
 
+  def job_copy_text(job, server)
+    [
+      "Job: #{job.job_class_name}",
+      "Job id: #{job.job_id}",
+      "Queue: #{job.queue_name}",
+      "",
+      "Arguments:",
+      job_arguments(job).presence || "[none]",
+      "",
+      "Error:",
+      failed_job_error(job),
+      "",
+      "Backtrace:",
+      failed_job_backtrace(job, server).presence || "[none]",
+      "",
+      "Raw data:",
+      JSON.pretty_generate(job.filtered_raw_data.without("backtrace"))
+    ].join("\n")
+  end
+
   def attribute_names_for_job_status(status)
     case status.to_s
     when "failed"      then [ "Error", "" ]
