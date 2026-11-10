@@ -23,10 +23,10 @@ class ActiveJob::JobsRelation
   include Enumerable
 
   STATUSES = %i[ pending failed in_progress blocked scheduled finished ]
-  FILTERS = %i[ queue_name job_class_name ]
+  FILTERS = %i[ queue_name job_class_name scheduled_at enqueued_at ]
 
-  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id finished_at ]
-  attr_reader *PROPERTIES, :default_page_size
+  PROPERTIES = %i[ queue_name status offset_value limit_value job_class_name worker_id recurring_task_id batch_id finished_at scheduled_at enqueued_at ]
+  attr_reader(*PROPERTIES, :default_page_size)
 
   # delegate :last, :[], :reverse, to: :to_a
   # No delegation to :to_a until we define it below.
@@ -52,17 +52,23 @@ class ActiveJob::JobsRelation
   # * <tt>:queue_name</tt> - To only include the jobs in the provided queue.
   # * <tt>:worker_id</tt> - To only include the jobs processed by the provided worker.
   # * <tt>:recurring_task_id</tt> - To only include the jobs corresponding to runs of a recurring task.
+  # * <tt>:batch_id</tt> - To only include the jobs belonging to a given batch.
   # * <tt>:finished_at</tt> - (Range) To only include the jobs finished between the provided range
-  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, finished_at: nil)
+  # * <tt>:scheduled_at</tt> - (Range) To only include the jobs scheduled between the provided range
+  # * <tt>:enqueued_at</tt> - (Range) To only include the jobs enqueued between the provided range
+  def where(job_class_name: nil, queue_name: nil, worker_id: nil, recurring_task_id: nil, batch_id: nil, finished_at: nil, scheduled_at: nil, enqueued_at: nil)
     # Remove nil arguments to avoid overriding parameters when concatenating +where+ clauses
     arguments = { job_class_name: job_class_name,
       queue_name: queue_name&.to_s,
       worker_id: worker_id,
       recurring_task_id: recurring_task_id,
-      finished_at: finished_at
+      batch_id: batch_id,
+      finished_at: finished_at,
+      scheduled_at: scheduled_at,
+      enqueued_at: enqueued_at
     }.compact
 
-    clone_with **arguments
+    clone_with(**arguments)
   end
 
   def with_status(status)
@@ -243,7 +249,7 @@ class ActiveJob::JobsRelation
 
   private
     attr_reader :queue_adapter, :loaded_jobs
-    attr_writer *PROPERTIES
+    attr_writer(*PROPERTIES)
 
     def set_defaults
       self.offset_value = 0
@@ -297,7 +303,15 @@ class ActiveJob::JobsRelation
     end
 
     def satisfy_filter?(job)
-      filters.all? { |property| public_send(property) == job.public_send(property) }
+      filters.all? { |property| satisfies_filter?(public_send(property), job.public_send(property)) }
+    end
+
+    def satisfies_filter?(filter_value, job_value)
+      if filter_value.is_a?(Range)
+        filter_value.cover?(job_value)
+      else
+        filter_value == job_value
+      end
     end
 
     def filters

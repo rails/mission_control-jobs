@@ -44,8 +44,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
 
     jobs = ActiveJob.jobs.failed.limit(2).to_a
     assert_equal 2, jobs.size
-    assert_equal [ 0 ], jobs[0].serialized_arguments
-    assert_equal [ 1 ], jobs[1].serialized_arguments
+    assert_equal [ 9 ], jobs[0].serialized_arguments
+    assert_equal [ 8 ], jobs[1].serialized_arguments
   end
 
   test "enumerate jobs with offset without limit" do
@@ -54,8 +54,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
 
     jobs = ActiveJob.jobs.failed.offset(2).to_a
     assert_equal 8, jobs.size
-    assert_equal [ 2 ], jobs[0].serialized_arguments
-    assert_equal [ 9 ], jobs[7].serialized_arguments
+    assert_equal [ 7 ], jobs[0].serialized_arguments
+    assert_equal [ 0 ], jobs[7].serialized_arguments
   end
 
   test "enumerate jobs with offset and limit" do
@@ -64,8 +64,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
 
     jobs = ActiveJob.jobs.failed.offset(2).limit(2).to_a
     assert_equal 2, jobs.size
-    assert_equal [ 2 ], jobs[0].serialized_arguments
-    assert_equal [ 3 ], jobs[1].serialized_arguments
+    assert_equal [ 7 ], jobs[0].serialized_arguments
+    assert_equal [ 6 ], jobs[1].serialized_arguments
   end
 
   test "enumerate jobs when limit is greater than the available set" do
@@ -93,7 +93,7 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
 
     jobs.each.with_index do |job, index|
       assert_job_proxy WithPaginationFailingJob, job
-      assert [ index ], job.serialized_arguments[0]
+      assert_equal [ 9 - index ], job.serialized_arguments
     end
   end
 
@@ -104,8 +104,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
     jobs = WithPaginationFailingJob.jobs.failed.offset(2).limit(3).to_a
     assert_equal 3, jobs.size
 
-    assert_equal [ 2 ], jobs[0].serialized_arguments
-    assert_equal [ 4 ], jobs[2].serialized_arguments
+    assert_equal [ 7 ], jobs[0].serialized_arguments
+    assert_equal [ 5 ], jobs[2].serialized_arguments
   end
 
   test "fetch pending jobs when pagination kicks in and the first pages are empty due to filtering" do
@@ -114,6 +114,17 @@ module ActiveJob::QueueAdapters::AdapterTesting::QueryJobs
 
     jobs = ActiveJob.jobs.pending.where(queue_name: :default, job_class_name: "WithPaginationDummyJob").to_a
     assert_equal 10, jobs.size
+  end
+
+  test "filter jobs by enqueued_at" do
+    3.times { DummyJob.perform_later }
+
+    pending_jobs = ActiveJob.jobs.pending.where(queue_name: :default)
+
+    assert_equal 3, pending_jobs.where(enqueued_at: 1.minute.ago..1.minute.from_now).count
+    assert_equal 3, pending_jobs.where(enqueued_at: 1.minute.ago..).count
+    assert_empty pending_jobs.where(enqueued_at: 1.hour.from_now..)
+    assert_empty pending_jobs.where(enqueued_at: ..1.hour.ago)
   end
 
   test "fetch jobs in a given queue" do

@@ -3,13 +3,13 @@ module ActiveJob::QueueAdapters::AdapterTesting::JobBatches
   extend ActiveSupport::Testing::Declarative
 
   included do
-    # Ascending order
-    assert_loop jobs_count: 10, order: :asc, batch_size: 5, expected_batches: [ 0..4, 5..9 ]
-    assert_loop jobs_count: 12, order: :asc, batch_size: 5, expected_batches: [ 0..4, 5..9, 10..11 ]
+    # Failed jobs are listed newest first, so ascending batches start with the newest jobs
+    assert_loop jobs_count: 10, order: :asc, batch_size: 5, expected_batches: [ [ 9, 8, 7, 6, 5 ], [ 4, 3, 2, 1, 0 ] ]
+    assert_loop jobs_count: 12, order: :asc, batch_size: 5, expected_batches: [ [ 11, 10, 9, 8, 7 ], [ 6, 5, 4, 3, 2 ], [ 1, 0 ] ]
 
-    # Descending order
-    assert_loop jobs_count: 10, order: :desc, batch_size: 5, expected_batches: [ 5..9, 0..4 ]
-    assert_loop jobs_count: 12, order: :desc, batch_size: 5, expected_batches: [ 7..11, 2..6, 0..1 ]
+    # Descending batches start from the end, with the oldest jobs
+    assert_loop jobs_count: 10, order: :desc, batch_size: 5, expected_batches: [ [ 4, 3, 2, 1, 0 ], [ 9, 8, 7, 6, 5 ] ]
+    assert_loop jobs_count: 12, order: :desc, batch_size: 5, expected_batches: [ [ 4, 3, 2, 1, 0 ], [ 9, 8, 7, 6, 5 ], [ 11, 10 ] ]
   end
 
   class_methods do
@@ -24,8 +24,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::JobBatches
         assert_equal expected_batches.length, batches.length
         batches.each { |batch| assert_instance_of ActiveJob::JobsRelation, batch }
 
-        expected_batches.each.with_index do |batch_range, index|
-          assert_equal batch_range.to_a, batches[index].to_a.collect(&:serialized_arguments).flatten
+        expected_batches.each.with_index do |batch_arguments, index|
+          assert_equal batch_arguments, batches[index].to_a.collect(&:serialized_arguments).flatten
         end
       end
 
@@ -39,8 +39,8 @@ module ActiveJob::QueueAdapters::AdapterTesting::JobBatches
         assert_equal expected_batches.length, batches.length
         batches.each { |batch| assert_instance_of ActiveJob::JobsRelation, batch }
 
-        expected_batches.each.with_index do |batch_range, index|
-          assert_equal batch_range.to_a, batches[index].to_a.collect(&:serialized_arguments).flatten
+        expected_batches.each.with_index do |batch_arguments, index|
+          assert_equal batch_arguments, batches[index].to_a.collect(&:serialized_arguments).flatten
         end
       end
     end

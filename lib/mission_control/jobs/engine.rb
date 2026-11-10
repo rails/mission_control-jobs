@@ -34,12 +34,18 @@ module MissionControl
         end
       end
 
+      initializer "mission_control-jobs.host_route_helpers" do |app|
+        ActiveSupport.on_load(:after_routes_loaded) do
+          MissionControl::Jobs::HostRouteHelpers.define_from(app.routes, MissionControl::Jobs::Engine.routes)
+        end
+      end
+
       initializer "mission_control-jobs.http_basic_auth" do |app|
         MissionControl::Jobs.http_basic_auth_user ||= app.credentials.dig(:mission_control, :http_basic_auth_user)
         MissionControl::Jobs.http_basic_auth_password ||= app.credentials.dig(:mission_control, :http_basic_auth_password)
       end
 
-      initializer "mission_control-jobs.active_job.extensions" do
+      initializer "mission_control-jobs.active_job.extensions", before: "active_job.set_configs" do
         ActiveSupport.on_load :active_job do
           include ActiveJob::Querying
           include ActiveJob::Executing

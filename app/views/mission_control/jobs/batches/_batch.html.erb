@@ -1,0 +1,21 @@
+<tr class="batch">
+  <td>
+    <%= link_to batch.id, application_batch_path(@application, batch.id) %>
+  </td>
+  <td>
+    <% if batch.description.present? %>
+      <%= batch.description %>
+    <% else %>
+      <span class="has-text-grey">No description</span>
+    <% end %>
+  </td>
+  <td><%= render "mission_control/jobs/batches/status", batch: batch %></td>
+  <td><%= number_to_percentage batch.progress_percentage, precision: 0 %></td>
+  <td>
+    <%= batch.total_jobs %>
+    <% if batch.failed_jobs > 0 %>
+      <span class="has-text-danger">(<%= batch.failed_jobs %> failed)</span>
+    <% end %>
+  </td>
+  <td><div class="has-text-grey"><%= batch.enqueued_at ? bidirectional_time_distance_in_words_with_title(batch.enqueued_at) : "Not started" %></div></td>
+</tr>

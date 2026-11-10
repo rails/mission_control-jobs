@@ -1,0 +1,37 @@
+<% navigation(title: "Batches", section: :batches)  %>
+
+<% if @batches_page.empty? && batches_status.nil? %>
+  <%= blank_status_notice "There are no batches" %>
+<% else %>
+  <div class="tabs">
+    <ul>
+      <li class="<%= "is-active" if batches_status.nil? %>"><%= link_to "All", application_batches_path(@application, batches_status: "all") %></li>
+      <li class="<%= "is-active" if batches_status == "unfinished" %>"><%= link_to "Unfinished", application_batches_path(@application, batches_status: "unfinished") %></li>
+      <li class="<%= "is-active" if batches_status == "finished" %>"><%= link_to "Finished", application_batches_path(@application, batches_status: "finished") %></li>
+      <li class="<%= "is-active" if batches_status == "failed" %>"><%= link_to "Failed", application_batches_path(@application, batches_status: "failed") %></li>
+    </ul>
+  </div>
+
+  <% if @batches_page.empty? %>
+    <%= blank_status_notice "No #{batches_status} batches found" %>
+  <% else %>
+    <table class="batches table jobs is-hoverable is-fullwidth">
+      <thead>
+      <tr>
+        <th></th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Jobs</th>
+        <th>Enqueued</th>
+      </tr>
+      </thead>
+
+      <tbody>
+        <%= render partial: "mission_control/jobs/batches/batch", collection: @batches_page.records %>
+      </tbody>
+    </table>
+
+    <%= render "mission_control/jobs/shared/pagination_toolbar", page: @batches_page, filter_param: batches_filter_param %>
+  <% end %>
+<% end %>

@@ -19,6 +19,14 @@ module ActiveJob::QueueAdapters::AdapterTesting::FindJobs
     assert_nil ActiveJob.jobs.failed.find_by_id("1234-6789")
   end
 
+  test "find returns nil when the job is outside the relation" do
+    DummyJob.queue_as(:queue_1)
+    job = DummyJob.perform_later(1234)
+
+    assert_nil ActiveJob.jobs.failed.find_by_id(job.job_id)
+    assert_nil ActiveJob.jobs.where(queue_name: :queue_2).find_by_id(job.job_id)
+  end
+
   test "find! raises an error when the job is missing" do
     assert_raises ActiveJob::Errors::JobNotFoundError do
       ActiveJob.jobs.failed.find_by_id!("1234-6789")

@@ -1,6 +1,10 @@
 module MissionControl::Jobs::NavigationHelper
   attr_reader :page_title, :current_section
 
+  def back_to_main_app_path
+    MissionControl::Jobs.back_to_main_app_path.presence || main_app.try(:root_path)
+  end
+
   def navigation_sections
     { queues: [ "Queues", application_queues_path(@application) ] }.tap do |sections|
       supported_job_statuses.without(:pending).each do |status|
@@ -9,6 +13,7 @@ module MissionControl::Jobs::NavigationHelper
 
       sections[:workers] = [ "Workers", application_workers_path(@application) ] if workers_exposed?
       sections[:recurring_tasks] = [ "Recurring tasks", application_recurring_tasks_path(@application) ] if recurring_tasks_supported?
+      sections[:batches] = [ "Batches", application_batches_path(@application) ] if batches_supported?
     end
   end
 

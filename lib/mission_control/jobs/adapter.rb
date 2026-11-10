@@ -80,6 +80,55 @@ module MissionControl::Jobs::Adapter
   end
 
 
+  def supports_batches?
+    false
+  end
+
+  # Returns an array with the requested page of batches, newest first, honoring
+  # the relation's +offset_value+ and +limit_value+. The relation's +status+
+  # narrows the list to +:finished+, +:unfinished+ or +:failed+ batches when
+  # present. Each batch is represented as a hash with these attributes:
+  #   {
+  #     id: 123,
+  #     description: "Nightly imports",
+  #     status: :enqueued,
+  #     total_jobs: 100,
+  #     completed_jobs: 60,
+  #     failed_jobs: 2,
+  #     pending_jobs: 20,
+  #     in_progress_jobs: 10,
+  #     blocked_jobs: 5,
+  #     scheduled_jobs: 3,
+  #     progress_percentage: 62.0,
+  #     metadata: { user_id: 123 },
+  #     enqueued_at: Fri, 26 Jan 2024 20:31:09.652174000 UTC +00:00,
+  #     finished_at: nil
+  #   }
+  #
+  # The listing renders progress and failures only, so adapters may leave the
+  # +pending_jobs+, +in_progress_jobs+, +blocked_jobs+ and +scheduled_jobs+
+  # breakdown to +find_batch+ rather than counting it for every batch listed.
+  def fetch_batches(batches_relation)
+    if supports_batches?
+      raise_incompatible_adapter_error_from :fetch_batches
+    end
+  end
+
+  # Returns the total number of batches, narrowed by the relation's +status+
+  def count_batches(batches_relation)
+    if supports_batches?
+      raise_incompatible_adapter_error_from :count_batches
+    end
+  end
+
+  # Returns a batch represented by a hash as indicated above
+  def find_batch(batch_id)
+    if supports_batches?
+      raise_incompatible_adapter_error_from :find_batch
+    end
+  end
+
+
   # Returns an array with the list of queues. Each queue is represented as a hash
   # with these attributes:
   #   {

@@ -8,7 +8,7 @@
   <td>
     <% if job.serialized_arguments.present? %>
       <span class="is-family-monospace">
-        <%= job_arguments(job) %>
+        <%= truncate(job_arguments(job), length: 300) %>
       </span>
     <% end %>
   </td>

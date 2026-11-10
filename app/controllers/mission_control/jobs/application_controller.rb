@@ -9,6 +9,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
   helper MissionControl::Jobs::ApplicationHelper unless self < MissionControl::Jobs::ApplicationHelper
   helper Importmap::ImportmapTagsHelper unless self < Importmap::ImportmapTagsHelper
 
+  include MissionControl::Jobs::HostRouteHelpers
   include MissionControl::Jobs::BasicAuthentication
   include MissionControl::Jobs::ApplicationScoped, MissionControl::Jobs::NotFoundRedirections
   include MissionControl::Jobs::AdapterFeatures
@@ -18,7 +19,7 @@ class MissionControl::Jobs::ApplicationController < MissionControl::Jobs.base_co
 
   private
     def default_url_options
-      { server_id: MissionControl::Jobs::Current.server }
+      super.merge(server_id: MissionControl::Jobs::Current.server)
     end
 
     def set_current_locale(&block)
