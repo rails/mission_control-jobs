@@ -1,6 +1,14 @@
 module MissionControl::Jobs::NavigationHelper
   attr_reader :page_title, :current_section
 
+  def mission_control_page_title
+    if MissionControl::Jobs.page_title
+      MissionControl::Jobs.page_title.call(page_title)
+    else
+      "Mission control - #{page_title}"
+    end
+  end
+
   def back_to_main_app_path
     MissionControl::Jobs.back_to_main_app_path.presence || main_app.try(:root_path)
   end
