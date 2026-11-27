@@ -280,11 +280,11 @@ Now you're ready to query and operate over jobs for this adapter via the API. So
 
 ```ruby
 
-# All jobs
-ActiveJob.jobs
-
 # All failed jobs
 ActiveJob.jobs.failed
+
+# Status-less queries are adapter-specific. With Solid Queue, select a status first:
+# ActiveJob.jobs
 
 # All pending jobs in some queue
 ActiveJob.jobs.pending.where(queue_name: "some_queue")
